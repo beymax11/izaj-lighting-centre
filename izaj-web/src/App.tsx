@@ -2,147 +2,155 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faBell, faShoppingCart, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import ItemDescription from './item-description'; // import the new page
+import LoginForm from './login'; // Import the LoginForm component
+import SignUpForm from './signup'; // Import the SignUpForm component
+import ItemDescription from './item-description'; // Import the ItemDescription page
 import Cart from './cart'; // Import Cart component
-import ProductList from './product-list'; // 👈 Add this line
-import Collection from './collection'; // 👈 Add this import
+import ProductList from './product-list'; // Import ProductList component
+import Collection from './collection'; // Import Collection component
 import Sales from './sales';
-import Checkout from './checkout'; // 👈 import
+import Checkout from './checkout'; // Import Checkout component
 import { Link } from 'react-router-dom'; // Import Link for routing
 import "./App.css";
 
-
 const App: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for managing modal visibility
+  const [isLoginForm, setIsLoginForm] = useState(true); // State to toggle between Login and SignUp form
+
+  // Function to toggle between LoginForm and SignUpForm
+  const toggleForm = () => {
+    setIsLoginForm(!isLoginForm);
+  };
+
   return (
     <Router>
       <Routes>
-      <Route path="/cart" element={<Cart />} /> {/* Cart route */}
-        <Route path="/" element={<VideoStreamingUI />} />
-        <Route path="/product-list" element={<ProductList />} /> {/* 👈 Add this route */}
-        <Route path="/new" element={<Collection />} /> {/* 👈 Add this route */}
-        <Route path="/sales" element={<Sales />} /> {/* 👈 Add this route */}
+        <Route path="/cart" element={<Cart />} /> {/* Cart route */}
+        <Route path="/" element={<VideoStreamingUI setIsModalOpen={setIsModalOpen} />} />
+        <Route path="/product-list" element={<ProductList />} />
+        <Route path="/new" element={<Collection />} />
+        <Route path="/sales" element={<Sales />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/item-description" element={<ItemDescription />} />
       </Routes>
+
+      {/* Modal (Overlay) */}
+      {isModalOpen && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            {isLoginForm ? (
+              <LoginForm toggleForm={toggleForm} />
+            ) : (
+              <SignUpForm toggleForm={toggleForm} />
+            )}
+            <button
+              onClick={() => setIsModalOpen(false)} // Close modal
+              className="mt-4 text-center text-gray-500 hover:text-black"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </Router>
   );
 };
-const VideoStreamingUI: React.FC = () => {
-  // State to toggle dropdowns
+
+const VideoStreamingUI: React.FC<{ setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>> }> = ({ setIsModalOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white text-white font-sans">
       {/* Header */}
-<header className="bg-white px-10 py-3 flex justify-between items-center border-b border-gray-200 sticky top-0 z-50">
-  {/* Logo */}
-  <div className="text-3xl font-playfair tracking-widest text-black">IZAJ</div>
+      <header className="bg-white px-10 py-3 flex justify-between items-center border-b border-gray-200 sticky top-0 z-50">
+        {/* Logo */}
+        <div className="text-3xl font-playfair tracking-widest text-black">IZAJ</div>
 
-  {/* Search Bar */}
-  <div className="relative w-1/2">
-    <input
-      type="text"
-      placeholder="Search"
-       className="w-full border border-black-300 rounded-full pl-10 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
-    />
-    <FontAwesomeIcon
-      icon={faSearch}
-      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
-    />
-  </div>
-
-  {/* Right Icons */}
-  <div className="flex items-center space-x-6">
-    <div
-      className="relative"
-      onMouseEnter={() => setIsAccountDropdownOpen(true)}
-      onMouseLeave={() => setIsAccountDropdownOpen(false)}
-    >
-     <span className="text-xs text-gray-500 block text-left">Login/Signup</span>
-      <button className="text-black text-sm font-medium flex items-center hover:text-orange-500">
-        My Account <FontAwesomeIcon icon={faCaretDown} className="ml-1" />
-      </button>
-
-      {/* Dropdown */}
-      {isAccountDropdownOpen && (
-        <div className="absolute right-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-          <ul className="py-2">
-            <li>
-              <a href="#profile" className="block px-4 py-2 hover:bg-gray-100">My Account</a>
-            </li>
-            <li>
-              <a href="#settings" className="block px-4 py-2 hover:bg-gray-100">My Purchase</a>
-            </li>
-            <li>
-              <a href="#logout" className="block px-4 py-2 hover:bg-gray-100">Logout</a>
-            </li>
-          </ul>
+        {/* Search Bar */}
+        <div className="relative w-1/2">
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-full border border-black-300 rounded-full pl-10 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <FontAwesomeIcon
+            icon={faSearch}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+          />
         </div>
-      )}
-    </div>
 
-    {/* Icons */}
-    <FontAwesomeIcon icon={faBell} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
-    <FontAwesomeIcon icon={faShoppingCart} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
-  </div>
-</header>
+        {/* Right Icons */}
+        
+          {/* My Account Button */}
+          <div className="flex items-center space-x-6">
+          <div className="relative">
+            {/* Display "Hello {userName}" above My Account */}
+            <div className="text-gray-500 text-sm">Hello Daniel</div>
+            </div>
+          <button
+            onClick={() => setIsModalOpen(true)} // Open modal on click
+            className="text-black text-sm font-medium flex items-center hover:text-orange-500"
+          >
+            My Account <FontAwesomeIcon icon={faCaretDown} className="ml-1" />
+          </button>
 
-{/* Navbar */}
-<nav className="bg-white py-3 border-b border-gray-200">
-  <ul className="flex justify-center space-x-10 text-sm font-medium">
-    <li><a href="#home" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
-
-    <li className="relative">
-  <button
-    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-    className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
-  >
-    PRODUCTS <FontAwesomeIcon icon={faCaretDown} className="ml-1 text-xs" />
-  </button>
-
-
-      {isDropdownOpen && (
-        <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-          <ul className="py-2">
-            <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">LIGHTING FIXTURES</a></li>
-            <li>
-  <Link to="/product-list" className="block px-4 py-2 hover:bg-gray-100">
-    All Lighting Fixtures
-  </Link>
-</li>
-
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Semi Flush Mounted Lights</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Cluster Chandeliers</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Floor Lamps</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Table Lamps</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Rechargeable Table Lamps</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Wall Lights</a></li>
-            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Painting & Bathroom Lights</a></li>
-          
-          </ul>
+          {/* Icons */}
+          <FontAwesomeIcon icon={faBell} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
+          <FontAwesomeIcon icon={faShoppingCart} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
         </div>
-      )}
-    </li>
+      </header>
 
-    <li>
-  <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
-    NEW
-  </Link>
-</li>
+      {/* Navbar */}
+      <nav className="bg-white py-3 border-b border-gray-200">
+        <ul className="flex justify-center space-x-10 text-sm font-medium">
+          <li><a href="#home" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
 
-<li>
-  <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
-    SALES
-  </Link>
-</li>
-    <li><a href="#about" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</a></li>
-  </ul>
-</nav>
+          <li className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)} // Toggle Products dropdown
+              className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
+            >
+              PRODUCTS <FontAwesomeIcon icon={faCaretDown} className="ml-1 text-xs" />
+            </button>
 
+            {isDropdownOpen && (
+              <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
+                <ul className="py-2">
+                  <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">LIGHTING FIXTURES</a></li>
+                  <li>
+                    <Link to="/product-list" className="block px-4 py-2 hover:bg-gray-100">
+                      All Lighting Fixtures
+                    </Link>
+                  </li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Semi Flush Mounted Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Cluster Chandeliers</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Floor Lamps</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Table Lamps</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Rechargeable Table Lamps</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Wall Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Painting & Bathroom Lights</a></li>
+                </ul>
+              </div>
+            )}
+          </li>
+
+          <li>
+            <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
+              NEW
+            </Link>
+          </li>
+
+          <li>
+            <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
+              SALES
+            </Link>
+          </li>
+          <li><a href="#about" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</a></li>
+        </ul>
+      </nav>
 
       {/* Main Content */}
       <main className="p-6 mx-auto">

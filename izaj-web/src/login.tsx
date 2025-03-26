@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 
-const LoginForm: React.FC = () => {
+interface LoginFormProps {
+  toggleForm: () => void; // Define the type for toggleForm prop
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -12,7 +16,13 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
+      {/* Title */}
+      <h2 className="text-2xl font-bold mb-2 text-center">Login to my account</h2>
+      
+      {/* Description */}
+      <p className="text-center text-sm text-gray-500 mb-6">Enter your e-mail and password:</p>
+      
+      {/* Form */}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -45,8 +55,14 @@ const LoginForm: React.FC = () => {
         </button>
       </form>
 
+      {/* Sign up link */}
       <p className="mt-4 text-sm text-center">
-        Don't have an account? <a href="/signup" className="text-blue-500">Sign up</a>
+        New customer? <button onClick={toggleForm} className="text-blue-500 cursor-pointer">Create your account</button>
+      </p>
+
+      {/* Lost password link */}
+      <p className="mt-2 text-sm text-center">
+        Lost password? <button className="text-blue-500 cursor-pointer">Recover password</button>
       </p>
     </div>
   );

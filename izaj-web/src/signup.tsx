@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 
-const SignUpForm: React.FC = () => {
+interface SignUpFormProps {
+  toggleForm: () => void; // Define the type for toggleForm prop
+}
+
+const SignUpForm: React.FC<SignUpFormProps> = ({ toggleForm }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -64,7 +68,7 @@ const SignUpForm: React.FC = () => {
       </form>
 
       <p className="mt-4 text-sm text-center">
-        Already have an account? <a href="/login" className="text-blue-500">Login</a>
+        Already have an account? <button onClick={toggleForm} className="text-blue-500 cursor-pointer">Login</button>
       </p>
     </div>
   );
