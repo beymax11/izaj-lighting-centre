@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faBell, faShoppingCart, faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faCaretDown, faUser, faShoppingCart, faBell } from "@fortawesome/free-solid-svg-icons";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginForm from './login'; // Import the LoginForm component
 import SignUpForm from './signup'; // Import the SignUpForm component
@@ -9,25 +9,55 @@ import Cart from './cart'; // Import Cart component
 import ProductList from './product-list'; // Import ProductList component
 import Collection from './collection'; // Import Collection component
 import Sales from './sales';
-import Checkout from './checkout'; // Import Checkout component
+import Checkout from './checkout';
+import MyPurchase from './MyPurchase'; // Import Checkout component
 import { Link } from 'react-router-dom'; // Import Link for routing
 import "./App.css";
+
+interface User {
+  name: string;
+  email: string;
+}
 
 const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // State for managing modal visibility
   const [isLoginForm, setIsLoginForm] = useState(true); // State to toggle between Login and SignUp form
+  const [user, setUser] = useState<User | null>(null); // State to manage logged-in user
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   // Function to toggle between LoginForm and SignUpForm
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
   };
 
+  // Function to handle login
+  const handleLogin = (userData: User) => {
+    setUser(userData);
+    setIsModalOpen(false);
+  };
+
+  // Function to handle logout
+  const handleLogout = () => {
+    setUser(null);
+    setIsAccountDropdownOpen(false);
+  };
+
   return (
     <Router>
       <Routes>
         <Route path="/cart" element={<Cart />} /> {/* Cart route */}
-        <Route path="/" element={<VideoStreamingUI setIsModalOpen={setIsModalOpen} />} />
+        <Route path="/" element={
+          <VideoStreamingUI 
+            setIsModalOpen={setIsModalOpen} 
+            user={user} 
+            setIsAccountDropdownOpen={setIsAccountDropdownOpen}
+            isAccountDropdownOpen={isAccountDropdownOpen}
+            handleLogout={handleLogout}
+          />
+        } />
         <Route path="/product-list" element={<ProductList />} />
+        <Route path="/my-purchases" element={<MyPurchase />} />
+
         <Route path="/new" element={<Collection />} />
         <Route path="/sales" element={<Sales />} />
         <Route path="/checkout" element={<Checkout />} />
@@ -39,12 +69,15 @@ const App: React.FC = () => {
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
             {isLoginForm ? (
-              <LoginForm toggleForm={toggleForm} />
+              <LoginForm 
+                toggleForm={toggleForm} 
+                onLogin={handleLogin}  // Explicitly passing the handleLogin function
+              />
             ) : (
               <SignUpForm toggleForm={toggleForm} />
             )}
             <button
-              onClick={() => setIsModalOpen(false)} // Close modal
+              onClick={() => setIsModalOpen(false)}
               className="mt-4 text-center text-gray-500 hover:text-black"
             >
               Close
@@ -56,49 +89,114 @@ const App: React.FC = () => {
   );
 };
 
-const VideoStreamingUI: React.FC<{ setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>> }> = ({ setIsModalOpen }) => {
+const VideoStreamingUI: React.FC<{
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  user: User | null;
+  setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isAccountDropdownOpen: boolean;
+  handleLogout: () => void;
+}> = ({ 
+  setIsModalOpen, 
+  user, 
+  setIsAccountDropdownOpen, 
+  isAccountDropdownOpen,
+  handleLogout 
+}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  
   return (
     <div className="min-h-screen bg-white text-white font-sans">
       {/* Header */}
-      <header className="bg-white px-10 py-3 flex justify-between items-center border-b border-gray-200 sticky top-0 z-50">
-        {/* Logo */}
-        <div className="text-3xl font-playfair tracking-widest text-black">IZAJ</div>
+<header className="bg-white px-10 py-3 flex items-center border-b border-gray-200 sticky top-0 z-50">
+  {/* Logo */}
+  <div className="text-3xl font-playfair tracking-widest text-black flex-shrink-0">IZAJ</div>
 
-        {/* Search Bar */}
-        <div className="relative w-1/2">
-          <input
-            type="text"
-            placeholder="Search"
-            className="w-full border border-black-300 rounded-full pl-10 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
-          />
-          <FontAwesomeIcon
-            icon={faSearch}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
-          />
+  {/* Search Bar */}
+  <div className="relative w-full max-w-2xl mx-auto">  {/* Set max width to match navbar's content */}
+    <input
+      type="text"
+      placeholder="Search"
+      className="w-full border border-black rounded-full pl-10 pr-4 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
+    />
+    <FontAwesomeIcon
+      icon={faSearch}
+      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+    />
+  </div>
+
+
+
+          {/* Right Icons */}
+<div className="flex items-center space-x-6">
+  {/* Login/Signup or User Account Section */}
+  {!user ? (
+    <button
+      onClick={() => setIsModalOpen(true)}
+      className="text-black text-large font-large flex items-center hover:text-orange-500"
+    >
+      <span>Login</span>
+      <span className="mx-2">|</span>
+      <span>Signup</span>
+    </button>
+  ) : (
+    <div className="relative">
+      <button 
+        onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+        className="text-black text-large font-large flex items-center hover:text-orange-500"
+      >
+        <FontAwesomeIcon icon={faUser} className="mr-2" />
+        <span>Hello {user.name}</span>
+        <FontAwesomeIcon icon={faCaretDown} className="ml-2" />
+      </button>
+
+      {isAccountDropdownOpen && (
+        <div className="absolute right-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
+          <ul className="py-2">
+            <li>
+              <a href="#my-account" className="block px-4 py-2 hover:bg-gray-100">
+                My Account
+              </a>
+            </li>
+            <li>
+            <Link to="/my-purchases" className="block px-4 py-2 hover:bg-gray-100">
+          My Purchases
+        </Link>
+            </li>
+            <li>
+              <button 
+                onClick={handleLogout}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
         </div>
+      )}
+    </div>
+  )}
 
-        {/* Right Icons */}
+  {/* Show notification and cart icons only if the user is logged in */}
+  {user && (
+    <>
+      {/* Notification Icon */}
+      <FontAwesomeIcon 
+        icon={faBell} 
+        className="text-lg text-black hover:text-orange-500 cursor-pointer" 
+      />
+
+      {/* Cart Icon */}
+      <FontAwesomeIcon 
+        icon={faShoppingCart} 
+        className="text-lg text-black hover:text-orange-500 cursor-pointer" 
+      />
+    </>
+  )}
+</div>
         
-          {/* My Account Button */}
-          <div className="flex items-center space-x-6">
-          <div className="relative">
-            {/* Display "Hello {userName}" above My Account */}
-            <div className="text-gray-500 text-sm">Hello Daniel</div>
-            </div>
-          <button
-            onClick={() => setIsModalOpen(true)} // Open modal on click
-            className="text-black text-sm font-medium flex items-center hover:text-orange-500"
-          >
-            My Account <FontAwesomeIcon icon={faCaretDown} className="ml-1" />
-          </button>
-
-          {/* Icons */}
-          <FontAwesomeIcon icon={faBell} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
-          <FontAwesomeIcon icon={faShoppingCart} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
-        </div>
       </header>
+
+      
 
       {/* Navbar */}
       <nav className="bg-white py-3 border-b border-gray-200">

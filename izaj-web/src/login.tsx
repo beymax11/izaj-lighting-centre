@@ -1,16 +1,28 @@
 import React, { useState } from "react";
 
 interface LoginFormProps {
-  toggleForm: () => void; // Define the type for toggleForm prop
+  toggleForm: () => void;
+  onLogin: (userData: { name: string; email: string }) => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ toggleForm, onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
+    
+    // Mock login logic - normally this would be an API call
+    const firstName = email.split('@')[0];
+    const capitalizedName = 
+      firstName.charAt(0).toUpperCase() + firstName.slice(1);
+
+    // Call onLogin with user data
+    onLogin({
+      name: capitalizedName,
+      email: email
+    });
+
     console.log("Logging in with", { email, password });
   };
 
