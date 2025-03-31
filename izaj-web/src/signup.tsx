@@ -7,7 +7,9 @@ interface SignUpFormProps {
 const SignUpForm: React.FC<SignUpFormProps> = ({ toggleForm }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,55 +22,98 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ toggleForm }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Sign Up</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+    <div className="max-w-md mx-auto p-3 bg-white">
+      {/* Title */}
+      <h2 className="text-2xl font-normal mb-4 text-center text-gray-800" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+        Create my account
+      </h2>
+      
+      {/* Description */}
+      <p className="text-center text-gray-600 mb-8" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+        Please fill in the information below:
+      </p>
+      
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="firstName" className="block text-sm font-normal text-gray-700 mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+            First name
+          </label>
+          <input
+            type="text"
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            className="w-full px-0 py-2 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="lastName" className="block text-sm font-normal text-gray-700 mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+            Last name
+          </label>
+          <input
+            type="text"
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            className="w-full px-0 py-2 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-normal text-gray-700 mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+            Email
+          </label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
             required
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full px-0 py-2 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
           />
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+        <div>
+          <label htmlFor="password" className="block text-sm font-normal text-gray-700 mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+            Password
+          </label>
           <input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
             required
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full px-0 py-2 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
           />
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm your password"
-            required
-            className="w-full p-2 border border-gray-300 rounded-md"
-          />
-        </div>
-
-        <button type="submit" className="w-full py-2 bg-black text-white rounded-lg hover:bg-gray-800">
-          Sign Up
+        <button 
+          type="submit" 
+          className="w-full py-3 bg-black text-white hover:bg-gray-800 mt-8"
+          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+        >
+          Signup
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-center">
-        Already have an account? <button onClick={toggleForm} className="text-blue-500 cursor-pointer">Login</button>
+      {/* Login link */}
+      <p className="mt-6 text-sm text-center text-gray-600" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+        Already have an account?{' '}
+        <button 
+          onClick={toggleForm} 
+          className="text-gray-800 underline cursor-pointer hover:text-black"
+          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+        >
+          Login Here
+        </button>
       </p>
     </div>
   );

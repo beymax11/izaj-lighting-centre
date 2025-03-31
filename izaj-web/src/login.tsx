@@ -27,55 +27,80 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm, onLogin }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg">
+    <div className="max-w-md mx-auto p-15 bg-white">
       {/* Title */}
-      <h2 className="text-2xl font-bold mb-2 text-center">Login to my account</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center text-black" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+        Login to my account
+      </h2>
       
       {/* Description */}
-      <p className="text-center text-sm text-gray-500 mb-6">Enter your e-mail and password:</p>
+      <p className="text-center text-black-600 mb-8" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+        Enter your e-mail and password:
+      </p>
       
       {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="email" className="block text-sm font-normal text-black mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+            Email
+          </label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
             required
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full px-2 py-2 border-0 border-b border-black focus:border-black focus:ring-0 rounded-none"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
           />
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+        <div>
+          <label htmlFor="password" className="block text-sm font-normal text-black mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+            Password
+          </label>
           <input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
             required
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full px-2 py-2 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
           />
         </div>
 
-        <button type="submit" className="w-full py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+        <button 
+          type="submit" 
+          className="w-full py-3 bg-black text-white hover:bg-gray-800 mt-8"
+          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+        >
           Login
         </button>
       </form>
 
-      {/* Sign up link */}
-      <p className="mt-4 text-sm text-center">
-        New customer? <button onClick={toggleForm} className="text-blue-500 cursor-pointer">Create your account</button>
-      </p>
-
-      {/* Lost password link */}
-      <p className="mt-2 text-sm text-center">
-        Lost password? <button className="text-blue-500 cursor-pointer">Recover password</button>
-      </p>
+      {/* Links */}
+      <div className="mt-6 space-y-3 text-center">
+        <p className="text-sm text-gray-600" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+          New customer?{' '}
+          <button 
+            onClick={toggleForm} 
+            className="text-gray-800 underline cursor-pointer hover:text-black"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+          >
+            Create your account
+          </button>
+        </p>
+        <p className="text-sm text-gray-600" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+          Lost password?{' '}
+          <button 
+            className="text-gray-800 underline cursor-pointer hover:text-black"
+            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+          >
+            Recover password
+          </button>
+        </p>
+      </div>
     </div>
   );
 };

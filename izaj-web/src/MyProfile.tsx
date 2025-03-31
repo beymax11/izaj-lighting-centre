@@ -6,9 +6,9 @@ import { Link } from 'react-router-dom';
 const MyPurchase: React.FC = () => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('TO PAY');
+  
 
-  const tabs = ['TO PAY', 'TO SHIP', 'TO RECIEVE', 'COMPLETED', 'CANCELLED', 'RETURN/REFUND'];
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -92,146 +92,118 @@ const MyPurchase: React.FC = () => {
           <div className="font-medium mb-6 text-center">Daniela Padilla</div>
       
           <ul className="space-y-4 w-full">
+          <ul className="w-full">
+  {/* My Account - Active Item */}
+  <li className="flex items-center p-2 bg-gray-100 rounded mb-1">  {/* Reduced margin-bottom */}
+    <FontAwesomeIcon icon={faUser} className="text-black mr-2 w-4 h-4" />  {/* Fixed icon size */}
+    <span className="text-black font-medium text-sm">My Account</span>  {/* Made text smaller */}
+  </li>
+  
+  {/* Submenu Items */}
+  <li className="pl-8 py-1">  {/* Tighter padding */}
+    <a href="#profile" className="text-black font-medium text-sm block">Profile</a> 
+  </li>
+  <li className="pl-8 py-1">
+    <Link to="/banks-cards" className="text-gray-600 hover:text-black text-sm block ">Banks & Cards </Link>
+  </li>
+  <li className="pl-8 py-1">
+    <Link to="/addresses" className="text-gray-600 hover:text-black text-sm block">Addresses</Link>
+  </li>
+  <li className="pl-8 py-1">
+     <Link to="/change-password" className="text-gray-600 hover:text-black text-sm block">Change Password</Link>
+  </li>
+</ul>
             <li className="flex items-center space-x-3 p-2">
-              <FontAwesomeIcon icon={faUser} className="text-gray-500" />
-               <Link to="/my-profile" className="text-black font-semibold">My Account</Link>
-            </li>
-            
-            <li className="flex items-center space-x-3 p-2 bg-gray-100 rounded">
-              <FontAwesomeIcon icon={faClipboardList} className="text-black" />
-              <Link to="/my-purchase" className="text-black font-semibold">My Purchase</Link>
+              <FontAwesomeIcon icon={faClipboardList} className="text-gray-500" />
+              <Link to="/my-purchase" className="text-gray-700  hover:text-black">My Purchase</Link>
             </li>
           </ul>
         </div>
       </div>
       
-      {/* Right Column - Purchase Tabs and Content (Wider) */}
-      <div className="flex-1">
-        {/* Purchase Tabs */}
-        <div className="border border-black overflow-hidden">
-          <div className="flex justify-between border-b border-black">
-            {tabs.map((tab) => (
-            <button
-              key={tab}
-              className={`flex-1 py-3 text-sm font-medium ${activeTab === tab ? 'border-b-2 border-black text-black' : 'text-gray-500'}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-            ))}
+     {/* Right Column - Profile Content */}
+<div className="flex-1">
+  <div className="border border-black overflow-hidden">
+    {/* Profile Header */}
+    <div className="p-6 border-b border-black">
+      <h2 className="text-xl font-bold">My Profile</h2>
+      <p className="text-gray-600 text-sm mt-1">Manage and protect your account</p>
+    </div>
+
+    {/* Profile Form */}
+    <div className="p-6">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Left Column - Form Fields */}
+        <div className="flex-1">
+          {/* Name Field */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Name:</label>
+            <input 
+              type="text" 
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="Enter your name"
+            />
           </div>
-          
-          {/* Purchase Content */}
-          <div className="p-8 flex flex-col items-center justify-center min-h-96">
-            <div className="w-40 h-40 mb-6">
-              <img src="order.png" alt="No orders" className="w-full" />
-            </div>
-            <p className="text-lg text-gray-700 mb-8">No orders yet</p>
-           
+
+          {/* Email Field (disabled) */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Email:</label>
+            <input 
+              type="email" 
+              value="danielpadilla@gmail.com" 
+              disabled
+              className="w-full p-2 border border-gray-300 rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Phone Number Field */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Phone Number:</label>
+            <input 
+              type="tel" 
+              value="091234567890" 
+              className="w-full p-2 border border-gray-300 rounded"
+            />
+          </div>
+
+          {/* Request Account Deletion and Delete Buttons */}
+          <div className="flex justify-between items-center mt-6 pt-4">
+            <button className="text-red-500 text-sm font-medium">
+              Request Account Deletion
+            </button>
+            <button className="px-6 py-2 bg-red-500 text-white text-sm font-medium rounded">
+              Delete
+            </button>
           </div>
         </div>
+
+        {/* Right Column - Image Upload */}
+        <div className="flex flex-col items-center md:items-start">
+          <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-300 mb-3">
+            <img src="profile.webp" alt="Profile" className="w-full h-full object-cover"/>
+          </div>
+          <button className="text-blue-500 text-sm underline mb-1">Change Photo</button>
+          <p className="text-gray-500 text-xs text-center md:text-left">
+            File size: maximum 1 MB<br/>
+            File extension: JPEG, PNG
+          </p>
+        </div>
+      </div>
+
+      {/* Save Button (Separate at bottom) */}
+      <div className="flex justify-end mt-6">
+        <button className="px-6 py-2 bg-black text-white text-sm font-medium rounded">
+          Save
+        </button>
       </div>
     </div>
   </div>
+</div>
+</div>
+</div>
 </main>
-      {/* Featured Products Section */}
-<div className="mt-16 px-4">
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-    {/* Top Picks Card */}
-    <div className="relative w-full h-80 rounded-lg overflow-hidden">
-      <img
-        src="featured.jpg"
-        alt="Top Picks"
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute bottom-0 left-0 w-full p-6">
-        <h3 className="text-xl font-semibold text-white">TOP PICKS</h3>
-        <p className="mt-2 text-sm text-white">SHOP DESIGNER FAVORITES</p>
-        <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300">
-          SHOP NOW
-        </button>
-      </div>
-    </div>
 
-    {/* What's Hot Card */}
-    <div className="relative w-full h-80 rounded-lg overflow-hidden">
-      <img
-        src="featured.jpg"
-        alt="What's Hot"
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute bottom-0 left-0 w-full p-6">
-        <h3 className="text-xl font-semibold text-white">WHAT'S HOT?</h3>
-        <p className="mt-2 text-sm text-white">GET THE LATEST DESIGN FOR YOUR HOME AND PROJECTS!</p>
-        <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300">
-          SHOP NOW
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-{/* RECENTLY VIEWED */}
-<div className="mt-16 px-4">
-<h2 className="text-2xl font-bold text-black mb-8 text-left">RECENTLY VIEWED</h2>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    {/* Deal 1 */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <img
-        src="ceiling-light.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
-
-    {/* Repeat similar blocks for other deals */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <img
-        src="ceiling-light.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
-
-    {/* Add other deals as needed */}
-    {/* Repeat similar blocks for other deals */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <img
-        src="ceiling-light.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
-    {/* Repeat similar blocks for other deals */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <img
-        src="ceiling-light.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
-  </div>
-</div>
+      
 
       {/* Footer */}
       <footer className="bg-white text-black py-10">

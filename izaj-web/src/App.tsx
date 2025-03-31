@@ -10,7 +10,11 @@ import ProductList from './product-list'; // Import ProductList component
 import Collection from './collection'; // Import Collection component
 import Sales from './sales';
 import Checkout from './checkout';
-import MyPurchase from './MyPurchase'; // Import Checkout component
+import MyPurchase from './MyPurchase';
+import MyProfile from './MyProfile';
+import BanksCards from './banks-cards';
+import Addresses from './addresses'; 
+import ChangePassword from './change-password'; // Import Checkout component
 import { Link } from 'react-router-dom'; // Import Link for routing
 import "./App.css";
 
@@ -57,7 +61,10 @@ const App: React.FC = () => {
         } />
         <Route path="/product-list" element={<ProductList />} />
         <Route path="/my-purchases" element={<MyPurchase />} />
-
+        <Route path="/my-profile" element={<MyProfile />} />
+        <Route path="/addresses" element={<Addresses />} />
+        <Route path="/banks-cards" element={<BanksCards />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/new" element={<Collection />} />
         <Route path="/sales" element={<Sales />} />
         <Route path="/checkout" element={<Checkout />} />
@@ -107,12 +114,14 @@ const VideoStreamingUI: React.FC<{
   return (
     <div className="min-h-screen bg-white text-white font-sans">
       {/* Header */}
-<header className="bg-white px-10 py-3 flex items-center border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white px-10 py-3 flex items-center sticky top-0 z-50">
+
   {/* Logo */}
   <div className="text-3xl font-playfair tracking-widest text-black flex-shrink-0">IZAJ</div>
 
-  {/* Search Bar */}
-  <div className="relative w-full max-w-2xl mx-auto">  {/* Set max width to match navbar's content */}
+ {/* Centered Search Bar */}
+<div className="flex-1 flex justify-center px-4">
+  <div className="relative w-full max-w-lg mx-4">
     <input
       type="text"
       placeholder="Search"
@@ -123,6 +132,8 @@ const VideoStreamingUI: React.FC<{
       className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
     />
   </div>
+</div>
+
 
 
 
@@ -193,104 +204,113 @@ const VideoStreamingUI: React.FC<{
     </>
   )}
 </div>
-        
-      </header>
+         </header>
 
       
-
       {/* Navbar */}
-      <nav className="bg-white py-3 border-b border-gray-200">
-        <ul className="flex justify-center space-x-10 text-sm font-medium">
-          <li><a href="#home" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
+      <nav className="bg-white py-3 sticky top-12 z-40">
 
-          <li className="relative">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)} // Toggle Products dropdown
-              className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
-            >
-              PRODUCTS <FontAwesomeIcon icon={faCaretDown} className="ml-1 text-xs" />
-            </button>
+  <ul className="flex justify-center space-x-10 text-sm font-medium">
+    <li><a href="#home" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
 
-            {isDropdownOpen && (
-              <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-                <ul className="py-2">
-                  <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">LIGHTING FIXTURES</a></li>
-                  <li>
-                    <Link to="/product-list" className="block px-4 py-2 hover:bg-gray-100">
-                      All Lighting Fixtures
-                    </Link>
-                  </li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Semi Flush Mounted Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Cluster Chandeliers</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Floor Lamps</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Table Lamps</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Rechargeable Table Lamps</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Wall Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Painting & Bathroom Lights</a></li>
-                </ul>
-              </div>
-            )}
-          </li>
+    <li className="relative">
+      <button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)} // Toggle Products dropdown
+        className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
+      >
+        PRODUCTS <FontAwesomeIcon icon={faCaretDown} className="ml-1 text-xs" />
+      </button>
 
-          <li>
-            <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
-              NEW
-            </Link>
-          </li>
+      {isDropdownOpen && (
+        <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
+          <ul className="py-2">
+            <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">LIGHTING FIXTURES</a></li>
+            <li>
+              <Link to="/product-list" className="block px-4 py-2 hover:bg-gray-100">
+                All Lighting Fixtures
+              </Link>
+            </li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Semi Flush Mounted Lights</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Cluster Chandeliers</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Floor Lamps</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Table Lamps</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Rechargeable Table Lamps</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Wall Lights</a></li>
+            <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Painting & Bathroom Lights</a></li>
+          </ul>
+        </div>
+      )}
+    </li>
 
-          <li>
-            <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
-              SALES
-            </Link>
-          </li>
-          <li><a href="#about" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</a></li>
-        </ul>
-      </nav>
+    <li>
+      <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
+        NEW
+      </Link>
+    </li>
+
+    <li>
+      <Link to="/sales" className="text-black hover:border-b-2 border-black pb-1">
+        SALES
+      </Link>
+    </li>
+    <li><a href="#about" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</a></li>
+  </ul>
+</nav>
+
 
       {/* Main Content */}
-      <main className="p-6 mx-auto">
-        {/* Banner - Completely redesigned with CSS background approach */}
-        <div 
-           className="w-full h-screen bg-cover bg-center relative"
-          style={{ 
-            backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/bradikan-uzlUBEYwufo-unsplash.jpg')", // Replace with your image path
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            marginLeft: "0",  
-            marginRight: "0", 
-          
-          }}
+      <main className="p-0 mx-0 w-full">
+  {/* Full-width banner */}
+  <div 
+    className="w-full h-screen relative overflow-hidden"
+    style={{ 
+      backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/bradikan-uzlUBEYwufo-unsplash.jpg')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }}
+  >
+    {/* Content container */}
+    <div className="absolute bottom-0 left-0 w-full px-10 py-12 text-white flex justify-between items-end">
+      {/* Text content */}
+      <div className="max-w-2xl">
+        <h1 
+          className="text-4xl font-normal mb-4 tracking-tight"
+          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
         >
-          <div className="absolute bottom-0 left-0 w-full p-6 text-white flex justify-between items-center">
-            {/* Left content */}
-            <div className="max-w-lg">
-              <h1 className="text-xl font-bold">
-                IZAJ LIGHTING CENTRE
-              </h1>
-              <p className="text-lg mt-2">
-                Our team is passionate about helping you find the perfect lighting.
-              </p>
-            </div>
+          IZAJ LIGHTNING CENTRE
+        </h1>
+        <p 
+          className="text-xl font-light mb-6"
+          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+        >
+          Our team is passionate about helping you
+           find the perfect lighting.
+        </p>
+      </div>
 
-            {/* Right button */}
-            <button className="mt-4 px-6 py-2 text-white font-semibold rounded-lg border border-white hover:bg-white hover:text-black transition-all duration-300">
-              LEARN MORE
-            </button>
-          </div>
-        </div>
+      {/* Learn More button */}
+      <button 
+        className="px-0 py-2 text-white font-normal text-xl hover:underline flex items-center"
+        style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+      >
+        LEARN MORE
+        <span className="ml-2 text-2xl"></span>
+      </button>
+    </div>
+  </div>
 
         {/* Lightning Category Section */}
-        <h2 className="text-2xl font-bold mt-10 mb-4 text-black flex justify-between items-center">
-  <span>LIGHTNING CATEGORY</span>
-  <a href="#view-all" className="text-sm text-gray-500 hover:text-black transition duration-300">
-    View All
-  </a>
-</h2>
+        <h2 className="text-xl font-bold mt-6 mb-2 text-black flex justify-between items-center">
+          <span>LIGHTNING CATEGORY</span>
+          <a href="#view-all" className="text-sm text-gray-500 hover:text-black transition duration-300 ml-1">
+            View All
+          </a>
+        </h2>
 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-  <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <div className="bg-white p-6 rounded-lg ">
     <div className="relative w-full h-80">
       <img
         src="ceiling-light.jpg" // Correct path to image inside public/images/
@@ -301,7 +321,7 @@ const VideoStreamingUI: React.FC<{
     <h3 className="text-lg font-semibold text-black mt-4 text-center">Ceiling Lights</h3>
   </div>
 
-  <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <div className="bg-white p-6 rounded-lg ">
     <div className="relative w-full h-80">
       <img
         src="ceiling-light.jpg"
@@ -312,7 +332,7 @@ const VideoStreamingUI: React.FC<{
     <h3 className="text-lg font-semibold text-black mt-4 text-center">Chandelier</h3>
   </div>
 
-  <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <div className="bg-white p-6 rounded-lg ">
     <div className="relative w-full h-80">
       <img
         src="ceiling-light.jpg"
@@ -323,7 +343,7 @@ const VideoStreamingUI: React.FC<{
     <h3 className="text-lg font-semibold text-black mt-4 text-center">Cluster Chandelier</h3>
   </div>
 
-  <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <div className="bg-white p-6 rounded-lg ">
     <div className="relative w-full h-80">
       <img
         src="ceiling-light.jpg"
@@ -334,7 +354,7 @@ const VideoStreamingUI: React.FC<{
     <h3 className="text-lg font-semibold text-black mt-4 text-center">Pendant Lights</h3>
   </div>
 
-  <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <div className="bg-white p-6 rounded-lg ">
     <div className="relative w-full h-80">
       <img
         src="ceiling-light.jpg"
