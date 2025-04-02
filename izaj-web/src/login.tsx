@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaFacebookF, FaGoogle, FaLinkedinIn } from "react-icons/fa";
 
 interface LoginFormProps {
   toggleForm: () => void;
@@ -27,80 +28,72 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm, onLogin }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-15 bg-white">
-      {/* Title */}
-      <h2 className="text-2xl font-bold mb-4 text-center text-black" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-        Login to my account
-      </h2>
-      
-      {/* Description */}
-      <p className="text-center text-black-600 mb-8" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-        Enter your e-mail and password:
-      </p>
-      
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="email" className="block text-sm font-normal text-black mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-2 py-2 border-0 border-b border-black focus:border-black focus:ring-0 rounded-none"
-            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
-          />
+    <div className="bg-white flex items-center justify-center h-full py-0 px-12 text-center">
+      <form onSubmit={handleSubmit} className="w-full">
+        <h1 className="font-bold m-0">Sign in</h1>
+        
+        {/* Social Icons */}
+        <div className="my-5">
+          <a href="#" className="border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10">
+            <FaFacebookF />
+          </a>
+          <a href="#" className="border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10">
+            <FaGoogle />
+          </a>
+          <a href="#" className="border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10">
+            <FaLinkedinIn />
+          </a>
         </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-normal text-black mb-1" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-2 py-2 border-0 border-b border-gray-300 focus:border-black focus:ring-0 rounded-none"
-            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
-          />
-        </div>
-
+        
+        <span className="text-xs">or use your account</span>
+        
+        {/* Email Input */}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="bg-white border border-black py-3 px-4 my-2 w-full"
+        />
+        
+        {/* Password Input */}
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="bg-white border border-black py-3 px-4 my-2 w-full"
+        />
+        
+        {/* Forgot Password */}
+        <a 
+          href="#" 
+          className="text-gray-600 text-xs my-3 inline-block"
+        >
+          Forgot your password?
+        </a>
+        
+        {/* Login Button */}
         <button 
           type="submit" 
-          className="w-full py-3 bg-black text-white hover:bg-gray-800 mt-8"
-          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+          className="rounded-3xl border border-black bg-black text-white text-xs font-bold py-3 px-12 uppercase tracking-wider transition-transform duration-80 ease-in focus:outline-none active:scale-95 mt-4"
         >
-          Login
+          Sign In
         </button>
-      </form>
-
-      {/* Links */}
-      <div className="mt-6 space-y-3 text-center">
-        <p className="text-sm text-gray-600" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-          New customer?{' '}
+        
+        {/* Create Account Link */}
+        <p className="text-xs text-gray-600 mt-4">
+          Don't have an account?{' '}
           <button 
             onClick={toggleForm} 
-            className="text-gray-800 underline cursor-pointer hover:text-black"
-            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+            className="text-black font-bold cursor-pointer hover:underline"
           >
-            Create your account
+            Sign Up
           </button>
         </p>
-        <p className="text-sm text-gray-600" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-          Lost password?{' '}
-          <button 
-            className="text-gray-800 underline cursor-pointer hover:text-black"
-            style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
-          >
-            Recover password
-          </button>
-        </p>
-      </div>
+      </form>
     </div>
   );
 };
