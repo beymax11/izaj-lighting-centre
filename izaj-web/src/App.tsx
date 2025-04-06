@@ -94,6 +94,154 @@ const App: React.FC = () => {
     </Router>
   );
 };
+const LightingCategory = () => {
+  const allItems = [
+    { id: 1, name: "Ceiling Lights", image: "celing.avif" },
+    { id: 2, name: "Chandelier", image: "chandelier.avif" },
+    { id: 3, name: "Pendant Lights", image: "pendant.avif" },
+    { id: 4, name: "Wall Lights", image: "wall.avif" },
+    { id: 5, name: "Table Lamps", image: "table.avif" },
+    { id: 6, name: "Cluster Chandelier", image: "cluster2.avif" },
+    { id: 7, name: "Floor Lamps", image: "floor.avif" },
+    { id: 8, name: " Table Lamps", image: "rechargeable.avif" },
+    { id: 9, name: "Painting Lights", image: "painting.avif" },
+    { id: 10, name: "Indoor Lights", image: "indoor.avif" },
+  ];
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const firstPageItems = allItems.slice(0, 6);
+  const secondPageItems = allItems.slice(6, 10);
+
+  const handleNextClick = () => {
+    setCurrentPage((prev) => (prev === 0 ? 1 : 0));
+  };
+
+  return (
+    <>
+      <div className="flex justify-between items-center mb-4 px-8 mt-16 mx-8">
+        <h2 className="text-2xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+          LIGHTING CATEGORY
+        </h2>
+        <div className="flex items-center">
+          <Link
+            to="/product-list"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+          >
+            VIEW ALL
+          </Link>
+        </div>
+      </div>
+
+      <div
+        className="relative group"
+        style={{
+          minHeight: "220px",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        <style>
+          {`
+            div::-webkit-scrollbar {
+              width: 0;
+              height: 0;
+              display: none;
+            }
+          `}
+        </style>
+
+        <div
+          className="flex justify-center space-x-6 transition-all duration-700 ease-in-out absolute w-full"
+          style={{
+            opacity: currentPage === 0 ? 1 : 0,
+            transform: `translateX(${currentPage === 0 ? "0" : "-100%"})`,
+            pointerEvents: currentPage === 0 ? "auto" : "none",
+          }}
+        >
+          {firstPageItems.map((item) => (
+            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative group">
+              <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
+                />
+              </div>
+              <h3
+                className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 relative"
+                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
+              >
+                <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
+                  {item.name}
+                </span>
+                <span className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <Icon icon="stash:arrow-right-light" className="text-black" width="20" height="20" />
+                </span>
+              </h3>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="flex justify-center space-x-6 transition-all duration-700 ease-in-out absolute w-full"
+          style={{
+            opacity: currentPage === 1 ? 1 : 0,
+            transform: `translateX(${currentPage === 1 ? "0" : "100%"})`,
+            pointerEvents: currentPage === 1 ? "auto" : "none",
+          }}
+        >
+          {secondPageItems.map((item) => (
+            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative group">
+              <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
+                />
+              </div>
+              <h3
+                className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 relative"
+                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
+              >
+                <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
+                  {item.name}
+                </span>
+                <span className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <Icon icon="stash:arrow-right-light" className="text-black" width="20" height="20" />
+                </span>
+              </h3>
+            </div>
+          ))}
+        </div>
+
+        {currentPage === 1 && (
+          <button
+            onClick={handleNextClick}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-0 group-hover:opacity-100"
+            style={{ zIndex: 10 }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+
+        <button
+          onClick={handleNextClick}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-0 group-hover:opacity-100"
+          style={{ zIndex: 10 }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+};
+
 
 const VideoStreamingUI: React.FC<{
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -109,11 +257,82 @@ const VideoStreamingUI: React.FC<{
   handleLogout 
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentDealIndex, setCurrentDealIndex] = useState(0);
+  
+  // Sample deals data
+  const deals = [
+    {
+      id: 1,
+      image: "ceiling.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 2,
+      image: "chadelier.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 3,
+      image: "cluster.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 4,
+      image: "pendant.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 5,
+      image: "floor.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 6,
+      image: "floor.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 7,
+      image: "floor.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+    {
+      id: 8,
+      image: "floor.jpg",
+      title: "Aberdeen | Modern LED Chandelier",
+      oldPrice: "₱16,995",
+      newPrice: "₱15,995",
+      discount: "10% off"
+    },
+  ];
+
+
   
   return (
     <div className="min-h-screen bg-white text-white font-sans">
       {/* Header */}
-      <header className="bg-white px-10 py-3 flex flex-col sticky top-0 z-50">
+      <header className="bg-white px-10 py-3 flex flex-col ">
         {/* Top Header Row */}
         <div className="flex items-center justify-between w-full">
           {/* Logo */}
@@ -150,20 +369,25 @@ const VideoStreamingUI: React.FC<{
 
             {/* Login/Signup or User Account Section */}
             {!user ? (
-              <button
-            onClick={() => setIsModalOpen(true)}
-            className="text-black text-large font-large flex items-center hover:text-orange-500 font-bold"
-              >
-            <span>Login/Signup</span>
-              </button>
-            ) : (
-              <div className="relative">
+                <div className="flex items-center space-x-2">
+                  <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-black text-large font-large flex items-center hover:text-orange-500 font-bold"
+                  >
+                    <span className="flex items-center">
+                    Login/Signup 
+                    </span>
+                  </button>
+                  
+                </div>
+                ) : (
+                <div className="relative">
           <button 
             onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
             className="text-black text-large font-large flex items-center hover:text-orange-500"
           >
-            <Icon icon="mdi:account" className="mr-2" width="16" height="16" />
-            <span>Hello {user.name}</span>
+            <Icon icon="lucide:user" className="mr-2" width="25" height="25" />
+            <span style={{ fontFamily: "'Poppins', serif", fontWeight: "bold" }}>Hello {user.name}</span>
             <Icon icon="mdi:chevron-down" className="ml-2" width="16" height="16" />
           </button>
 
@@ -274,122 +498,43 @@ const VideoStreamingUI: React.FC<{
       {/* Main Content */}
       <main className="p-0 mx-0 w-full">
   {/* Full-width banner */}
-  <div 
-    className="w-full h-screen relative overflow-hidden"
-    style={{ 
-      backgroundImage: " url('/hero.jpg')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    }}
-  >
-    {/* Content container */}
-    <div className="absolute bottom-0 left-0 w-full px-10 py-12 text-white flex justify-between items-end">
-      {/* Text content */}
-      <div className="max-w-2xl">
-        <h1 
-          className="text-4xl font-bold mb-4 tracking-tight"
-          style={{ fontFamily: "'Playfair Display', serif" }}
-        >
-          IZAJ LIGHTNING CENTRE
-        </h1>
-        <p 
-          className="text-xl font-light mb-6"
-          style={{ fontFamily: "'Playfair Display', serif" }}
-        >
-          Our team is passionate about helping you
-           find the perfect lighting.
-        </p>
-      </div>
-
-      {/* Learn More button */}
-      <button 
-        className="px-0 py-2 text-white font-semibold text-xl hover:underline flex items-center"
-        style={{ fontFamily: "'Playfair Display', serif" }}
-      >
-        LEARN MORE <Icon icon="mdi:chevron-right" className="ml-1 text-xs" width="30" height="30" />
-        <span className="ml-2 text-2xl"></span>
-      </button>
-    </div>
+  <div className="w-full">
+  <img
+    src="hero.jpg"
+    alt="Testimonials"
+    className="w-full object-cover"
+  />
   </div>
 
-        {/* Lightning Category Section */}
-        <div className="flex justify-between items-center mb-4 px-4 mt-8 mx-4">
-          {/* Left Text */}
-          <h2 className="text-2xl font-bold text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-            LIGHTING CATEGORY
-          </h2>
-          {/* Right Link */}
-          <Link to="/product-list" className="text-sm font-medium text-gray-500 hover:underline mt-1" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-            VIEW ALL
-          </Link>
+     {/* Content container */}
+     <div className="absolute bottom-0 left-0 w-full px-10 py-12 text-white flex justify-between items-end">
+        {/* Text content */}
+        <div className="max-w-2xl">
+          <h1 
+            className="text-4xl font-bold mb-4 tracking-tight"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            IZAJ LIGHTNING CENTRE
+          </h1>
+          <p 
+            className="text-xl font-light mb-6"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Our team is passionate about helping you
+             find the perfect lighting.
+          </p>
         </div>
+        {/* Learn More button */}
+        <button 
+          className="px-0 py-2 text-white font-semibold text-xl hover:underline flex items-center"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          LEARN MORE <Icon icon="mdi:chevron-right" className="ml-1 text-xs" width="30" height="30" />
+          <span className="ml-2 text-2xl"></span>
+        </button>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-1 mx-4 px-6">
-            <div className="bg-white p-4 rounded-lg flex flex-col items-center rounded-2xl hover:shadow-lg transition-transform duration-300 hover:scale-105">
-          <div className="relative w-full h-80 overflow-hidden">
-              <img
-            src="ceiling.jpg"
-            alt="Ceiling Lights"
-            className="absolute inset-0 w-full h-full object-cover rounded-3xl transform transition-transform duration-300 hover:scale-110"
-              />
-          </div>
-          <h3 className="text-lg font-semibold text-black mt-2 text-center hover:text-orange-500 transition-colors duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700" }}>
-              Ceiling Lights
-          </h3>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg flex flex-col items-center hover:shadow-lg transition-transform duration-300 hover:scale-105">
-          <div className="relative w-full h-80 overflow-hidden">
-              <img
-            src="chadelier.jpg"
-            alt="Chandelier"
-            className="absolute inset-0 w-full h-full object-cover rounded-3xl transform transition-transform duration-300 hover:scale-110"
-              />
-          </div>
-          <h3 className="text-lg font-semibold text-black mt-2 text-center hover:text-orange-500 transition-colors duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700" }}>
-              Chandelier
-          </h3>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg flex flex-col items-center hover:shadow-lg transition-transform duration-300 hover:scale-105">
-          <div className="relative w-full h-80 overflow-hidden">
-              <img
-            src="cluster.jpg"
-            alt="Cluster Chandelier"
-            className="absolute inset-0 w-full h-full object-cover rounded-3xl transform transition-transform duration-300 hover:scale-110"
-              />
-          </div>
-          <h3 className="text-lg font-semibold text-black mt-2 text-center hover:text-orange-500 transition-colors duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700" }}>
-              Cluster Chandelier
-          </h3>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg flex flex-col items-center hover:shadow-lg transition-transform duration-300 hover:scale-105">
-          <div className="relative w-full h-80 overflow-hidden">
-              <img
-            src="pendant.jpg"
-            alt="Pendant Lights"
-            className="absolute inset-0 w-full h-full object-cover rounded-3xl transform transition-transform duration-300 hover:scale-110"
-              />
-          </div>
-          <h3 className="text-lg font-semibold text-black mt-2 text-center hover:text-orange-500 transition-colors duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700" }}>
-              Pendant Lights
-          </h3>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg flex flex-col items-center hover:shadow-lg transition-transform duration-300 hover:scale-105">
-          <div className="relative w-full h-80 overflow-hidden">
-              <img
-            src="floor.jpg"
-            alt="Floor Lights"
-            className="absolute inset-0 w-full h-full object-cover rounded-3xl transform transition-transform duration-300 hover:scale-110"
-              />
-          </div>
-          <h3 className="text-lg font-semibold text-black mt-2 text-center hover:text-orange-500 transition-colors duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700" }}>
-              Floor Lights
-          </h3>
-            </div>
-        </div>
+      <LightingCategory />
 
 {/* About Us Section - Plain Version */}
 <div className="mt-16 mb-16 px-4">
@@ -406,106 +551,110 @@ const VideoStreamingUI: React.FC<{
 </div>
 
 {/* Monthly Deals Section */}
-<div className="mt-16 px-4 mx-4">
-  <h2 className="text-2xl font-bold text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+<div className="mt-16 px-8 mx-8">
+  {/* Title */}
+  <h2 className="text-2xl font-bold text-black mb-8 text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
     MONTHLY DEALS
   </h2>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    {/* Deal 1 */}
-    <div className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <div className="relative overflow-hidden rounded-md">
-      <img
-        src="ceiling.jpg"
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover transform transition-transform duration-300 hover:scale-110"
-      />
-      <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-        MONTHLY DEALS
-      </span>
-      </div>
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      {/* Link for navigation */}
-      <Link to="/item-description">
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-        CHOOSE OPTIONS
+  
+  <div className="relative group" style={{
+    height: "500px", // Fixed height to prevent vertical scrolling
+    overflow: "hidden", // Hide overflow
+  }}>
+    {/* First Page with 4 items */}
+    <div
+      className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
+      style={{
+        opacity: currentDealIndex === 0 ? 1 : 0,
+        transform: `translateX(${currentDealIndex === 0 ? "0" : "-100%"})`,
+        pointerEvents: currentDealIndex === 0 ? "auto" : "none",
+      }}
+    >
+      {deals.slice(0, 4).map((deal) => (
+        <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+          <div className="relative overflow-hidden flex-grow">
+            <img
+              src={deal.image}
+              alt={deal.title}
+              className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+            />
+            <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+              MONTHLY DEALS
+            </span>
+          </div>
+          <h3 className="text-lg font-semibold text-black mt-4">{deal.title}</h3>
+          <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+          <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+          <Link to="/item-description">
+            <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
+              CHOOSE OPTIONS
+            </button>
+          </Link>
+        </div>
+      ))}
+    </div>
+
+    {/* Second Page with next 4 items */}
+    <div
+      className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
+      style={{
+        opacity: currentDealIndex === 1 ? 1 : 0,
+        transform: `translateX(${currentDealIndex === 1 ? "0" : "100%"})`,
+        pointerEvents: currentDealIndex === 1 ? "auto" : "none",
+      }}
+    >
+      {deals.slice(4, 8).map((deal) => (
+        <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+          <div className="relative overflow-hidden flex-grow">
+            <img
+              src={deal.image}
+              alt={deal.title}
+              className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+            />
+            <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+              MONTHLY DEALS
+            </span>
+          </div>
+          <h3 className="text-lg font-semibold text-black mt-4">{deal.title}</h3>
+          <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+          <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+          <Link to="/item-description">
+            <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
+              CHOOSE OPTIONS
+            </button>
+          </Link>
+        </div>
+      ))}
+    </div>
+
+    {/* Navigation Buttons */}
+    {currentDealIndex === 1 && (
+      <button
+        onClick={() => setCurrentDealIndex(0)}
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
+        style={{ zIndex: 10 }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
       </button>
-      </Link>
-    </div>
+    )}
 
-    {/* Repeat similar blocks for other deals */}
-    <div className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <div className="relative overflow-hidden rounded-md">
-        <img
-          src="chadelier.jpg"
-          alt="Aberdeen LED Chandelier"
-          className="w-full h-80 object-cover transform transition-transform duration-300 hover:scale-110"
-        />
-         <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-        MONTHLY DEALS
-      </span>
-      </div>
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      {/* Link for navigation */}
-      <Link to="/item-description">
-        <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-          CHOOSE OPTIONS
-        </button>
-      </Link>
-    </div>
-
-    {/* Add other deals as needed */}
-    <div className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <div className="relative overflow-hidden rounded-md">
-        <img
-          src="cluster.jpg"
-          alt="Aberdeen LED Chandelier"
-          className="w-full h-80 object-cover transform transition-transform duration-300 hover:scale-110"
-        />
-         <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-        MONTHLY DEALS
-      </span>
-      </div>
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      {/* Link for navigation */}
-      <Link to="/item-description">
-        <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-          CHOOSE OPTIONS
-        </button>
-      </Link>
-    </div>
-
-    <div className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
-      <div className="relative overflow-hidden rounded-md">
-        <img
-          src="floor.jpg"
-          alt="Aberdeen LED Chandelier"
-          className="w-full h-80 object-cover transform transition-transform duration-300 hover:scale-110"
-        />
-         <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-        MONTHLY DEALS
-      </span>
-      </div>
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      {/* Link for navigation */}
-      <Link to="/item-description">
-        <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-          CHOOSE OPTIONS
-        </button>
-      </Link>
-    </div>
+    {currentDealIndex === 0 && (
+      <button
+        onClick={() => setCurrentDealIndex(1)}
+        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
+        style={{ zIndex: 10 }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    )}
   </div>
 </div>
+
+
 
 
 
@@ -560,101 +709,106 @@ const VideoStreamingUI: React.FC<{
 
 
   {/* Fresh Drops Section */}
-  <div className="mt-4 px-4 mx-4">
-    <h2 className="text-2xl font-bold text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+  <div className="mt-12 px-8 mx-8">
+    {/* Title */}
+    <h2 className="text-2xl font-bold text-black mb-8 text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
       FRESH DROPS
     </h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Deal 1 */}
-      <div className="p-4 shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <div className="relative overflow-hidden rounded-md">
-          <img
-            src="ceiling.jpg"
-            alt="Aberdeen LED Chandelier"
-            className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
-          />
-          <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-            FRESH DROPS
-          </span>
-        </div>
-        <h3 className="text-lg font-semibold text-black mt-2">Aberdeen | Modern LED Chandelier</h3>
-        <p className="text-gray-500 text-sm line-through">₱16,995</p>
-        <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-        {/* Link for navigation */}
-        <Link to="/item-description">
-          <button className="mt-2 w-full py-2 bg-black text-white font-semibold rounded-lg">
-            CHOOSE OPTIONS
-          </button>
-        </Link>
+    
+    <div className="relative group" style={{
+      height: "500px", // Fixed height to prevent vertical scrolling
+      overflow: "hidden", // Hide overflow
+    }}>
+      {/* First Page with 4 items */}
+      <div
+        className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
+        style={{
+          opacity: currentDealIndex === 0 ? 1 : 0,
+          transform: `translateX(${currentDealIndex === 0 ? "0" : "-100%"})`,
+          pointerEvents: currentDealIndex === 0 ? "auto" : "none",
+        }}
+      >
+        {deals.slice(0, 4).map((deal) => (
+          <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+            <div className="relative overflow-hidden flex-grow">
+              <img
+                src={deal.image}
+                alt={deal.title}
+                className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+              />
+              <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                FRESH DROPS
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
+            <p className="text-gray-500 text-sm line-through">₱16,995</p>
+            <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
+            <Link to="/item-description">
+              <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
+                CHOOSE OPTIONS
+              </button>
+            </Link>
+          </div>
+        ))}
       </div>
 
-      {/* Repeat similar blocks for other deals */}
-      <div className="p-4 shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <div className="relative overflow-hidden rounded-md">
-          <img
-            src="chadelier.jpg"
-            alt="Aberdeen LED Chandelier"
-            className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
-          />
-          <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-            FRESH DROPS
-          </span>
-        </div>
-        <h3 className="text-lg font-semibold text-black mt-2">Aberdeen | Modern LED Chandelier</h3>
-        <p className="text-gray-500 text-sm line-through">₱16,995</p>
-        <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-        {/* Link for navigation */}
-        <Link to="/item-description">
-          <button className="mt-2 w-full py-2 bg-black text-white font-semibold rounded-lg">
-            CHOOSE OPTIONS
-          </button>
-        </Link>
+      {/* Second Page with next 4 items */}
+      <div
+        className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
+        style={{
+          opacity: currentDealIndex === 1 ? 1 : 0,
+          transform: `translateX(${currentDealIndex === 1 ? "0" : "100%"})`,
+          pointerEvents: currentDealIndex === 1 ? "auto" : "none",
+        }}
+      >
+        {deals.slice(4, 8).map((deal) => (
+          <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+            <div className="relative overflow-hidden flex-grow">
+              <img
+                src={deal.image}
+                alt={deal.title}
+                className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+              />
+              <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                FRESH DROPS
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
+            <p className="text-gray-500 text-sm line-through">₱16,995</p>
+            <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
+            <Link to="/item-description">
+              <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
+                CHOOSE OPTIONS
+              </button>
+            </Link>
+          </div>
+        ))}
       </div>
 
-      {/* Add other deals as needed */}
-      <div className="p-4 shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <div className="relative overflow-hidden rounded-md">
-          <img
-            src="cluster.jpg"
-            alt="Aberdeen LED Chandelier"
-            className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
-          />
-          <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-            FRESH DROPS
-          </span>
-        </div>
-        <h3 className="text-lg font-semibold text-black mt-2">Aberdeen | Modern LED Chandelier</h3>
-        <p className="text-gray-500 text-sm line-through">₱16,995</p>
-        <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-        {/* Link for navigation */}
-        <Link to="/item-description">
-          <button className="mt-2 w-full py-2 bg-black text-white font-semibold rounded-lg">
-            CHOOSE OPTIONS
-          </button>
-        </Link>
-      </div>
+      {/* Navigation Buttons */}
+      {currentDealIndex === 1 && (
+        <button
+          onClick={() => setCurrentDealIndex(0)}
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
+          style={{ zIndex: 10 }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
 
-      <div className="p-4 shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <div className="relative overflow-hidden rounded-md">
-          <img
-            src="floor.jpg"
-            alt="Aberdeen LED Chandelier"
-            className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
-          />
-          <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-            FRESH DROPS
-          </span>
-        </div>
-        <h3 className="text-lg font-semibold text-black mt-2">Aberdeen | Modern LED Chandelier</h3>
-        <p className="text-gray-500 text-sm line-through">₱16,995</p>
-        <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-        {/* Link for navigation */}
-        <Link to="/item-description">
-          <button className="mt-2 w-full py-2 bg-black text-white font-semibold rounded-lg">
-            CHOOSE OPTIONS
-          </button>
-        </Link>
-      </div>
+      {currentDealIndex === 0 && (
+        <button
+          onClick={() => setCurrentDealIndex(1)}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
+          style={{ zIndex: 10 }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
     </div>
   </div>
 
@@ -685,7 +839,7 @@ const VideoStreamingUI: React.FC<{
         className="w-full h-full object-cover"
       />
       <div className="absolute bottom-0 left-0 w-full p-6">
-        <h3 className="text-xl font-semibold text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extrabold" }}>WHAT'S HOT?</h3>
+        <h3 className="text-2xl font-extrabold text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extrabold" }}>WHAT'S HOT?</h3>
         <p className="mt-2 text-sm text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>GET THE LATEST DESIGN FOR YOUR HOME AND PROJECTS!</p>
         <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
           SHOP NOW
