@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Icon } from '@iconify/react'; // Import Icon from Iconify
+import { Icon } from '@iconify/react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginForm from './login';
 import SignUpForm from './signup';
@@ -16,6 +16,7 @@ import Addresses from './addresses';
 import Aboutus from './aboutus'; 
 import Contactus from './contactus'; 
 import ChangePassword from './change-password';
+import ChatNow from './ChatNow';
 import { Link } from 'react-router-dom';
 import "./App.css";
 
@@ -61,6 +62,7 @@ const App: React.FC = () => {
         <Route path="/my-purchases" element={<MyPurchase />} />
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/addresses" element={<Addresses />} />
+        <Route path="/chatnow" element={<ChatNow />} />
         <Route path="/banks-cards" element={<BanksCards />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/new" element={<Collection />} />
@@ -387,8 +389,8 @@ const VideoStreamingUI: React.FC<{
             className="text-black text-large font-large flex items-center hover:text-orange-500"
           >
             <Icon icon="lucide:user" className="mr-2" width="25" height="25" />
-            <span style={{ fontFamily: "'Poppins', serif", fontWeight: "bold" }}>Hello {user.name}</span>
-            <Icon icon="mdi:chevron-down" className="ml-2" width="16" height="16" />
+            <span style={{ fontFamily: "'Poppins', serif", fontWeight: "500" }}>Hello {user.name}</span>
+            <Icon icon="mdi:chevron-down" className="ml-2" width="25" height="" />
           </button>
 
           {isAccountDropdownOpen && (
@@ -426,16 +428,16 @@ const VideoStreamingUI: React.FC<{
               <Icon 
           icon="mingcute:notification-newdot-line" 
           className="text-lg text-black cursor-pointer"
-          width="40"
-          height="40"
+          width="30"
+          height="30"
               />
 
               {/* Cart Icon */}
               <Icon 
           icon="mdi:cart-outline"  // Material Design Icons
           className="text-lg text-black hover:text-orange-500 cursor-pointer"
-          width="40"
-          height="40"
+          width="30"
+          height="30"
               />
             </div>
           </div>
