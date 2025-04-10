@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Icon } from '@iconify/react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginForm from './login';
-import SignUpForm from './signup';
+import AuthForm from './AuthForm';
 import ItemDescription from './item-description';
 import Cart from './cart';
 import ProductList from './product-list';
@@ -20,7 +19,7 @@ import ChatNow from './ChatNow';
 import { Link } from 'react-router-dom';
 import "./App.css";
 
-interface User {
+interface UserData {
   name: string;
   email: string;
 }
@@ -28,72 +27,77 @@ interface User {
 const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginForm, setIsLoginForm] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
   };
 
-  const handleLogin = (userData: User) => {
+  const handleLogin = (userData: UserData) => {
+    console.log("Logged in user:", userData);
     setUser(userData);
-    setIsModalOpen(false);
+    setIsModalOpen(false); // close the login modal
   };
-
   const handleLogout = () => {
     setUser(null);
-    setIsAccountDropdownOpen(false);
   };
 
   return (
     <Router>
       <Routes>
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/" element={
-          <VideoStreamingUI 
-            setIsModalOpen={setIsModalOpen} 
-            user={user} 
-            setIsAccountDropdownOpen={setIsAccountDropdownOpen}
-            isAccountDropdownOpen={isAccountDropdownOpen}
-            handleLogout={handleLogout}
-          />
-        } />
-        <Route path="/product-list" element={<ProductList />} />
-        <Route path="/my-purchases" element={<MyPurchase />} />
-        <Route path="/my-profile" element={<MyProfile />} />
-        <Route path="/addresses" element={<Addresses />} />
-        <Route path="/chatnow" element={<ChatNow />} />
-        <Route path="/banks-cards" element={<BanksCards />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/new" element={<Collection />} />
-        <Route path="/aboutus" element={<Aboutus />} />
-        <Route path="/contactus" element={<Contactus />} />
-        <Route path="/sales" element={<Sales />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/item-description" element={<ItemDescription />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/" element={
+        <VideoStreamingUI 
+        setIsModalOpen={setIsModalOpen} 
+        user={user} 
+        setIsAccountDropdownOpen={setIsAccountDropdownOpen}
+        isAccountDropdownOpen={isAccountDropdownOpen}
+        handleLogout={handleLogout}
+        />
+      } />
+      <Route path="/product-list" element={<ProductList />} />
+      <Route path="/my-purchases" element={<MyPurchase />} />
+      <Route path="/my-profile" element={<MyProfile />} />
+      <Route path="/addresses" element={<Addresses />} />
+      <Route path="/chatnow" element={<ChatNow />} />
+      <Route path="/banks-cards" element={<BanksCards />} />
+      <Route path="/change-password" element={<ChangePassword />} />
+      <Route path="/new" element={<Collection />} />
+      <Route path="/aboutus" element={<Aboutus />} />
+      <Route path="/contactus" element={<Contactus />} />
+      <Route path="/sales" element={<Sales />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/item-description" element={<ItemDescription />} />
       </Routes>
 
       {isModalOpen && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-            {isLoginForm ? (
-              <LoginForm 
-                toggleForm={toggleForm} 
-                onLogin={handleLogin}
-              />
-            ) : (
-              <SignUpForm toggleForm={toggleForm} />
-            )}
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="mt-4 text-center text-gray-500 hover:text-black"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </Router>
+ <div
+ className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+ onClick={() => setIsModalOpen(false)} // close when clicking the background
+>
+ <div
+   className="relative"
+   onClick={(e) => e.stopPropagation()} // prevent close when clicking inside the modal
+ >
+   <button
+     onClick={() => setIsModalOpen(false)}
+     className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+     aria-label="Close"
+   >
+     <Icon icon="mdi:close" width="20" height="20" />
+   </button>
+   <AuthForm
+     isLoginForm={isLoginForm}
+     toggleForm={toggleForm}
+     onLogin={handleLogin}
+   />
+ </div>
+</div>
+
+)}
+  </Router>
+
   );
 };
 const LightingCategory = () => {
@@ -247,7 +251,7 @@ const LightingCategory = () => {
 
 const VideoStreamingUI: React.FC<{
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  user: User | null;
+  user: UserData | null;
   setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAccountDropdownOpen: boolean;
   handleLogout: () => void;
@@ -333,6 +337,7 @@ const VideoStreamingUI: React.FC<{
   
   return (
     <div className="min-h-screen bg-white text-white font-sans">
+  
       {/* Header */}
       <header className="bg-white px-10 py-3 flex flex-col ">
         {/* Top Header Row */}
@@ -355,7 +360,7 @@ const VideoStreamingUI: React.FC<{
           {/* Right Section with Search, User, Notification, and Cart Icons */}
           <div className="flex items-center space-x-6">
             {/* Centered Search Bar */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-96">
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-1/2">
               <input
               type="text"
               placeholder="Search"
@@ -369,79 +374,119 @@ const VideoStreamingUI: React.FC<{
               />
             </div>
 
-            {/* Login/Signup or User Account Section */}
-            {!user ? (
-                <div className="flex items-center space-x-2">
+         {/* Login/Signup Section with Icons */}
+         <div className="flex items-center space-x-4">
+              {!user ? (
+                <div className="flex items-center space-x-4">
+                  {/* User Icon (for Login) */}
                   <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="text-black text-large font-large flex items-center hover:text-orange-500 font-bold"
+                    onClick={() => setIsModalOpen(true)}
+                    className="text-black hover:text-orange-500 transition-colors duration-200"
+                    aria-label="Login"
                   >
-                    <span className="flex items-center">
-                    Login/Signup 
-                    </span>
+                    <Icon icon="lucide:user" width="28" height="28" />
                   </button>
                   
+                  {/* Notification Icon - Always visible */}
+                  <Icon
+                    icon="mingcute:notification-newdot-line"
+                    className="text-black cursor-pointer hover:text-orange-500"
+                    width="28"
+                    height="28"
+                  />
+                  
+                  {/* Cart Icon - Always visible */}
+                  <Link to="/cart">
+                    <Icon
+                      icon="mdi:cart-outline"
+                      className="text-black cursor-pointer hover:text-orange-500"
+                      width="28"
+                      height="28"
+                    />
+                  </Link>
                 </div>
-                ) : (
-                <div className="relative">
-          <button 
-            onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-            className="text-black text-large font-large flex items-center hover:text-orange-500"
-          >
-            <Icon icon="lucide:user" className="mr-2" width="25" height="25" />
-            <span style={{ fontFamily: "'Poppins', serif", fontWeight: "500" }}>Hello {user.name}</span>
-            <Icon icon="mdi:chevron-down" className="ml-2" width="25" height="" />
-          </button>
+              ) : (
+                <div className="flex items-center">
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                      className="flex items-center"
+                      aria-haspopup="true"
+                      aria-expanded={isAccountDropdownOpen}
+                    >
+                      {/* User icon aligned with other icons */}
+                      <Icon icon="lucide:user" width="30" height="30" className="text-black hover:text-orange-500 transition-colors duration-200" />
+                      
+                      {/* Text container aligned to the left */}
+                      <div className="flex flex-col ml-2 text-left">
+                        {/* Username and My Account aligned with minimal spacing */}
+                        <span className="font-medium text-sm text-gray-500 leading-none" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}>
+                          Hello {user.name}
+                        </span>
+                        <div className="flex items-center text-black">
+                          <span className="font-medium text-lg" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                            My Account
+                          </span>
+                          <Icon icon="mdi:chevron-down" width="20" height="20" className="ml-1 text-black" />
+                        </div>
+                      </div>
+                    </button>
 
-          {isAccountDropdownOpen && (
-            <div className="absolute right-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-              <ul className="py-2">
-          <li>
-            <a href="#my-account" className="block px-4 py-2 hover:bg-gray-100">
-              My Account
-            </a>
-          </li>
-          <li>
-            <Link to="/my-purchases" className="block px-4 py-2 hover:bg-gray-100">
-              My Purchases
-            </Link>
-          </li>
-          <li>
-            <button 
-              onClick={handleLogout}
-              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-            >
-              Logout
-            </button>
-          </li>
-              </ul>
-            </div>
-          )}
-              </div>
-            )}
+                    {isAccountDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 animate-fade-in transition-all">
+                        <ul className="py-2 text-sm text-black">
+                          <li>
+                            <a
+                              href="#my-account"
+                              className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                            >
+                              My Account
+                            </a>
+                          </li>
+                          <li>
+                            <Link
+                              to="/my-purchases"
+                              className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                            >
+                              My Purchases
+                            </Link>
+                          </li>
+                          <li>
+                            <button
+                              onClick={handleLogout}
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                            >
+                              Logout
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Notification Icon */}
+                  <Icon
+                    icon="mingcute:notification-newdot-line"
+                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                    width="28"
+                    height="28"
+                  />
 
-            {/* Divider Line */}
-            <div className="h-10 w-px bg-black"></div>
-
-            {/* Notification Icon */}
-            <div className="flex items-center space-x-2">
-              <Icon 
-          icon="mingcute:notification-newdot-line" 
-          className="text-lg text-black cursor-pointer"
-          width="30"
-          height="30"
-              />
-
-              {/* Cart Icon */}
-              <Icon 
-          icon="mdi:cart-outline"  // Material Design Icons
-          className="text-lg text-black hover:text-orange-500 cursor-pointer"
-          width="30"
-          height="30"
-              />
+                  {/* Cart Icon */}
+                  <Link to="/cart">
+                    <Icon
+                      icon="mdi:cart-outline"
+                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                      width="28"
+                      height="28"
+                    />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
+            
 
         {/* Navbar */}
         <nav className="bg-white py-3">
@@ -516,7 +561,7 @@ const VideoStreamingUI: React.FC<{
             className="text-4xl font-bold mb-4 tracking-tight"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            IZAJ LIGHTNING CENTRE
+            IZAJ LIGHTING CENTRE
           </h1>
           <p 
             className="text-xl font-light mb-6"

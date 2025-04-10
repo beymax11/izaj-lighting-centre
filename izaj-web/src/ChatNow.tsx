@@ -15,47 +15,41 @@ interface ChatNowProps {
 
 const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: 'Hi there! Got a question?',
-      sender: 'izaj',
-      timestamp: new Date(),
-    },
-    {
-      id: 2,
-      text: "I'm here to help you with anything you need.",
-      sender: 'izaj',
-      timestamp: new Date(),
-    },
+    { id: 1, text: 'Hi there! Got a question?', sender: 'izaj', timestamp: new Date() },
+    { id: 2, text: "I'm here to help you with anything you need.", sender: 'izaj', timestamp: new Date() },
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, [messages]);
 
-  useEffect(() => {
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
+      setShowScrollButton(!isNearBottom);
+    }
+  };
+
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    setShowScrollButton(false);
+  };
 
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
-
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: newMessage,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
+    const userMessage: Message = { id: messages.length + 1, text: newMessage, sender: 'user', timestamp: new Date() };
     setMessages((prev) => [...prev, userMessage]);
     setNewMessage('');
-
     setIsTyping(true);
+    scrollToBottom();
 
     setTimeout(() => {
       const replyMessage: Message = {
@@ -66,101 +60,90 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
       };
       setMessages((prev) => [...prev, replyMessage]);
       setIsTyping(false);
+      scrollToBottom();
     }, 1000);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleFileUpload = () => {
-    alert('File upload triggered');
   };
 
   const formattedTimestamp = (timestamp: Date) =>
     formatDistanceToNowStrict(timestamp, { addSuffix: true });
 
   return (
-    <div className="flex flex-col h-96 max-h-screen bg-white rounded-lg shadow-lg overflow-hidden relative">
-      {/* Close button */}
-      {onClose && (
-        <button 
-          onClick={() => onClose()}
-          className="absolute top-2 right-2 z-10 text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Close chat"
-        >
-          <Icon icon="mdi:close" width={24} height={24} />
-        </button>
-      )}
-
+    <div className="flex flex-col h-[600px] w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 relative">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 shadow-sm">
-        <div className="flex items-center space-x-3">
-          <div className="bg-white text-blue-600 rounded-full w-9 h-9 flex items-center justify-center font-bold text-sm shadow-sm">
-            IZAJ
-          </div>
-          <div>
-            <h1 className="font-semibold text-white text-sm">IZAJ Assistant</h1>
-            <p className="text-xs text-blue-100">Online - Typically replies instantly</p>
-          </div>
+      <header className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 flex items-center gap-3 sticky top-0 z-10">
+        <div className="bg-white text-blue-600 rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm shadow">
+          IZAJ
         </div>
+        <div>
+          <h1 className="font-semibold text-white text-base">IZAJ Assistant</h1>
+          <p className="text-xs text-blue-100">{isTyping ? 'Typing...' : 'Online - Replies instantly'}</p>
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="ml-auto text-white hover:text-gray-200">
+            <Icon icon="mdi:close" width={20} height={20} />
+          </button>
+        )}
       </header>
 
-      {/* Messages container */}
-      <div 
+      {/* Messages */}
+      <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+        onScroll={handleScroll}
       >
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`flex max-w-[85%] ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}
-            >
-              {message.sender === 'izaj' && (
-                <div className="bg-white text-blue-600 rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-sm">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className="flex max-w-[85%] gap-2">
+              {msg.sender === 'izaj' && (
+                <div className="bg-white text-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs shadow">
                   IZAJ
                 </div>
               )}
               <div
-                className={`rounded-lg px-4 py-3 text-sm ${message.sender === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-none'
-                  : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
+                className={`px-4 py-2 rounded-2xl text-sm ${
+                  msg.sender === 'user'
+                    ? 'bg-blue-600 text-white rounded-tr-none'
+                    : 'bg-white text-gray-800 rounded-tl-none shadow'
                 }`}
               >
-                <p className="leading-snug">{message.text}</p>
-                <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-blue-200' : 'text-gray-500'}`}>
-                  {formattedTimestamp(message.timestamp)}
-                </p>
+                <p>{msg.text}</p>
+                <p className="text-[10px] mt-1 opacity-70">{formattedTimestamp(msg.timestamp)}</p>
               </div>
             </div>
           </div>
         ))}
+
         {isTyping && (
-          <div className="flex justify-start items-center gap-2">
-            <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs shadow">
               IZAJ
             </div>
-            <div className="bg-white px-4 py-3 rounded-lg shadow-sm text-sm text-gray-500">
-              Typing...
+            <div className="bg-white px-4 py-2 rounded-2xl shadow text-sm text-gray-500 rounded-tl-none">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
+      {/* Scroll to Bottom Button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-24 right-4 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700"
+        >
+          <Icon icon="mdi:chevron-down" width={20} height={20} />
+        </button>
+      )}
+
+      {/* Input */}
       <div className="border-t border-gray-200 p-3 bg-white">
         <div className="relative flex items-center">
-          <button
-            onClick={handleFileUpload}
-            className="absolute left-2 rounded-full p-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 transition-colors"
-          >
+          <button onClick={() => alert('File Upload')} className="absolute left-3 text-gray-500 hover:text-blue-600">
             <Icon icon="carbon:attachment" width={20} height={20} />
           </button>
           <input
@@ -168,16 +151,16 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message here..."
-            className="w-full border border-gray-200 rounded-full pl-10 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+            onKeyDown={(e) => (e.key === 'Enter' ? handleSendMessage() : null)}
+            placeholder="Type your message..."
+            className="w-full border border-gray-200 rounded-full pl-10 pr-12 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleSendMessage}
             disabled={!newMessage.trim()}
-            className={`absolute right-2 rounded-full p-2 focus:outline-none transition-colors ${
-              newMessage.trim() 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+            className={`absolute right-3 p-1.5 rounded-full ${
+              newMessage.trim()
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >

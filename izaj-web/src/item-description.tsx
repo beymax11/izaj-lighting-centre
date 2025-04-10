@@ -25,167 +25,209 @@ const Header: React.FC<{
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <header className="bg-white px-4 md:px-10 py-3 flex flex-col">
+    <header className="bg-white px-10 py-3 flex flex-col">
       {/* Top Header Row */}
       <div className="flex items-center justify-between w-full">
-         {/* Logo */}
-         <div className="flex flex-col items-start flex-shrink-0">
-            <div 
-              className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular" 
-              style={{ 
-          color: "#000000",
-          fontFamily: "'Playfair Display', serif",
-          textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-          letterSpacing: "10px",
-              }}
-            >
-              IZAJ
-            </div>
+        {/* Logo */}
+        <div className="flex flex-col items-start flex-shrink-0">
+          <div 
+            className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular" 
+            style={{ 
+              color: "#000000",
+              fontFamily: "'Playfair Display', serif",
+              textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
+              letterSpacing: "10px",
+            }}
+          >
+            IZAJ
           </div>
+        </div>
 
         {/* Right Section with Search, User, Notification, and Cart Icons */}
-        <div className="flex items-center space-x-4 md:space-x-6">
-          {/* Centered Search Bar - Hidden on mobile */}
-          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-64 lg:w-96">
+        <div className="flex items-center space-x-6">
+          {/* Centered Search Bar */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1/2">
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-gray-300 pl-10 pr-4 py-2 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black rounded-full"
+              className="w-full border border-black-500 pl-10 pr-4 py-3 text-sm text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-black rounded-full"
             />
             <Icon 
               icon="ic:outline-search" 
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-              width="20"
-              height="20"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+              width="25"
+              height="25"
             />
           </div>
 
-          {/* Login/Signup or User Account Section */}
-          {!user ? (
-            <div className="flex items-center">
-              <button
-                onClick={() => setIsModalOpen && setIsModalOpen(true)}
-                className="text-black text-sm md:text-base font-medium flex items-center hover:text-orange-500 transition-colors"
-              >
-                <span className="flex items-center">
-                  Login/Signup 
-                </span>
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <button 
-                onClick={() => setIsAccountDropdownOpen && setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                className="text-black text-sm md:text-base font-medium flex items-center hover:text-orange-500 transition-colors"
-              >
-                <Icon icon="lucide:user" className="mr-1 md:mr-2" width="20" height="20" />
-                <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "500" }}>Hello {user?.name}</span>
-                <Icon icon="mdi:chevron-down" className="ml-1" width="20" height="20" />
-              </button>
+          {/* Login/Signup Section with Icons */}
+          <div className="flex items-center space-x-4">
+            {!user ? (
+              <div className="flex items-center space-x-4">
+                {/* User Icon (for Login) */}
+                <button
+                  onClick={() => setIsModalOpen && setIsModalOpen(true)}
+                  className="text-black hover:text-orange-500 transition-colors duration-200"
+                  aria-label="Login"
+                >
+                  <Icon icon="lucide:user" width="28" height="28" />
+                </button>
+                
+                {/* Notification Icon - Always visible */}
+                <Icon
+                  icon="mingcute:notification-newdot-line"
+                  className="text-black cursor-pointer hover:text-orange-500"
+                  width="28"
+                  height="28"
+                />
+                
+                {/* Cart Icon - Always visible */}
+                <Link to="/cart">
+                  <Icon
+                    icon="mdi:cart-outline"
+                    className="text-black cursor-pointer hover:text-orange-500"
+                    width="28"
+                    height="28"
+                  />
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <div className="relative">
+                  <button
+                    onClick={() => setIsAccountDropdownOpen && setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                    className="flex items-center"
+                    aria-haspopup="true"
+                    aria-expanded={isAccountDropdownOpen}
+                  >
+                    {/* User icon aligned with other icons */}
+                    <Icon icon="lucide:user" width="30" height="30" className="text-black hover:text-orange-500 transition-colors duration-200" />
+                    
+                    {/* Text container aligned to the left */}
+                    <div className="flex flex-col ml-2 text-left">
+                      {/* Username and My Account aligned with minimal spacing */}
+                      <span className="font-medium text-sm text-gray-500 leading-none" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}>
+                        Hello {user.name}
+                      </span>
+                      <div className="flex items-center text-black">
+                        <span className="font-medium text-lg" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                          My Account
+                        </span>
+                        <Icon icon="mdi:chevron-down" width="20" height="20" className="ml-1 text-black" />
+                      </div>
+                    </div>
+                  </button>
 
-              {isAccountDropdownOpen && (
-                <div className="absolute right-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50 border border-gray-200">
-                  <ul className="py-1">
-                    <li>
-                      <a href="#my-account" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                        My Account
-                      </a>
-                    </li>
-                    <li>
-                      <Link to="/my-purchases" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                        My Purchases
-                      </Link>
-                    </li>
-                    <li>
-                      <button 
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
+                  {isAccountDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 animate-fade-in transition-all">
+                      <ul className="py-2 text-sm text-black">
+                        <li>
+                          <a
+                            href="#my-account"
+                            className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                          >
+                            My Account
+                          </a>
+                        </li>
+                        <li>
+                          <Link
+                            to="/my-purchases"
+                            className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                          >
+                            My Purchases
+                          </Link>
+                        </li>
+                        <li>
+                          <button
+                            onClick={handleLogout}
+                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                          >
+                            Logout
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+                
+                {/* Notification Icon */}
+                <Icon
+                  icon="mingcute:notification-newdot-line"
+                  className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                  width="28"
+                  height="28"
+                />
 
-          {/* Divider Line */}
-          <div className="h-8 w-px bg-gray-300 hidden md:block"></div>
-
-          {/* Notification and Cart Icons */}
-          <div className="flex items-center space-x-3 md:space-x-4">
-            <Icon 
-              icon="mingcute:notification-newdot-line" 
-              className="text-black cursor-pointer hover:text-orange-500 transition-colors"
-              width="30"
-              height="30"
-            />
-
-            <Icon 
-              icon="mdi:cart-outline"
-              className="text-black hover:text-orange-500 cursor-pointer transition-colors"
-              width="30"
-              height="30"
-            />
+                {/* Cart Icon */}
+                <Link to="/cart">
+                  <Icon
+                    icon="mdi:cart-outline"
+                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                    width="28"
+                    height="28"
+                  />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Navbar */}
       <nav className="bg-white py-3">
-        <ul className="flex justify-center space-x-4 md:space-x-8 text-xs md:text-sm font-medium">
-          <li><Link to="/" className="text-black hover:border-b-2 border-black pb-1 transition-colors">HOME</Link></li>
+        <ul className="flex justify-center space-x-10 text-sm font-medium">
+          <li><a href="#home" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
 
           <li className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="text-black font-medium hover:border-b-2 border-black pb-1 flex items-center transition-colors"
+              className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
             >
-              PRODUCTS <Icon icon="mdi:chevron-down" className="ml-1" width="16" height="16" />
+              PRODUCTS <Icon icon="mdi:chevron-down" className="ml-1 text-xs" width="25" height="25" />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50 border border-gray-200">
-                <ul className="py-1 max-h-96 overflow-y-auto">
-                  <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100 transition-colors">LIGHTING FIXTURES</a></li>
+              <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
+                <ul className="py-2">
+                  <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">LIGHTING FIXTURES</a></li>
                   <li>
-                    <Link to="/product-list" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
+                    <Link to="/product-list" className="block px-4 py-2 hover:bg-gray-100">
                       All Lighting Fixtures
                     </Link>
                   </li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Ceiling Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Semi Flush Mounted Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Chandeliers</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Cluster Chandeliers</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Pendant Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Floor Lamps</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Table Lamps</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Rechargeable Table Lamps</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Wall Lights</a></li>
-                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100 transition-colors">Painting & Bathroom Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Semi Flush Mounted Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Cluster Chandeliers</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Floor Lamps</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Table Lamps</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Rechargeable Table Lamps</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Wall Lights</a></li>
+                  <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Painting & Bathroom Lights</a></li>
                 </ul>
               </div>
             )}
           </li>
 
           <li>
-            <Link to="/new" className="text-black hover:border-b-2 border-black pb-1 transition-colors">
+            <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
               NEW
             </Link>
           </li>
 
           <li>
-            <Link to="/sales" className="text-black hover:border-b-2 border-black pb-1 transition-colors">
+            <Link to="/sales" className="text-black hover:border-b-2 border-black pb-1">
               SALES
             </Link>
           </li>
-          <Link to="/aboutus" className="text-black hover:border-b-2 border-black pb-1 transition-colors">ABOUT US</Link>
+          <Link to="/aboutus" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</Link>
         </ul>
       </nav>
     </header>
   );
 };
+
 
 const ItemDescription: React.FC = () => {
   const [mainImage, setMainImage] = useState("aber.webp");
@@ -571,16 +613,38 @@ const ItemDescription: React.FC = () => {
   </div>  
 
         
- {/* Chat Modal */}
+{/* Chat Modal */}
 {isChatModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-      <div className="h-[80vh] overflow-y-auto">
-        <ChatNow onClose={() => setIsChatModalOpen(false)} />
+  <div className="fixed inset-0 z-50">
+    {/* Backdrop with fade animation */}
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+      onClick={() => setIsChatModalOpen(false)}
+    />
+    
+    {/* Modal container with slide-up animation */}
+    <div className="fixed inset-0 flex items-center justify-center p-4">
+      <div 
+        className="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button overlay */}
+        <button
+          onClick={() => setIsChatModalOpen(false)}
+          className="absolute -top-10 -right-10 md:top-4 md:right-4 z-10 p-2 text-white hover:text-gray-200 transition-colors"
+        >
+          <Icon icon="mdi:close" width={24} height={24} />
+        </button>
+        
+        {/* Chat component */}
+        <div className="h-full">
+          <ChatNow onClose={() => setIsChatModalOpen(false)} />
+        </div>
       </div>
     </div>
   </div>
 )}
+
 {/* Product Ratings */}
 <div className="mt-12 max-w-7xl mx-auto">
   <h3 className="text-2xl font-semibold text-black mb-6">PRODUCT RATINGS</h3>
