@@ -57,8 +57,9 @@ const App: React.FC = () => {
         />
       } />
       <Route path="/product-list" element={<ProductList />} />
-      <Route path="/my-purchases" element={<MyPurchase />} />
+      <Route path="/my-purchase" element={<MyPurchase />} />
       <Route path="/my-profile" element={<MyProfile />} />
+      <Route path="/cart" element={<Cart/>} />
       <Route path="/addresses" element={<Addresses />} />
       <Route path="/chatnow" element={<ChatNow />} />
       <Route path="/banks-cards" element={<BanksCards />} />
@@ -445,7 +446,7 @@ const VideoStreamingUI: React.FC<{
                           </li>
                           <li>
                             <Link
-                              to="/my-purchases"
+                              to="/my-purchase"
                               className="block px-4 py-2 hover:bg-gray-100 transition-colors"
                             >
                               My Purchases
