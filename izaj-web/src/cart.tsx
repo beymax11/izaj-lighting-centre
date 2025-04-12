@@ -24,19 +24,19 @@ const Cart: React.FC = () => {
         {/* Top Header Row */}
         <div className="flex items-center justify-between w-full">
           {/* Logo */}
-          <div className="flex flex-col items-start flex-shrink-0">
-            <div
-              className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
-              style={{
-                color: "#000000",
-                fontFamily: "'Playfair Display', serif",
-                textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-                letterSpacing: "10px",
-              }}
-            >
-              IZAJ
-            </div>
-          </div>
+                     <Link to="/" className="flex flex-col items-start flex-shrink-0">
+                     <div
+                       className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                       style={{
+                       color: "#000000",
+                       fontFamily: "'Playfair Display', serif",
+                       textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
+                       letterSpacing: "10px",
+                       }}
+                     >
+                       IZAJ
+                     </div>
+                     </Link>
 
           {/* Right Section with Search, User, Notification, and Cart Icons */}
           <div className="flex items-center space-x-6">
