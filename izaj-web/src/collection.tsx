@@ -1,96 +1,253 @@
-import React, { useState } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faBell, faShoppingCart, faCaretDown, faTh, faBars } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from "react";
+import { Icon } from '@iconify/react';
+import { Link } from 'react-router-dom';
 
-const Header: React.FC = () => {
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-
-  return (
-    <header className="bg-white px-10 py-3 flex justify-between items-center border-b border-gray-200 sticky top-0 z-50">
-      <div className="text-3xl font-playfair tracking-widest text-black">IZAJ</div>
-
-      <div className="relative w-1/2">
-        <input
-          type="text"
-          placeholder="Search"
-          className="w-full border border-gray-300 rounded-full pl-10 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
-        />
-        <FontAwesomeIcon
-          icon={faSearch}
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
-        />
-      </div>
-
-      <div className="flex items-center space-x-6">
-        <div
-          className="relative"
-          onMouseEnter={() => setIsAccountDropdownOpen(true)}
-          onMouseLeave={() => setIsAccountDropdownOpen(false)}
-        >
-          <span className="text-xs text-gray-500 block text-left">Login/Signup</span>
-          <button className="text-black text-sm font-medium flex items-center hover:text-orange-500">
-            My Account <FontAwesomeIcon icon={faCaretDown} className="ml-1" />
-          </button>
-
-          {isAccountDropdownOpen && (
-            <div className="absolute right-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-              <ul className="py-2">
-                <li><a href="#profile" className="block px-4 py-2 hover:bg-gray-100">My Account</a></li>
-                <li><a href="#purchases" className="block px-4 py-2 hover:bg-gray-100">My Purchases</a></li>
-                <li><a href="#logout" className="block px-4 py-2 hover:bg-gray-100">Logout</a></li>
-              </ul>
-            </div>
-          )}
-        </div>
-
-        <FontAwesomeIcon icon={faBell} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
-        <FontAwesomeIcon icon={faShoppingCart} className="text-lg text-black hover:text-orange-500 cursor-pointer" />
-      </div>
-    </header>
-  );
-};
-
-const NavigationBar: React.FC = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  return (
-    <nav className="bg-white py-3 border-b border-gray-200">
-      <ul className="flex justify-center space-x-10 text-sm font-medium">
-        <li><a href="/" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
-        <li className="relative" onMouseEnter={() => setIsDropdownOpen(true)} onMouseLeave={() => setIsDropdownOpen(false)}>
-          <a href="#" className="text-black hover:border-b-2 border-black pb-1 flex items-center">
-            PRODUCTS <FontAwesomeIcon icon={faCaretDown} className="ml-1 text-xs" />
-          </a>
-          {isDropdownOpen && (
-            <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-              <ul className="py-2">
-                <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
-                <li><a href="#product2" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
-                <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
-              </ul>
-            </div>
-          )}
-        </li>
-        <li><a href="/new" className="text-black hover:border-b-2 border-black pb-1">NEW</a></li>
-        <li><a href="/sales" className="text-black hover:border-b-2 border-black pb-1">SALES</a></li>
-        <li><a href="/about" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</a></li>
-      </ul>
-    </nav>
-  );
+type Product = {
+  description: string;
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviewCount: number;
+  image: string;
+  isNew?: boolean;
+  isOnSale?: boolean;
 };
 
 const ProductList: React.FC = () => {
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState<{ name: string } | null>({
+    name: 'Daniel',
+  });
+  
+  // State for sorting and filtering
+  const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+
+  // Mock product data - in a real app, this would come from an API
+  useEffect(() => {
+    const mockProducts: Product[] = Array.from({ length: 12 }).map((_, i) => ({
+      id: i + 1,
+      name: `Aberdeen | Modern LED Chandelier ${i + 1}`,
+      description: `This is a description for product ${i + 1}.`,
+      price: i % 3 === 0 ? 15995 : 16995,
+      originalPrice: i % 3 === 0 ? 16995 : undefined,
+      rating: 4,
+      reviewCount: 18,
+      image: "/aber.webp",
+      isNew: i % 4 === 0,
+      isOnSale: i % 3 === 0
+    }));
+    
+    setProducts(mockProducts);
+    setFilteredProducts(mockProducts);
+  }, []);
+
+  // Handle sort change
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const option = e.target.value;
+    setSortOption(option);
+    
+    let sortedProducts = [...filteredProducts];
+    
+    switch(option) {
+      case 'Alphabetical, A-Z':
+        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'Alphabetical, Z-A':
+        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'Price, Low to High':
+        sortedProducts.sort((a, b) => a.price - b.price);
+        break;
+      case 'Price, High to Low':
+        sortedProducts.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        break;
+    }
+    
+    setFilteredProducts(sortedProducts);
+  };
+
+  // Handle view mode change
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
     <div className="bg-white min-h-screen">
-      <Header />
-      <NavigationBar />
+      {/* Updated Header from cart.tsx */}
+      <header className="bg-white px-10 py-3 flex flex-col ">
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between w-full">
+          {/* Logo */}
+                     <Link to="/" className="flex flex-col items-start flex-shrink-0">
+                     <div
+                       className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                       style={{
+                       color: "#000000",
+                       fontFamily: "'Playfair Display', serif",
+                       textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
+                       letterSpacing: "10px",
+                       }}
+                     >
+                       IZAJ
+                     </div>
+                     </Link>
 
+          {/* Right Section with Search, User, Notification, and Cart Icons */}
+          <div className="flex items-center space-x-6">
+            {/* Search Bar */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-1/2">
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full border border-black-500 pl-10 pr-4 py-3 text-sm text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-black rounded-full"
+              />
+              <Icon
+                icon="ic:outline-search"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+                width="25"
+                height="25"
+              />
+            </div>
+
+            {/* User/Dropdown */}
+            <div className="flex items-center space-x-4">
+              {!user ? (
+                <div className="flex items-center space-x-4">
+                  <button
+                    className="text-black hover:text-orange-500 transition-colors duration-200"
+                    aria-label="Login"
+                  >
+                    <Icon icon="lucide:user" width="28" height="28" />
+                  </button>
+                  <Icon
+                    icon="mingcute:notification-newdot-line"
+                    className="text-black cursor-pointer hover:text-orange-500"
+                    width="28"
+                    height="28"
+                  />
+                  <Link to="/cart">
+                    <Icon
+                      icon="mdi:cart-outline"
+                      className="text-black cursor-pointer hover:text-orange-500"
+                      width="28"
+                      height="28"
+                    />
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                      className="flex items-center"
+                      aria-haspopup="true"
+                      aria-expanded={isAccountDropdownOpen}
+                    >
+                      <Icon icon="lucide:user" width="30" height="30" className="text-black hover:text-orange-500 transition-colors duration-200" />
+                      <div className="flex flex-col ml-2 text-left">
+                        <span className="font-medium text-sm text-gray-500 leading-none" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}>
+                          Hello {user.name}
+                        </span>
+                        <div className="flex items-center text-black">
+                          <span className="font-medium text-lg" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                            My Account
+                          </span>
+                          <Icon icon="mdi:chevron-down" width="20" height="20" className="ml-1 text-black" />
+                        </div>
+                      </div>
+                    </button>
+
+                    {isAccountDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 animate-fade-in transition-all">
+                        <ul className="py-2 text-sm text-black">
+                          <li>
+                            <Link to="/my-profile" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
+                              My Account
+                            </Link>
+                          </li>
+                          <li>
+                            <Link to="/my-purchases" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
+                              My Purchases
+                            </Link>
+                          </li>
+                          <li>
+                            <button
+                              onClick={handleLogout}
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                            >
+                              Logout
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  <Icon
+                    icon="mingcute:notification-newdot-line"
+                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                    width="28"
+                    height="28"
+                  />
+                  <Link to="/cart">
+                    <Icon
+                      icon="mdi:cart-outline"
+                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                      width="28"
+                      height="28"
+                    />
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="bg-white py-3">
+          <ul className="flex justify-center space-x-10 text-sm font-medium">
+            <li><Link to="/" className="text-black hover:border-b-2 border-black pb-1">HOME</Link></li>
+            <li className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
+              >
+                PRODUCTS <Icon icon="mdi:chevron-down" className="ml-1 text-xs" width="25" height="25" />
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
+                  <ul className="py-2">
+                    <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
+                    <li><a href="#product2" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
+                    <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
+                  </ul>
+                </div>
+              )}
+            </li>
+            <li><Link to="/new" className="text-black hover:border-b-2 border-black pb-1">NEW</Link></li>
+            <li><Link to="/sales" className="text-black hover:border-b-2 border-black pb-1">SALES</Link></li>
+            <li><Link to="/aboutus" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</Link></li>
+          </ul>
+        </nav>
+      </header>
+      {/* Main Content */}
       <div className="flex">
         {/* Sidebar */}
         <aside className="w-1/5 p-6 border-r">
           <h3 className="font-bold text-black mb-4">SHOP</h3>
           <ul className="space-y-2 text-sm text-black">
-            <li className="font-bold">Lighting Fixtures</li>
+            <li className="font-bold">All Lighting Fixtures</li>
             <li className="pl-2 hover:underline cursor-pointer">Ceiling Lights</li>
             <li className="pl-2 hover:underline cursor-pointer">Semi Flush Mounted Lights</li>
             <li className="pl-2 hover:underline cursor-pointer">Chandelier</li>
@@ -104,57 +261,262 @@ const ProductList: React.FC = () => {
           </ul>
         </aside>
 
-        {/* Main Content */}
+        {/* Product List */}
         <main className="w-4/5 p-6">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold text-black">Fresh Drops</h1>
-            <img src="banner.png" alt="Banner" className="w-full h-56 object-cover rounded-md my-4" />
-            <div className="flex justify-between items-center mb-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-black mb-3" style={{ fontFamily: "'Poppins', serif" }}>All Lighting Fixtures</h1>
+            
+            {/* Banner with overlay text */}
+            <div className="relative mb-6">
+              <img src="/banner2.jpg" alt="Banner" className="w-full h-56 object-cover rounded-md shadow-sm" />
+              <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col justify-center items-start p-8 rounded-md">
+                <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>Elevate Your Space</h2>
+                <p className="text-white text-lg mb-3">Premium lighting solutions for every room</p>
+                <button className="bg-white text-black px-5 py-2 rounded-md font-medium hover:bg-black hover:text-white transition-all duration-300">
+                  Explore Collection
+                </button>
+              </div>
+            </div>
+            
+            {/* Filter and Sort Controls - Now Functional */}
+            <div className="flex justify-between items-center mb-6 bg-gray-50 p-4 rounded-md">
               <div>
                 <label htmlFor="sort" className="mr-2 text-sm text-gray-700">Sort by:</label>
-                <select id="sort" className="border text-sm px-2 py-1 rounded-md">
+                <select 
+                  id="sort" 
+                  value={sortOption}
+                  onChange={handleSortChange}
+                  className="border text-sm px-3 py-2 rounded-md focus:ring-2 focus:ring-black focus:outline-none"
+                >
                   <option>Alphabetical, A-Z</option>
                   <option>Alphabetical, Z-A</option>
                   <option>Price, Low to High</option>
                   <option>Price, High to Low</option>
                 </select>
               </div>
-              <div className="space-x-2">
-                <FontAwesomeIcon icon={faTh} className="cursor-pointer text-black" />
-                <FontAwesomeIcon icon={faBars} className="cursor-pointer text-black" />
+              
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-500">{filteredProducts.length} products</span>
+                <div className="flex">
+                  <button 
+                    onClick={() => handleViewModeChange('grid')}
+                    className={`p-1.5 border border-r-0 rounded-l-md ${viewMode === 'grid' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'}`}
+                    title="Grid view"
+                  >
+                    <Icon icon="mdi:grid" width="16" height="16" />
+                  </button>
+                  <button 
+                    onClick={() => handleViewModeChange('list')}
+                    className={`p-1.5 border rounded-r-md ${viewMode === 'list' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'}`}
+                    title="List view"
+                  >
+                    <Icon icon="mdi:format-list-bulleted" width="16" height="16" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
-                <img
-                  src="ceiling-light.jpg"
-                  alt="Product"
-                  className="w-full h-48 object-cover rounded-md"
-                />
-                <h3 className="text-sm font-semibold text-black mt-3">Aberdeen | Modern LED Chandelier</h3>
-                <p className="text-black text-lg font-bold mt-1">₱16,995</p>
-                <p className="text-xs text-gray-500">INQUIRE NOW</p>
-                <button className="mt-2 w-full py-1 bg-black text-white text-sm font-medium rounded">CHOOSE OPTIONS</button>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-10 space-x-2">
-            <button className="px-3 py-1 border rounded bg-black text-white">1</button>
-            <button className="px-3 py-1 border rounded">2</button>
-            <button className="px-3 py-1 border rounded">3</button>
-            <span className="px-3 py-1">...</span>
-            <button className="px-3 py-1 border rounded">10</button>
-            <button className="px-3 py-1 border rounded">Next</button>
+         {/* Product Grid - Enhanced Design */}
+{viewMode === 'grid' ? (
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+    {filteredProducts.map((product) => (
+      <div key={product.id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group border border-gray-100">
+        <div className="relative">
+          <div className="overflow-hidden">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+            />
           </div>
           
-        </main>
+         {/* Badges directly in image */}
+         {product.isOnSale && (
+            <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-sm shadow-sm">
+              SALE
+            </div>
+          )}
+          {product.isNew && (
+            <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-sm shadow-sm">
+              NEW
+            </div>
+          )}
+          
+          {/* Quick Action Buttons */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-300">
+            <button className="bg-white text-gray-800 p-3 rounded-full hover:bg-orange-500 hover:text-white transition-colors duration-300 transform hover:scale-110 shadow-md">
+              <Icon icon="mdi:magnify" width="18" height="18" />
+            </button>
+            <button className="bg-white text-gray-800 p-3 rounded-full hover:bg-orange-500 hover:text-white transition-colors duration-300 transform hover:scale-110 shadow-md">
+              <Icon icon="mdi:heart-outline" width="18" height="18" />
+            </button>
+            <button className="bg-white text-gray-800 p-3 rounded-full hover:bg-orange-500 hover:text-white transition-colors duration-300 transform hover:scale-110 shadow-md">
+              <Icon icon="mdi:cart-outline" width="18" height="18" />
+            </button>
+          </div>
+        </div>
         
+        <div className="p-5">
+          <div className="flex items-center mb-2">
+            <div className="flex text-yellow-400">
+              {[...Array(5)].map((_, i) => (
+                <Icon 
+                  key={i} 
+                  icon={i < Math.floor(product.rating) ? "mdi:star" : i < product.rating ? "mdi:star-half" : "mdi:star-outline"} 
+                  width="14" 
+                  height="14" 
+                  className="text-yellow-400" 
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-500 ml-2 font-medium">({product.reviewCount})</span>
+          </div>
+          
+          <h3 className="text-sm font-bold text-gray-800 mt-1 group-hover:text-orange-600 transition-colors">{product.name}</h3>
+          
+          {product.isOnSale ? (
+            <div className="mt-2 flex items-baseline space-x-2">
+              <p className="text-orange-600 text-lg font-bold">₱{product.price.toLocaleString()}</p>
+              <p className="text-gray-400 text-sm line-through">₱{product.originalPrice?.toLocaleString()}</p>
+              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">
+                {Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)}% OFF
+              </span>
+            </div>
+          ) : (
+            <p className="text-orange-600 text-lg font-bold mt-2">₱{product.price.toLocaleString()}</p>
+          )}
+          
+          <p className="text-xs text-gray-500 mt-2 uppercase tracking-wider font-medium">Available for Inquiry</p>
+          
+          <button className="mt-4 w-full py-2.5 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors duration-300 flex items-center justify-center space-x-2 group">
+            <span>CHOOSE OPTIONS</span>
+            <Icon icon="mdi:arrow-right" width="16" height="16" className="transform group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
       </div>
+    ))}
+  </div>
+) : (
+  <div className="space-y-6">
+    {filteredProducts.map((product) => (
+      <div key={product.id} className="flex flex-col sm:flex-row bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+        <div className="sm:w-1/3 md:w-1/4 relative group overflow-hidden">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-64 sm:h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          />
+          
+          {/* Badge Container */}
+          {product.isOnSale && (
+            <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-sm shadow-sm">
+              SALE
+            </div>
+          )}
+          {product.isNew && (
+            <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-sm shadow-sm">
+              NEW
+            </div>
+          )}
+          
+          <div className="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity duration-300">
+            <button className="bg-white text-gray-800 p-2 rounded-full hover:bg-orange-500 hover:text-white transition-colors duration-300">
+              <Icon icon="mdi:magnify" width="16" height="16" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="sm:w-2/3 md:w-3/4 p-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+            <div>
+              <h3 className="text-xl font-bold text-gray-800 hover:text-orange-600 transition-colors cursor-pointer">{product.name}</h3>
+              
+              <div className="flex items-center my-3">
+                <div className="flex text-yellow-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Icon 
+                      key={i} 
+                      icon={i < Math.floor(product.rating) ? "mdi:star" : i < product.rating ? "mdi:star-half" : "mdi:star-outline"} 
+                      width="16" 
+                      height="16" 
+                      className="text-yellow-400" 
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-500 ml-2">({product.reviewCount} reviews)</span>
+              </div>
+            </div>
+            
+            <div className="mt-3 md:mt-0">
+              {product.isOnSale ? (
+                <div className="flex items-center space-x-2">
+                  <p className="text-orange-600 text-2xl font-bold">₱{product.price.toLocaleString()}</p>
+                  <div className="flex flex-col items-end">
+                    <p className="text-gray-400 text-sm line-through">₱{product.originalPrice?.toLocaleString()}</p>
+                    <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">
+                      {Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)}% OFF
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-orange-600 text-2xl font-bold">₱{product.price.toLocaleString()}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="h-px bg-gray-100 my-4"></div>
+          
+          <p className="text-gray-600 text-sm mb-5">
+            {product.description || "This premium product offers exceptional quality and value. Perfect for those who appreciate fine craftsmanship and attention to detail."}
+          </p>
+          
+          <div className="flex flex-wrap gap-3 mt-5">
+            <button className="px-6 py-2.5 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors duration-300 flex items-center justify-center gap-2 group">
+              <Icon icon="mdi:eye-outline" width="18" height="18" />
+              <span>VIEW DETAILS</span>
+            </button>
+            
+            <button className="px-6 py-2.5 border-2 border-gray-800 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-800 hover:text-white transition-colors duration-300 flex items-center justify-center gap-2">
+              <Icon icon="mdi:cart-outline" width="18" height="18" />
+              <span>ADD TO CART</span>
+            </button>
+            
+            <button className="p-2.5 border-2 border-gray-200 text-gray-500 rounded-lg hover:border-red-400 hover:text-red-500 transition-colors duration-300">
+              <Icon icon="mdi:heart-outline" width="18" height="18" />
+            </button>
+          </div>
+          
+          <div className="mt-4 text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <Icon icon="mdi:truck-delivery-outline" width="16" height="16" />
+              <span>Free shipping on orders over ₱1,000</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+          {/* Pagination */}
+          <div className="flex justify-center mt-10 space-x-1">
+            <button className="px-3 py-1.5 border rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+              <Icon icon="mdi:chevron-left" width="16" height="16" />
+            </button>
+            <button className="px-3 py-1.5 border rounded-md bg-black text-white">1</button>
+            <button className="px-3 py-1.5 border rounded-md hover:bg-gray-100 transition-colors">2</button>
+            <button className="px-3 py-1.5 border rounded-md hover:bg-gray-100 transition-colors">3</button>
+            <span className="px-3 py-1.5">...</span>
+            <button className="px-3 py-1.5 border rounded-md hover:bg-gray-100 transition-colors">10</button>
+            <button className="px-3 py-1.5 border rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+              <Icon icon="mdi:chevron-right" width="16" height="16" />
+            </button>
+          </div>
+        </main>
+      </div>
+
+
       {/* Featured Products Section */}
 <div className="mt-16 px-4">
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -166,9 +528,9 @@ const ProductList: React.FC = () => {
         className="w-full h-full object-cover"
       />
       <div className="absolute bottom-0 left-0 w-full p-6">
-        <h3 className="text-xl font-semibold text-white">TOP PICKS</h3>
-        <p className="mt-2 text-sm text-white">SHOP DESIGNER FAVORITES</p>
-        <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300">
+        <h3 className="text-2xl font-extrabold text-white" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extrabold" }}>TOP PICKS</h3>
+        <p className="mt-2 text-sm text-white" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>SHOP DESIGNER FAVORITES</p>
+        <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
           SHOP NOW
         </button>
       </div>
@@ -182,9 +544,9 @@ const ProductList: React.FC = () => {
         className="w-full h-full object-cover"
       />
       <div className="absolute bottom-0 left-0 w-full p-6">
-        <h3 className="text-xl font-semibold text-white">WHAT'S HOT?</h3>
-        <p className="mt-2 text-sm text-white">GET THE LATEST DESIGN FOR YOUR HOME AND PROJECTS!</p>
-        <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300">
+        <h3 className="text-2xl font-extrabold text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extrabold" }}>WHAT'S HOT?</h3>
+        <p className="mt-2 text-sm text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>GET THE LATEST DESIGN FOR YOUR HOME AND PROJECTS!</p>
+        <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
           SHOP NOW
         </button>
       </div>
@@ -197,9 +559,9 @@ const ProductList: React.FC = () => {
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     {/* Deal 1 */}
     <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
+      
       <img
-        src="ceiling-light.jpg" 
+        src="ceiling.jpg" 
         alt="Aberdeen LED Chandelier"
         className="w-full h-80 object-cover rounded-md"
       />
@@ -211,9 +573,9 @@ const ProductList: React.FC = () => {
 
     {/* Repeat similar blocks for other deals */}
     <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
+      
       <img
-        src="ceiling-light.jpg" 
+        src="ceiling.jpg" 
         alt="Aberdeen LED Chandelier"
         className="w-full h-80 object-cover rounded-md"
       />
@@ -226,9 +588,9 @@ const ProductList: React.FC = () => {
     {/* Add other deals as needed */}
     {/* Repeat similar blocks for other deals */}
     <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
+    
       <img
-        src="ceiling-light.jpg" 
+        src="ceiling.jpg" 
         alt="Aberdeen LED Chandelier"
         className="w-full h-80 object-cover rounded-md"
       />
@@ -239,9 +601,9 @@ const ProductList: React.FC = () => {
     </div>
     {/* Repeat similar blocks for other deals */}
     <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full absolute top-4 left-4">MONTHLY DEALS</span>
+      
       <img
-        src="ceiling-light.jpg" 
+        src="ceiling.jpg" 
         alt="Aberdeen LED Chandelier"
         className="w-full h-80 object-cover rounded-md"
       />
@@ -252,6 +614,50 @@ const ProductList: React.FC = () => {
     </div>
   </div>
 </div>
+
+{/* Feature Section */}
+<div className="bg-white py-8">
+  <div className="max-w-screen-xl mx-auto px-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      {/* Free Delivery & Installation */}
+      <div className="flex items-center text-left">
+        <Icon icon="mdi:truck-delivery-outline" width="32" height="32" className="text-black mr-4" />
+        <div>
+          <h3 className="font-semibold text-lg mb-2 text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>Free delivery & installation</h3>
+          <p className="text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>For orders P10,000.00 and above within Metro Manila.</p>
+        </div>
+      </div>
+
+      {/* Phone Contact */}
+      <div className="flex items-center text-left">
+        <Icon icon="mdi:phone-outline" width="32" height="32" className="text-black mr-4" />
+        <div>
+          <h3 className="font-semibold text-lg mb-2 text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>Phone Contact</h3>
+          <p className="text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>Monday to Sunday 9:00am - 5:00pm</p>
+        </div>
+      </div>
+
+      {/* Top-notch support */}
+      <div className="flex items-center text-left">
+        <Icon icon="mdi:headset" width="32" height="32" className="text-black mr-4" />
+        <div>
+          <h3 className="font-semibold text-lg mb-2 text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>Top-notch support</h3>
+          <p className="text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>Any question? Our team is just one click away!</p>
+        </div>
+      </div>
+
+      {/* Secure payments */}
+      <div className="flex items-center text-left">
+        <Icon icon="mdi:lock-outline" width="32" height="32" className="text-black mr-4" />
+        <div>
+          <h3 className="font-semibold text-lg mb-2 text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>Secure payments</h3>
+          <p className="text-black" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>Your payment information is processed securely</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {/* Footer */}
 <footer className="bg-white text-black py-10">
   <div className="max-w-screen-xl mx-auto px-6">
@@ -260,8 +666,8 @@ const ProductList: React.FC = () => {
       
       {/* Our Company */}
       <div>
-        <h3 className="font-semibold text-lg mb-4">OUR COMPANY</h3>
-        <ul className="space-y-2">
+        <h3 className="font-semibold text-lg mb-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>OUR COMPANY</h3>
+        <ul className="space-y-2" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>
           <li><a href="#home" className="hover:text-orange-500">Home</a></li>
           <li><a href="#about-us" className="hover:text-orange-500">About Us</a></li>
           <li><a href="#subscribe" className="hover:text-orange-500">Subscribe</a></li>
@@ -270,8 +676,8 @@ const ProductList: React.FC = () => {
 
       {/* More Info */}
       <div>
-        <h3 className="font-semibold text-lg mb-4">MORE INFO</h3>
-        <ul className="space-y-2">
+        <h3 className="font-semibold text-lg mb-4"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>MORE INFO</h3>
+        <ul className="space-y-2" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>
           <li><a href="#delivery" className="hover:text-orange-500">Delivery & Installation</a></li>
           <li><a href="#privacy" className="hover:text-orange-500">Privacy Policy</a></li>
           <li><a href="#returns" className="hover:text-orange-500">Returns & Refunds</a></li>
@@ -284,8 +690,8 @@ const ProductList: React.FC = () => {
 
       {/* Connect with Us */}
       <div>
-        <h3 className="font-semibold text-lg mb-4">CONNECT WITH US</h3>
-        <ul className="space-y-2">
+        <h3 className="font-semibold text-lg mb-4"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>CONNECT WITH US</h3>
+        <ul className="space-y-2" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>
           <li><a href="tel:+639123456789" className="hover:text-orange-500">+639123456789</a></li>
           <li><a href="mailto:example@gmail.com" className="hover:text-orange-500">example@gmail.com</a></li>
           <li><a href="https://wa.me/639123456789" className="hover:text-orange-500">WhatsApp</a></li>
@@ -295,11 +701,11 @@ const ProductList: React.FC = () => {
 
       {/* Our Location */}
       <div>
-        <h3 className="font-semibold text-lg mb-4">OUR LOCATION</h3>
-        <p>Izaj Lighting Centre</p>
-        <p>San Pablo - 173 I, San Pablo City, 4000 Laguna</p>
-        <h3 className="font-semibold text-lg mt-6 mb-4">OUR BRANCHES</h3>
-        <ul className="space-y-2">
+        <h3 className="font-semibold text-lg mb-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>OUR LOCATION</h3>
+        <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>Izaj Lighting Centre</p>
+        <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>San Pablo - 173 I, San Pablo City, 4000 Laguna</p>
+        <h3 className="font-semibold text-lg mt-6 mb-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>OUR BRANCHES</h3>
+        <ul className="space-y-2" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>
           <li>Quezon</li>
           <li>Laguna</li>
           <li>Cavite</li>
@@ -312,13 +718,13 @@ const ProductList: React.FC = () => {
 
       {/* Payments Method */}
       <div>
-        <h3 className="font-semibold text-lg mb-4">PAYMENTS METHOD</h3>
+        <h3 className="font-semibold text-lg mb-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "600" }}>PAYMENTS METHOD</h3>
         <img src="payments.png" alt="Payments Methods" className="w-full" />
       </div>
     </div>
 
     {/* Bottom Footer */}
-    <div className="mt-10 text-center text-sm text-gray-400">
+    <div className="mt-10 text-center text-sm text-gray-400" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>
       <p>© 2025 IZAJ LIGHTING CENTRE. All Rights Reserved.</p>
     </div>
   </div>

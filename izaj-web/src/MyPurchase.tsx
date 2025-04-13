@@ -271,12 +271,7 @@ const MyPurchase: React.FC = () => {
               </Link>
             </li>
             
-            <li className="rounded-lg hover:bg-gray-50 transition-colors">
-              <Link to="/wishlist" className="flex items-center space-x-3 p-3 text-gray-700">
-                <Icon icon="lucide:heart" className="text-gray-500 w-5 h-5" />
-                <span className="font-medium">Wishlist</span>
-              </Link>
-            </li>
+         
             
             <li className="rounded-lg hover:bg-gray-50 transition-colors">
               <Link to="/settings" className="flex items-center space-x-3 p-3 text-gray-700">
