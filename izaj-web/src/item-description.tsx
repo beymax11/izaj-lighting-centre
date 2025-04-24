@@ -450,12 +450,13 @@ const ItemDescription: React.FC = () => {
                 ADD TO CART
               </button>
               
-              <button 
+                <Link 
+                to="/checkout"
                 className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2"
-              >
+                >
                 <Icon icon="mdi:credit-card-outline" className="text-lg" />
                 BUY NOW
-              </button>
+                </Link>
             </div>
 
            {/* Delivery & Installation Section */}

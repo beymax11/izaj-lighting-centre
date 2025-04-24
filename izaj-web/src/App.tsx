@@ -16,6 +16,7 @@ import Aboutus from './aboutus';
 import Contactus from './contactus'; 
 import ChangePassword from './change-password';
 import ChatNow from './ChatNow';
+import MyFavorites from './MyFavorites';
 import { Link } from 'react-router-dom';
 import "./App.css";
 
@@ -57,6 +58,7 @@ const App: React.FC = () => {
         />
       } />
       <Route path="/product-list" element={<ProductList />} />
+      <Route path="/my-favorites" element={<MyFavorites />} />
       <Route path="/my-purchase" element={<MyPurchase />} />
       <Route path="/my-profile" element={<MyProfile />} />
       <Route path="/cart" element={<Cart/>} />
@@ -168,7 +170,7 @@ const LightingCategory = () => {
           }}
         >
           {firstPageItems.map((item) => (
-            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative group">
+            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative">
               <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
                 <img
                   src={item.image}
@@ -176,17 +178,24 @@ const LightingCategory = () => {
                   className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
                 />
               </div>
-              <h3
-                className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 relative"
-                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
-              >
-                <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
-                  {item.name}
-                </span>
-                <span className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <Icon icon="stash:arrow-right-light" className="text-black" width="20" height="20" />
-                </span>
-              </h3>
+              <div className="relative group">
+                <h3
+                  className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
+                  style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
+                >
+                  <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
+                    {item.name}
+                  </span>
+                  <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <Icon 
+                      icon="cil:arrow-right" 
+                      className="h-5 w-5 text-black" 
+                      width="20" 
+                      height="20" 
+                    />
+                  </span>
+                </h3>
+              </div>
             </div>
           ))}
         </div>
@@ -200,7 +209,7 @@ const LightingCategory = () => {
           }}
         >
           {secondPageItems.map((item) => (
-            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative group">
+            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative">
               <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
                 <img
                   src={item.image}
@@ -208,17 +217,24 @@ const LightingCategory = () => {
                   className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
                 />
               </div>
-              <h3
-                className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 relative"
-                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
-              >
-                <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
-                  {item.name}
-                </span>
-                <span className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <Icon icon="stash:arrow-right-light" className="text-black" width="20" height="20" />
-                </span>
-              </h3>
+              <div className="relative group">
+                <h3
+                  className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
+                  style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
+                >
+                  <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
+                    {item.name}
+                  </span>
+                  <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <Icon 
+                      icon="cil:arrow-right" 
+                      className="h-5 w-5 text-black" 
+                      width="20" 
+                      height="20" 
+                    />
+                  </span>
+                </h3>
+              </div>
             </div>
           ))}
         </div>
@@ -229,9 +245,7 @@ const LightingCategory = () => {
             className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-0 group-hover:opacity-100"
             style={{ zIndex: 10 }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
           </button>
         )}
 
@@ -240,9 +254,7 @@ const LightingCategory = () => {
           className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-0 group-hover:opacity-100"
           style={{ zIndex: 10 }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+            <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
         </button>
       </div>
     </>
@@ -506,13 +518,13 @@ const VideoStreamingUI: React.FC<{
                    My Purchases
                    </Link>
 
-                     <Link
-                     to="/my-purchase"
-                     className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
-                     >
-                     <Icon icon="mdi:heart-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
-                     My Favorites
-                     </Link>
+                   <Link
+  to="/my-favorites"
+  className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+>
+  <Icon icon="mdi:heart-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+  My Favorites
+</Link>
                    
                    <hr className="border-gray-200 my-1" />
                    
