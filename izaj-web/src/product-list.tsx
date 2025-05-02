@@ -92,7 +92,7 @@ const ProductList: React.FC = () => {
           {/* Logo */}
                      <Link to="/" className="flex flex-col items-start flex-shrink-0">
                      <div
-                       className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                       className="text-5xl tracking-wide flex-shrink-0 leading-tight font-regular"
                        style={{
                        color: "#000000",
                        fontFamily: "'Playfair Display', serif",

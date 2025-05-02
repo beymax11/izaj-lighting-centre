@@ -362,7 +362,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-md mx-4">
+  <div className="w-full">
+
       {/* Optional close button in corner */}
       {onClose && (
         <button 

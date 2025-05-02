@@ -17,6 +17,9 @@ import Contactus from './contactus';
 import ChangePassword from './change-password';
 import ChatNow from './ChatNow';
 import MyFavorites from './MyFavorites';
+import NotificationDropdown from './NotificationDropdown';
+import FavoritesDropdown from './FavoritesDropdown';
+
 import { Link } from 'react-router-dom';
 import "./App.css";
 
@@ -75,30 +78,69 @@ const App: React.FC = () => {
       </Routes>
 
       {isModalOpen && (
- <div
- className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
- onClick={() => setIsModalOpen(false)} // close when clicking the background
->
- <div
-   className="relative"
-   onClick={(e) => e.stopPropagation()} // prevent close when clicking inside the modal
- >
-   <button
-     onClick={() => setIsModalOpen(false)}
-     className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-     aria-label="Close"
-   >
-     <Icon icon="mdi:close" width="20" height="20" />
-   </button>
-   <AuthForm
-     isLoginForm={isLoginForm}
-     toggleForm={toggleForm}
-     onLogin={handleLogin}
-   />
- </div>
+  <div
+    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    onClick={() => setIsModalOpen(false)}
+  >
+    <div
+      className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+      onClick={(e) => e.stopPropagation()}
+    >
+    {/* Left Column - Slideshow with Gradient Overlay */}
+<div className="hidden md:block md:w-1/2 relative overflow-hidden">
+  {/* Slideshow container */}
+  <div className="absolute inset-0 animate-slide-fade z-0">
+    {/* Background slideshow (replace with your own images) */}
+    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+      style={{ backgroundImage: `url('/ceiling.jpg')`, animation: 'fade 15s infinite 0s' }} />
+    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+      style={{ backgroundImage: `url('/pendant.jpg')`, animation: 'fade 15s infinite 5s' }} />
+    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+      style={{ backgroundImage: `url('/cluster.jpg')`, animation: 'fade 15s infinite 10s' }} />
+  </div>
+
+  {/* Gradient overlay */}
+  <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/30 to-transparent z-10"></div>
+
+  {/* Text overlay */}
+  <div className="relative z-20 flex flex-col items-center justify-center h-full text-white text-center p-8">
+    <h2 
+      className="text-3xl font-bold" 
+      style={{ 
+      fontFamily: "'Playfair Display', serif", 
+      textShadow: "10px 10px 10px rgba(0, 0, 0, 0.5)" 
+      }}
+    >
+      LIGHT UP YOUR SPACE
+    </h2>
+    <p className="mt-4 max-w-xs text-sm text-gray-200">
+      Discover premium chandeliers and lighting that reflect your lifestyle and elegance.
+    </p>
+  </div>
 </div>
 
+
+      {/* Right Column - Auth Form */}
+      <div className="w-full md:w-1/2 p-6 sm:p-8">
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          aria-label="Close"
+        >
+          <Icon icon="mdi:close" width="20" height="20" />
+        </button>
+        <AuthForm
+          isLoginForm={isLoginForm}
+          toggleForm={toggleForm}
+          onLogin={handleLogin}
+          onClose={() => setIsModalOpen(false)}
+        />
+      </div>
+    </div>
+  </div>
 )}
+
+
   </Router>
 
   );
@@ -390,7 +432,7 @@ const VideoStreamingUI: React.FC<{
           {/* Logo */}
           <Link to="/" className="flex flex-col items-start flex-shrink-0">
                               <div
-                                className="text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                                className="text-5xl tracking-wide flex-shrink-0 leading-tight font-regular"
                                 style={{
                                 color: "#000000",
                                 fontFamily: "'Playfair Display', serif",
@@ -419,149 +461,116 @@ const VideoStreamingUI: React.FC<{
               />
             </div>
 
-         {/* Login/Signup Section with Icons */}
-         <div className="flex items-center space-x-4">
-              {!user ? (
-                <div className="flex items-center space-x-4">
-                  {/* User Icon (for Login) */}
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="text-black hover:text-orange-500 transition-colors duration-200"
-                    aria-label="Login"
-                  >
-                    <Icon icon="lucide:user" width="28" height="28" />
-                  </button>
-                  
-                  {/* Notification Icon - Always visible */}
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500"
-                    width="28"
-                    height="28"
-                  />
-                  
-                  {/* Cart Icon - Always visible */}
-                  <Link to="/cart">
-                    <Icon
-                      icon="mdi:cart-outline"
-                      className="text-black cursor-pointer hover:text-orange-500"
-                      width="28"
-                      height="28"
-                    />
-                  </Link>
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                      className="flex items-center transition-transform duration-300"
-                      aria-haspopup="true"
-                      aria-expanded={isAccountDropdownOpen}
-                      style={{
-                      transform: isAccountDropdownOpen ? "translateY(-2px)" : "translateY(0)",
-                      color: isAccountDropdownOpen ? "#4B0082" : "black",
-                      }}
-                    >
-                      {/* User icon aligned with other icons */}
-                      <Icon
-                      icon="lucide:user"
-                      width="30"
-                      height="30"
-                      className="text-black hover:text-orange-500 transition-colors duration-200"
-                      />
-                      
-                      {/* Text container aligned to the left */}
-                      <div className="flex flex-col ml-2 text-left">
-                      {/* Username and My Account aligned with minimal spacing */}
-                      <span
-                        className="font-medium text-sm text-gray-500 leading-none"
-                        style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
-                      >
-                        Hello {user.name}
-                      </span>
-                      <div className="flex items-center text-black">
-                        <span
-                        className="font-medium text-lg"
-                        style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
-                        >
-                        My Account
-                        </span>
-                        <Icon
-                        icon="mdi:chevron-down"
-                        width="20"
-                        height="20"
-                        className={`ml-1 text-black transition-transform duration-300 ${
-                          isAccountDropdownOpen ? "rotate-180" : "rotate-0"
-                        }`}
-                        />
-                      </div>
-                      </div>
-                    </button>
-
-                    {isAccountDropdownOpen && (
-                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
-                 <div className="py-1">
-                   <Link
-                   to="/my-profile"
-                   className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
-                   >
-                   <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
-                   My Account
-                   </Link>
-                   
-                   <Link
-                   to="/my-purchase"
-                   className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
-                   >
-                   <Icon icon="mdi:clipboard-list-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
-                   My Purchases
-                   </Link>
-
-                   <Link
-  to="/my-favorites"
-  className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
->
-  <Icon icon="mdi:heart-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
-  My Favorites
-</Link>
-                   
-                   <hr className="border-gray-200 my-1" />
-                   
-                   <button
-                   onClick={handleLogout}
-                   className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
-                   >
-                   <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
-                   Logout
-                   </button>
-                 </div>
-                 </div>
-                    )}
-                  </div>
-                  
-                  {/* Notification Icon */}
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
-                    width="28"
-                    height="28"
-                  />
-
-                  {/* Cart Icon */}
-                  <Link to="/cart">
-                    <Icon
-                      icon="mdi:cart-outline"
-                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
-                      width="28"
-                      height="28"
-                    />
-                  </Link>
-                </div>
-              )}
-            </div>
+        {/* Login/Signup Section with Icons */}
+<div className="flex items-center space-x-4">
+  {/* User Icon or Account Dropdown */}
+  {!user ? (
+    <button
+      onClick={() => setIsModalOpen(true)}
+      className="text-black hover:text-orange-500 transition-colors duration-200"
+      aria-label="Login"
+    >
+      <Icon icon="lucide:user" width="28" height="28" />
+    </button>
+  ) : (
+    <div className="relative">
+      <button
+        onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+        className="flex items-center transition-transform duration-300"
+        aria-haspopup="true"
+        aria-expanded={isAccountDropdownOpen}
+        style={{
+          transform: isAccountDropdownOpen ? "translateY(-2px)" : "translateY(0)",
+          color: isAccountDropdownOpen ? "#4B0082" : "black",
+        }}
+      >
+        <Icon
+          icon="lucide:user"
+          width="28"
+          height="28"
+          className="text-black hover:text-orange-500 transition-colors duration-200"
+        />
+        <div className="flex flex-col ml-2 text-left">
+          <span
+            className="font-medium text-sm text-gray-500 leading-none"
+            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
+          >
+            Hello {user.name}
+          </span>
+          <div className="flex items-center text-black">
+            <span
+              className="font-medium text-lg"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            >
+              My Account
+            </span>
+            <Icon
+              icon="mdi:chevron-down"
+              width="20"
+              height="20"
+              className={`ml-1 text-black transition-transform duration-300 ${
+                isAccountDropdownOpen ? "rotate-180" : "rotate-0"
+              }`}
+            />
           </div>
         </div>
+      </button>
+
+      {isAccountDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
+          <div className="py-1">
+            <Link
+              to="/my-profile"
+              className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+            >
+              <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+              My Account
+            </Link>
+            <Link
+              to="/my-purchase"
+              className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+            >
+              <Icon icon="mdi:clipboard-list-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+              My Purchases
+            </Link>
+            <hr className="border-gray-200 my-1" />
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
+            >
+              <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* Heart Icon */}
+  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+  <FavoritesDropdown user={user} />
+
+  </div>
+
+
+  {/* Notification Icon */}
+  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+    <NotificationDropdown user={user} />
+  </div>
+
+  {/* Cart Icon */}
+  <Link to="/cart">
+    <Icon
+      icon="mdi:cart-outline"
+      className="text-black cursor-pointer hover:text-orange-500"
+      width="28"
+      height="28"
+    />
+  </Link>
+</div>
+</div>
+</div>
             
 
         {/* Navbar */}
@@ -570,7 +579,7 @@ const VideoStreamingUI: React.FC<{
             <li><a href="#home" className="text-black hover:border-b-2 border-black pb-1">HOME</a></li>
         
 
-{/* Products Dropdown  Menu */}
+{/* Products Dropdown Menu */}
 <li className="relative group">
   <div
     className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center justify-between cursor-pointer transition-all duration-300"
@@ -578,7 +587,15 @@ const VideoStreamingUI: React.FC<{
       transform: isDropdownOpen ? "translateY(-2px)" : "translateY(0)",
       color: isDropdownOpen ? "#4B0082" : "black",
     }}
+    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
     onMouseEnter={() => setIsDropdownOpen(true)}
+    onMouseLeave={() => {
+      setTimeout(() => {
+        if (!document.querySelector('.dropdown-content:hover')) {
+          setIsDropdownOpen(false);
+        }
+      }, 100);
+    }}
   >
     PRODUCTS
     <Icon 
@@ -592,7 +609,13 @@ const VideoStreamingUI: React.FC<{
 
   {isDropdownOpen && (
     <div 
-      className="fixed left-0 right-0 bg-white text-black shadow-xl z-50 border-t border-gray-200 mt-2"
+      className="absolute bg-white text-black shadow-xl z-50 border-t border-gray-200 dropdown-content"
+      style={{ 
+      top: "100%",
+      left: "50%",
+      transform: "translateX(-44%)", // Center the dropdown horizontally
+      width: "100vw"
+      }}
       onMouseEnter={() => setIsDropdownOpen(true)}
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
@@ -779,9 +802,9 @@ const VideoStreamingUI: React.FC<{
   </p>
   
   <div className="max-w-4xl mx-auto flex justify-center">
-  <h3 className="text-large font-bold text-white bg-black py-2 px-5 rounded-md text-center"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+  <Link to="/aboutus" className="text-large font-bold text-white bg-black py-2 px-5 rounded-md text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
       About Us
-    </h3>
+  </Link>
   </div>
 </div>
 
@@ -931,9 +954,9 @@ const VideoStreamingUI: React.FC<{
         <p className="text-5xl font-semibold" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "0.2em" }}>NEW COLLECTION</p>
         <p className="mt-1 text-lg" style={{ fontFamily: "'Poppins', serif" }}>Free Delivery & Installation</p>
         <div className="flex items-center justify-center mt-4 px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300 w-40">
-            <button className="text-center" style={{ fontFamily: "'Poppins', serif" }}>
+            <Link to="/product-list" className="text-center" style={{ fontFamily: "'Poppins', serif" }}>
             SHOP NOW
-            </button>
+            </Link>
         </div>  
       </div>
     
