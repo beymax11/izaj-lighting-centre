@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 
 function Payments() {
   return (
-    <main className="flex-1 px-8 py-8 bg-gray-50 overflow-auto">
+    <main className="flex-1 px-8 py-8 bg-white overflow-auto">
       {/* Section Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800 mb-2">
