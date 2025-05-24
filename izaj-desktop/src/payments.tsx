@@ -6,7 +6,7 @@ function Payments() {
       {/* Section Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800 mb-2">
-          <Icon icon="mdi:credit-card-outline" className="text-yellow-400 w-8 h-8" />
+          <Icon icon="mdi:credit-card-outline" className="text-pink-400 w-8 h-8" />
           Payments
         </h2>
         <p className="text-gray-500 text-md">Monitor and manage payment transactions</p>

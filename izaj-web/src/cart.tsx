@@ -177,133 +177,126 @@ const Cart: React.FC = () => {
       </header>
 
       {/* Main Content */}
-<div className="max-w-6xl mx-auto mt-8 px-4 sm:px-6">
-  {/* Shopping Header */}
-  <h1 className="text-lg font-bold uppercase tracking-wider mb-4">SHOPPING</h1>
-
-  {/* Cart Table Container */}
-  <div className="border-t border-b border-l border-r border-gray-300">
-    {/* Table Header */}
-    <div className="grid grid-cols-12 border-b border-gray-300 py-3 px-4">
-      <div className="col-span-6">
-        <div className="flex items-center">
-          <input type="checkbox" className="mr-3 h-4 w-4" />
-          <span className="uppercase font-medium text-sm">PRODUCT</span>
+      <div className="max-w-6xl mx-auto mt-12 px-4 sm:px-6">
+        {/* Shopping Header */}
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold tracking-wider">Shopping Cart</h1>
+          <Link to="/" className="text-sm text-gray-600 hover:text-black transition-colors">
+            Continue Shopping
+          </Link>
         </div>
-      </div>
-      <div className="col-span-2 text-sm uppercase font-medium">
-        UNIT PRICE
-      </div>
-      <div className="col-span-2 text-sm uppercase font-medium">
-        QUANTITY
-      </div>
-      <div className="col-span-1 text-sm uppercase font-medium">
-        TOTAL PRICE
-      </div>
-      <div className="col-span-1 text-sm uppercase font-medium">
-        ACTIONS
-      </div>
-    </div>
 
-    {/* Product Item */}
-    <div className="grid grid-cols-12 items-center py-4 px-4 border-b border-gray-200">
-      <div className="col-span-6">
-        <div className="flex items-center">
-          <input type="checkbox" className="mr-3 h-4 w-4" />
-          <div className="w-24 h-24 mr-4">
-            <img
-              src="ceiling.jpg"
-              alt="Aberdeen Modern LED Chandelier"
-              className="w-full h-full object-cover"
-            />
+        {/* Cart Table Container */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 border-b border-gray-200 py-4 px-6 bg-gray-50 rounded-t-lg">
+            <div className="col-span-6">
+              <div className="flex items-center">
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-black rounded border-gray-300 focus:ring-black" />
+                <span className="ml-3 font-medium text-sm">PRODUCT</span>
+              </div>
+            </div>
+            <div className="col-span-2 text-sm font-medium">UNIT PRICE</div>
+            <div className="col-span-2 text-sm font-medium">QUANTITY</div>
+            <div className="col-span-1 text-sm font-medium">TOTAL</div>
+            <div className="col-span-1 text-sm font-medium">ACTIONS</div>
           </div>
-          <div>
-            <p className="font-medium">Aberdeen | Modern LED Chandelier</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Dispatched within 7 working days (Metro Manila) and 14 days (Provincial)
-            </p>
-            <div className="mt-2">
-              <span className="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full inline-flex items-center">
-                Monthly Deals (-₱1,000) <span className="ml-1 text-xs cursor-pointer">×</span>
-              </span>
+
+          {/* Product Item */}
+          <div className="grid grid-cols-12 items-center py-6 px-6 hover:bg-gray-50 transition-colors border-b border-gray-200">
+            <div className="col-span-6">
+              <div className="flex items-center">
+                <input type="checkbox" className="form-checkbox h-5 w-5 text-black rounded border-gray-300 focus:ring-black" />
+                <div className="w-24 h-24 ml-3 rounded-lg overflow-hidden">
+                  <img
+                    src="ceiling.jpg"
+                    alt="Aberdeen Modern LED Chandelier"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                  />
+                </div>
+                <div className="ml-4">
+                  <p className="font-medium hover:text-orange-500 cursor-pointer transition-colors">
+                    Aberdeen | Modern LED Chandelier
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Dispatched within 7 working days
+                  </p>
+                  <div className="mt-2">
+                    <span className="bg-red-50 text-red-600 text-xs px-3 py-1 rounded-full inline-flex items-center">
+                      Monthly Deals (-₱1,000)
+                      <button className="ml-2 hover:text-red-800">×</button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-2">
+              <p className="font-medium">₱15,995</p>
+              <p className="text-sm text-gray-400 line-through">₱16,995</p>
+            </div>
+            <div className="col-span-2">
+              <div className="relative inline-block">
+                <select className="form-select w-20 pl-3 pr-8 py-2 border-gray-300 rounded-md focus:ring-black focus:border-black text-sm">
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-span-1 font-medium">₱15,995</div>
+            <div className="col-span-1">
+              <button className="text-gray-400 hover:text-red-600 transition-colors">
+                <Icon icon="mdi:delete" width="20" height="20" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Lower Section */}
+        <div className="mt-8 grid grid-cols-12 gap-8">
+          {/* Shipping Estimate */}
+          <div className="col-span-12 lg:col-span-6">
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="flex justify-between items-center cursor-pointer">
+                <div className="flex items-center">
+                  <Icon icon="mdi:truck-delivery-outline" width="24" height="24" className="mr-3" />
+                  <span className="font-medium">Estimate Shipping</span>
+                </div>
+                <Icon icon="mdi:chevron-down" width="20" height="20" />
+              </div>
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="col-span-12 lg:col-span-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-lg font-bold mb-4">Order Summary</h2>
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span>₱15,995</span>
+                </div>
+                <div className="flex justify-between text-green-600">
+                  <span>Discount</span>
+                  <span>-₱1,000</span>
+                </div>
+                <div className="border-t border-gray-200 pt-3 flex justify-between font-bold">
+                  <span>Total</span>
+                  <span>₱14,995</span>
+                </div>
+              </div>
+              <button className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-lg font-medium transition-colors">
+                PROCEED TO CHECKOUT
+              </button>
+              <p className="text-xs text-center mt-3 text-gray-500">
+                Taxes and shipping calculated at checkout
+              </p>
             </div>
           </div>
         </div>
       </div>
-      <div className="col-span-2">
-        <div>
-          <p className="font-medium">₱15,995</p>
-          <p className="text-xs text-gray-500 line-through">₱16,995</p>
-        </div>
-      </div>
-      <div className="col-span-2">
-        <div className="relative inline-block">
-          <select className="border border-gray-300 rounded py-1 pl-2 pr-8 appearance-none bg-white">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-            <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-      </div>
-      <div className="col-span-1 font-medium">
-        ₱15,995
-      </div>
-      <div className="col-span-1">
-        <button className="text-red-500 text-sm">Delete</button>
-      </div>
-    </div>
-  </div>
 
-  {/* Lower Section */}
-  <div className="mt-8 grid grid-cols-12 gap-6">
-    {/* Shipping Estimate */}
-    <div className="col-span-12 lg:col-span-6">
-      <div className="border border-gray-300 p-4">
-        <div className="flex justify-between items-center cursor-pointer">
-          <div className="flex items-center">
-            <svg className="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-            <span className="uppercase font-medium text-sm">ESTIMATE SHIPPING</span>
-          </div>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    {/* Order Summary */}
-    <div className="col-span-12 lg:col-span-6">
-      <div className="border border-gray-300 p-4">
-        <div className="flex justify-between items-center mb-3">
-          <span className="font-medium">Total</span>
-          <span className="font-medium">₱15,995</span>
-        </div>
-        <div className="text-sm text-red-500 mb-3">
-          You saved ₱1,000!
-        </div>
-        <div className="flex justify-between items-center mb-3 cursor-pointer">
-          <span className="text-sm">Order Instructions</span>
-          <span className="text-lg font-bold">+</span>
-        </div>
-        <button className="w-full bg-black text-white py-3 uppercase font-bold mt-3">
-          CHECKOUT
-        </button>
-        <div className="text-xs text-center mt-2 text-gray-500">
-          Taxes and shipping calculated at checkout
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-       {/* Feature Section */}
+      {/* Feature Section */}
                          <div className="bg-white py-12 mt-12">
                            <div className="max-w-7xl mx-auto px-4">
                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

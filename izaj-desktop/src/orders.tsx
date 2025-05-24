@@ -48,7 +48,13 @@ function Orders() {
         }}>
         {/* Header Section */}
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800">Orders Overview</h2>
+          <div>
+            <div className="flex items-center gap-3">
+              <Icon icon="mdi:shopping-outline" className="text-3xl text-green-400" />
+              <h2 className="text-2xl font-bold text-gray-800">Orders Overview</h2>
+            </div>
+            <p className="text-gray-500 mt-1">Track and manage all orders in one place</p>
+          </div>
           <div className="flex items-center space-x-3">
             <div className="relative">
               <input 

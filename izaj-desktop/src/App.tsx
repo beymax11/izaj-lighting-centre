@@ -32,6 +32,7 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const modalRef = useRef<HTMLDivElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Example messages data
   const messages = [
@@ -108,7 +109,7 @@ function App() {
   const renderContent = () => {
     switch (currentPage) {
       case 'PRODUCTS':
-        return <Products />;
+        return <Products />; // Remove the prop
       case 'ORDERS':
         return <Orders />;
       case 'USERS':
@@ -497,15 +498,34 @@ function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white">
+      {/* Mobile menu overlay */}
+      <div
+        className={`fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 lg:hidden ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setMobileMenuOpen(false)}
+      ></div>
+      {/* Sidebar: hidden on mobile, slide-in menu */}
       <aside
-        className={`m-4 z-40 transition-all duration-300 ${
-          sidebarCollapsed ? 'w-20' : 'w-64'
-        } bg-white shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border-r border-white flex flex-col h-[calc(100vh-2rem)] shrink-0 overflow-hidden rounded-2xl`}
+        className={`
+          m-0 lg:m-4 z-50 fixed lg:static top-0 left-0 h-full transition-all duration-300
+          ${sidebarCollapsed ? 'w-20' : 'w-64'}
+          bg-white shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border-r border-white flex flex-col
+          shrink-0 overflow-hidden rounded-none lg:rounded-2xl
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+        `}
         style={{
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-          minHeight: 'calc(100vh - 2rem)',
+          minHeight: '100vh',
         }}
       >
+        {/* Mobile close button */}
+        <div className="flex lg:hidden justify-end p-4">
+          <button
+            className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Icon icon="mdi:close" className="w-6 h-6 text-gray-600" />
+          </button>
+        </div>
         <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : ''} px-6 py-4`}>
           <div className="flex-shrink-0 flex items-center justify-center">
             <img
@@ -603,9 +623,9 @@ function App() {
         {/* Header */}
         <header
           className={`relative bg-white shadow-2xl border border-white
-            px-8 py-5 mt-6 rounded-2xl shrink-0 overflow-hidden transition-all duration-300
+            px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
             backdrop-blur-md
-            ${sidebarCollapsed ? 'mx-2' : 'mx-8'}
+            ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
           `}
           style={{
             borderLeft: '6px solid #fff',
@@ -613,66 +633,54 @@ function App() {
           }}
         >
           <div className="flex items-center justify-between">
-            {/* Left side: Sidebar/Menu icon and page title (if PRODUCTS) */}
-            <div className="flex items-center gap-4 flex-1">
+            {/* Left side: Always show sidebar toggle and search */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-1">
+              {/* Mobile menu button */}
               <button
-          className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition"
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition lg:hidden"
+                onClick={() => setMobileMenuOpen(true)}
               >
-          <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
+                <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
               </button>
-              {/* Search bar beside sidebar icon if not PRODUCTS */}
-              {currentPage !== 'PRODUCTS' && (
-          <div className="relative min-w-[240px] max-w-sm ml-2">
-            <Icon icon="mdi:magnify" className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-150 focus:border-yellow-200 bg-white shadow"
-            />
-          </div>
-              )}
-              {currentPage === 'PRODUCTS' ? (
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-semibold text-gray-800 tracking-wide drop-shadow-sm">Products</span>
-          </div>
-              ) : null}
+              {/* Desktop sidebar toggle */}
+              <button
+                className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition hidden lg:block"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              >
+                <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
+              </button>
+              <div className="relative min-w-0 flex-1 max-w-xs ml-2">
+                <Icon icon="mdi:magnify" className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-150 focus:border-yellow-200 bg-white shadow"
+                />
+              </div>
             </div>
-            {/* Right side: Add Products button (if PRODUCTS), else notification */}
-            <div className="flex items-center gap-4 justify-end">
-              {currentPage === 'PRODUCTS' ? (
-          <>
-            <button
-              className="flex items-center gap-2 px-4 py-2 border-2 border-yellow-200 rounded-xl text-sm bg-black text-white font-semibold shadow hover:bg-yellow-100 hover:text-black hover:border-yellow-400 transition-all duration-200"
-              style={{
-                boxShadow: '0 2px 8px 0 rgba(252, 211, 77, 0.10)',
-              }}
-              onClick={() => setShowAddProductModal(true)}
-            >
-              <Icon icon="mdi:plus" className="text-lg" />
-              Add Products
-            </button>
-          </>
-              ) : (
-          <>
-            <button className="p-2 rounded-lg bg-white hover:bg-yellow-100 border border-yellow-100 shadow transition">
-              <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-600" />
-            </button>
-          </>
-              )}
+            {/* Right side: Always show notification */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button className="p-2 rounded-lg bg-white hover:bg-yellow-100 border border-yellow-100 shadow transition">
+                <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-600" />
+              </button>
             </div>
           </div>
         </header>
         {/* Main Content */}
         <div className="flex-1 min-h-0 overflow-auto">
+          {/* Responsive grid tweaks inside renderContent */}
+          {/* ...existing code... */}
+          {/* Replace grid-cols-3 with responsive classes */}
+          {/* Example: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 */}
+          {/* ...existing code... */}
           {renderContent()}
         </div>
       </div>
 
       {/*  Product Modal */}
       {showAddProductModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-auto">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-[900px] w-full relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-2 sm:p-4 overflow-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-8 max-w-full sm:max-w-[900px] w-full relative max-h-[95vh] overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
               <h2 className="text-2xl font-semibold text-gray-900">Add New Product</h2>
@@ -686,7 +694,7 @@ function App() {
             </div>
 
             {/* Body */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
               {/* Left Column */}
               <div className="space-y-8">
                 <section>
@@ -836,7 +844,7 @@ function App() {
       {/* Floating Message Icon - hide when in messages view */}
       {!isInMessagesView && (
         <button
-          className="fixed z-50 bottom-8 right-8 bg-yellow-400 hover:bg-yellow-500 text-white rounded-full shadow-lg p-4 flex items-center justify-center transition-all duration-200"
+          className="fixed z-50 bottom-4 right-4 sm:bottom-8 sm:right-8 bg-yellow-400 hover:bg-yellow-500 text-white rounded-full shadow-lg p-4 flex items-center justify-center transition-all duration-200"
           style={{ boxShadow: '0 4px 24px rgba(252, 211, 77, 0.25)' }}
           onClick={() => setShowMessages(true)}
           aria-label="Show Messages"
@@ -850,7 +858,7 @@ function App() {
         <div className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none">
           <div
             ref={messagePanelRef}
-            className="pointer-events-auto bg-white rounded-2xl shadow-2xl border border-yellow-100 max-w-xs w-full mr-8 mb-24 p-4 flex flex-col"
+            className="pointer-events-auto bg-white rounded-2xl shadow-2xl border border-yellow-100 max-w-xs w-full mr-2 sm:mr-8 mb-20 sm:mb-24 p-4 flex flex-col"
             style={{ minHeight: '320px', maxHeight: '60vh' }}
           >
             <div className="flex items-center justify-between mb-3">
@@ -894,13 +902,15 @@ function App() {
         <div className="fixed inset-0 z-50 pointer-events-none">
           <div 
             ref={modalRef}
-            className="absolute bg-white rounded-2xl shadow-2xl max-w-md w-full h-[80vh] flex flex-col pointer-events-auto"
+            className="absolute bg-white rounded-2xl shadow-2xl max-w-full sm:max-w-md w-full h-[80vh] flex flex-col pointer-events-auto"
             style={{ 
               left: modalPosition.x,
               top: modalPosition.y,
-              transform: 'none', // Remove transform to fix positioning
+              transform: 'none',
               cursor: isDragging ? 'grabbing' : 'default',
-              transition: isDragging ? 'none' : 'all 0.1s ease', // Add smooth transition when not dragging
+              transition: isDragging ? 'none' : 'all 0.1s ease',
+              minWidth: '90vw',
+              maxWidth: '98vw'
             }}
           >
             {/* Header - make it draggable */}
