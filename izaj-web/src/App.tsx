@@ -147,16 +147,16 @@ const App: React.FC = () => {
 };
 const LightingCategory = () => {
   const allItems = [
-    { id: 1, name: "Ceiling Lights", image: "celing.avif" },
+    { id: 1, name: "Ceiling Lights", image: "ceiling.avif" }, // fixed typo
     { id: 2, name: "Chandelier", image: "chandelier.avif" },
     { id: 3, name: "Pendant Lights", image: "pendant.avif" },
     { id: 4, name: "Wall Lights", image: "wall.avif" },
     { id: 5, name: "Table Lamps", image: "table.avif" },
     { id: 6, name: "Cluster Chandelier", image: "cluster2.avif" },
     { id: 7, name: "Floor Lamps", image: "floor.avif" },
-    { id: 8, name: " Table Lamps", image: "rechargeable.avif" },
-    { id: 9, name: "Painting Lights", image: "painting.avif" },
-    { id: 10, name: "Indoor Lights", image: "indoor.avif" },
+    // Removed duplicate Table Lamps with leading space and different image
+    { id: 8, name: "Painting Lights", image: "painting.avif" },
+    { id: 9, name: "Indoor Lights", image: "indoor.avif" },
   ];
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -664,7 +664,7 @@ const VideoStreamingUI: React.FC<{
             <div className="grid grid-cols-2 gap-3">
               <div className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-lg mb-2">
-                  <img src="celing.avif" alt="Ceiling Lights" className="w-full h-24 object-cover group-hover:scale-110 transition-all duration-300" />
+                  <img src="ceiling.avif" alt="Ceiling Lights" className="w-full h-24 object-cover group-hover:scale-110 transition-all duration-300" />
                   <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
                 </div>
                 <p className="text-sm font-medium">Ceiling Lights</p>
@@ -710,6 +710,7 @@ const VideoStreamingUI: React.FC<{
               <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Rechargeable Lamps</a></li>
               <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Wall Lights</a></li>
               <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Painting & Bathroom</a></li>
+              <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Indoor Lights</a></li>
             </ul>
           </div>
         </div>
@@ -1051,8 +1052,8 @@ const VideoStreamingUI: React.FC<{
           style={{ zIndex: 10 }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
         </button>
       )}
 
@@ -1063,8 +1064,8 @@ const VideoStreamingUI: React.FC<{
           style={{ zIndex: 10 }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
         </button>
       )}
     </div>

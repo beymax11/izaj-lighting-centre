@@ -61,15 +61,21 @@ export function AddProductModal({ onClose, mode }: AddProductModalProps) {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                       <input
-                        type="date"
+                        type="text"
+                        placeholder="mm/dd/yyyy"
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
+                        onFocus={e => (e.target.type = 'date')}
+                        onBlur={e => (e.target.type = 'text')}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                       <input
-                        type="date"
+                        type="text"
+                        placeholder="mm/dd/yyyy"
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
+                        onFocus={e => (e.target.type = 'date')}
+                        onBlur={e => (e.target.type = 'text')}
                       />
                     </div>
                   </div>
@@ -77,20 +83,56 @@ export function AddProductModal({ onClose, mode }: AddProductModalProps) {
               </div>
             </div>
           ) : (
-            // Original product form content
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-800">Product Details</h3>
+            // Product form content (MATCH SALE DESIGN)
+            <div className="space-y-6">
               <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Product Name"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
-                />
-                <textarea
-                  placeholder="Product Description"
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
-                />
+                <h3 className="font-semibold text-gray-800">Product Details</h3>
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Product Name"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
+                  />
+                  <textarea
+                    placeholder="Product Description"
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <select className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300">
+                        <option>Select Category</option>
+                        {/* Add category options here */}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                      <input
+                        type="number"
+                        placeholder="Enter price"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                      <input
+                        type="number"
+                        placeholder="Enter stock"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                      <input
+                        type="file"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -115,7 +157,8 @@ export function AddProductModal({ onClose, mode }: AddProductModalProps) {
             >
               Cancel
             </button>
-            <button className="px-6 py-2 rounded-xl bg-black text-white font-medium border-2 border-yellow-200 hover:border-yellow-400 shadow-lg hover:shadow-xl transition-all duration-200">
+            <button className="px-6 py-2 rounded-xl bg-black text-white font-medium border-2 border-yellow-200 hover:border-yellow-400 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-yellow-200 focus:outline-none"
+              style={{ boxShadow: '0 2px 8px 0 rgba(0,0,0,0.10)' }}>
               Confirm
             </button>
           </div>
