@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-
 import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-
 import './App.css';
 
 // Cart Component
@@ -18,7 +16,12 @@ const Cart: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div
+      className="min-h-screen"
+      style={{
+        background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+      }}
+    >
       {/* Updated Header from MyPurchase.tsx */}
       <header className="bg-white px-10 py-3 flex flex-col ">
         {/* Top Header Row */}
@@ -152,23 +155,150 @@ const Cart: React.FC = () => {
         <nav className="bg-white py-3">
           <ul className="flex justify-center space-x-10 text-sm font-medium">
             <li><Link to="/" className="text-black hover:border-b-2 border-black pb-1">HOME</Link></li>
-            <li className="relative">
+            <li
+              className="relative"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => setIsDropdownOpen(false)}
+            >
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                // Remove onClick to make it hover-only
                 className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={isDropdownOpen}
               >
                 PRODUCTS <Icon icon="mdi:chevron-down" className="ml-1 text-xs" width="25" height="25" />
               </button>
               {isDropdownOpen && (
-                <div className="absolute left-0 mt-2 bg-white text-black rounded-md shadow-lg w-48 z-50">
-                  <ul className="py-2">
-                    <li><a href="#product1" className="block px-4 py-2 hover:bg-gray-100">Ceiling Lights</a></li>
-                    <li><a href="#product2" className="block px-4 py-2 hover:bg-gray-100">Pendant Lights</a></li>
-                    <li><a href="#product3" className="block px-4 py-2 hover:bg-gray-100">Chandeliers</a></li>
-                  </ul>
-                </div>
-              )}
-            </li>
+                <div 
+                  className="absolute bg-white text-black shadow-xl z-50 border-t border-gray-200 dropdown-content"
+                  style={{ 
+                    top: "100%",
+                    left: "50%",
+                    transform: "translateX(-44%)",
+                    width: "100vw"
+                  }}
+                >
+                  <div className="max-w-7xl mx-auto px-6 py-8">
+                     <div className="grid grid-cols-3 gap-8">
+                       {/* First Column - Main Categories */}
+                       <div>
+                         <h3 className="font-bold text-base mb-4 border-b border-gray-200 pb-2" 
+                             style={{ fontFamily: "'Playfair Display', serif" }}>
+                           LIGHTING FIXTURES
+                         </h3>
+                         <ul>
+                           <li className="mb-3">
+                             <Link 
+                               to="/product-list" 
+                               state={user ? { user } : undefined}
+                               className="flex items-center group"
+                             >
+                               <Icon icon="mdi:lightbulb-outline" className="mr-2 text-gray-600 group-hover:text-orange-500" width="22" height="22" />
+                               <span className="group-hover:text-orange-500 group-hover:translate-x-1 transition-transform duration-200">
+                                 All Lighting Fixtures 
+                               </span>
+                             </Link>
+                           </li>
+                           <li className="mb-3">
+                             <Link to="/new" className="flex items-center group">
+                               <Icon icon="mdi:star-circle-outline" className="mr-2 text-gray-600 group-hover:text-orange-500" width="22" height="22" />
+                               <span className="group-hover:text-orange-500 group-hover:translate-x-1 transition-transform duration-200">
+                                 New Arrivals
+                               </span>
+                             </Link>
+                           </li>
+                           <li className="mb-3">
+                             <Link to="/sales" className="flex items-center group">
+                               <Icon icon="mdi:tag-outline" className="mr-2 text-gray-600 group-hover:text-orange-500" width="22" height="22" />
+                               <span className="group-hover:text-orange-500 group-hover:translate-x-1 transition-transform duration-200">
+                                 Special Offers
+                               </span>
+                             </Link>
+                           </li>
+                         </ul>
+                       </div>
+             
+                       {/* Second Column - Categories with Images */}
+                       <div>
+                         <h3 className="font-bold text-base mb-4 border-b border-gray-200 pb-2"
+                             style={{ fontFamily: "'Playfair Display', serif" }}>
+                           POPULAR CATEGORIES
+                         </h3>
+                         <div className="grid grid-cols-2 gap-3">
+                           <div className="group cursor-pointer">
+                             <div className="relative overflow-hidden rounded-lg mb-2">
+                               <img src="ceiling.avif" alt="Ceiling Lights" className="w-full h-24 object-cover group-hover:scale-110 transition-all duration-300" />
+                               <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                             </div>
+                             <p className="text-sm font-medium">Ceiling Lights</p>
+                           </div>
+                           <div className="group cursor-pointer">
+                             <div className="relative overflow-hidden rounded-lg mb-2">
+                               <img src="chandelier.avif" alt="Chandeliers" className="w-full h-24 object-cover group-hover:scale-110 transition-all duration-300" />
+                               <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                             </div>
+                             <p className="text-sm font-medium">Chandeliers</p>
+                           </div>
+                           <div className="group cursor-pointer">
+                             <div className="relative overflow-hidden rounded-lg mb-2">
+                               <img src="pendant.avif" alt="Pendant Lights" className="w-full h-24 object-cover group-hover:scale-110 transition-all duration-300" />
+                               <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                             </div>
+                             <p className="text-sm font-medium">Pendant Lights</p>
+                           </div>
+                           <div className="group cursor-pointer">
+                             <div className="relative overflow-hidden rounded-lg mb-2">
+                               <img src="wall.avif" alt="Wall Lights" className="w-full h-24 object-cover group-hover:scale-110 transition-all duration-300" />
+                               <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                             </div>
+                             <p className="text-sm font-medium">Wall Lights</p>
+                           </div>
+                         </div>
+                       </div>
+             
+                       {/* Third Column - Complete Categories List */}
+                       <div>
+                         <h3 className="font-bold text-base mb-4 border-b border-gray-200 pb-2"
+                             style={{ fontFamily: "'Playfair Display', serif" }}>
+                           ALL CATEGORIES
+                         </h3>
+                         <ul className="grid grid-cols-2 gap-x-4 gap-y-2">
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Ceiling Lights</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Semi Flush Mounted</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Chandeliers</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Cluster Chandeliers</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Pendant Lights</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Floor Lamps</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Table Lamps</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Rechargeable Lamps</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Wall Lights</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Painting & Bathroom</a></li>
+                           <li><a href="#product3" className="hover:text-orange-500 transition-colors duration-200 text-sm">Indoor Lights</a></li>
+                         </ul>
+                       </div>
+                     </div>
+             
+                     {/* Bottom Banner Section */}
+                     <div className="mt-6 pt-4 border-t border-gray-200">
+                       <div className="flex items-center justify-between">
+                         <div>
+                           <p className="text-sm font-medium">Free Installation on Orders Above ₱10,000</p>
+                           <p className="text-xs text-gray-500">Within Metro Manila Area</p>
+                         </div>
+                         <Link 
+                           to="/sales" 
+                           className="px-4 py-2 bg-black text-white text-sm rounded hover:bg-orange-500 transition-colors duration-300"
+                         >
+                           VIEW PROMOTIONS
+                         </Link>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+                 
+               )}
+             </li>
             <li><Link to="/new" className="text-black hover:border-b-2 border-black pb-1">NEW</Link></li>
             <li><Link to="/sales" className="text-black hover:border-b-2 border-black pb-1">SALES</Link></li>
             <li><Link to="/aboutus" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</Link></li>
@@ -176,122 +306,151 @@ const Cart: React.FC = () => {
         </nav>
       </header>
 
+   
+
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto mt-12 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto mt-8 px-4 sm:px-6">
         {/* Shopping Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold tracking-wider">Shopping Cart</h1>
+          <h1 className="text-3xl font-extrabold tracking-wider text-black" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Shopping Cart
+          </h1>
           <Link to="/" className="text-sm text-gray-600 hover:text-black transition-colors">
             Continue Shopping
           </Link>
         </div>
 
         {/* Cart Table Container */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
           {/* Table Header */}
-          <div className="grid grid-cols-12 border-b border-gray-200 py-4 px-6 bg-gray-50 rounded-t-lg">
+          <div className="grid grid-cols-12 border-b border-gray-100 py-5 px-8 bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-3xl">
             <div className="col-span-6">
               <div className="flex items-center">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-black rounded border-gray-300 focus:ring-black" />
-                <span className="ml-3 font-medium text-sm">PRODUCT</span>
+                <span className="ml-3 font-semibold text-base tracking-wide text-black">PRODUCT</span>
               </div>
             </div>
-            <div className="col-span-2 text-sm font-medium">UNIT PRICE</div>
-            <div className="col-span-2 text-sm font-medium">QUANTITY</div>
-            <div className="col-span-1 text-sm font-medium">TOTAL</div>
-            <div className="col-span-1 text-sm font-medium">ACTIONS</div>
+            <div className="col-span-2 text-base font-semibold text-black">UNIT PRICE</div>
+            <div className="col-span-2 text-base font-semibold text-black">QUANTITY</div>
+            <div className="col-span-1 text-base font-semibold text-black">TOTAL</div>
+            <div className="col-span-1 text-base font-semibold text-black">ACTIONS</div>
           </div>
 
           {/* Product Item */}
-          <div className="grid grid-cols-12 items-center py-6 px-6 hover:bg-gray-50 transition-colors border-b border-gray-200">
+          <div className="grid grid-cols-12 items-center py-8 px-8 hover:bg-gray-50 transition-colors border-b border-gray-100">
             <div className="col-span-6">
               <div className="flex items-center">
                 <input type="checkbox" className="form-checkbox h-5 w-5 text-black rounded border-gray-300 focus:ring-black" />
-                <div className="w-24 h-24 ml-3 rounded-lg overflow-hidden">
+                <div className="w-28 h-28 ml-4 rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white flex items-center justify-center relative">
                   <img
                     src="ceiling.jpg"
                     alt="Aberdeen Modern LED Chandelier"
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                   />
+                  <span className="absolute top-2 left-2 bg-gradient-to-r from-orange-400 to-yellow-300 text-white px-3 py-1 rounded-full text-xs font-bold shadow">
+                    Best Seller
+                  </span>
                 </div>
-                <div className="ml-4">
-                  <p className="font-medium hover:text-orange-500 cursor-pointer transition-colors">
+                <div className="ml-6">
+                  <p className="font-bold text-lg text-black hover:text-orange-500 cursor-pointer transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
                     Aberdeen | Modern LED Chandelier
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
                     Dispatched within 7 working days
                   </p>
-                  <div className="mt-2">
-                    <span className="bg-red-50 text-red-600 text-xs px-3 py-1 rounded-full inline-flex items-center">
+                  <div className="mt-3">
+                    <span className="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full inline-flex items-center font-semibold shadow">
                       Monthly Deals (-₱1,000)
-                      <button className="ml-2 hover:text-red-800">×</button>
+                      <button className="ml-2 hover:text-red-800 font-bold">×</button>
                     </span>
                   </div>
                 </div>
               </div>
             </div>
             <div className="col-span-2">
-              <p className="font-medium">₱15,995</p>
+              <p className="font-bold text-lg text-black">₱15,995</p>
               <p className="text-sm text-gray-400 line-through">₱16,995</p>
             </div>
             <div className="col-span-2">
               <div className="relative inline-block">
-                <select className="form-select w-20 pl-3 pr-8 py-2 border-gray-300 rounded-md focus:ring-black focus:border-black text-sm">
+                <select className="form-select w-24 pl-3 pr-8 py-2 border-gray-300 rounded-lg focus:ring-black focus:border-black text-base shadow">
                   <option>1</option>
                   <option>2</option>
                   <option>3</option>
                 </select>
               </div>
             </div>
-            <div className="col-span-1 font-medium">₱15,995</div>
+            <div className="col-span-1 font-bold text-lg text-black">₱15,995</div>
             <div className="col-span-1">
-              <button className="text-gray-400 hover:text-red-600 transition-colors">
-                <Icon icon="mdi:delete" width="20" height="20" />
+              <button className="text-gray-400 hover:text-red-600 transition-colors rounded-full p-2 bg-gray-100 hover:bg-red-100">
+                <Icon icon="mdi:delete" width="22" height="22" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Lower Section */}
-        <div className="mt-8 grid grid-cols-12 gap-8">
+        <div className="mt-10 grid grid-cols-12 gap-8">
           {/* Shipping Estimate */}
           <div className="col-span-12 lg:col-span-6">
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-md p-8 hover:shadow-xl transition-shadow border border-gray-100">
               <div className="flex justify-between items-center cursor-pointer">
                 <div className="flex items-center">
-                  <Icon icon="mdi:truck-delivery-outline" width="24" height="24" className="mr-3" />
-                  <span className="font-medium">Estimate Shipping</span>
+                  <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="mr-4 text-orange-500" />
+                  <span className="font-semibold text-black text-lg">Estimate Shipping</span>
                 </div>
-                <Icon icon="mdi:chevron-down" width="20" height="20" />
+                <Icon icon="mdi:chevron-down" width="22" height="22" className="text-gray-500" />
+              </div>
+              <div className="mt-4 text-gray-500 text-sm">
+                Enter your address at checkout to see shipping options and rates.
               </div>
             </div>
           </div>
 
           {/* Order Summary */}
           <div className="col-span-12 lg:col-span-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-bold mb-4">Order Summary</h2>
-              <div className="space-y-3 mb-4">
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-2xl shadow-lg p-8 border border-yellow-200">
+              <h2 className="text-xl font-extrabold mb-5 text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>Order Summary</h2>
+              <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span>₱15,995</span>
+                  <span className="text-gray-600 font-medium">Subtotal</span>
+                  <span className="font-semibold text-black">₱15,995</span>
                 </div>
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-green-600 font-semibold">
                   <span>Discount</span>
                   <span>-₱1,000</span>
                 </div>
-                <div className="border-t border-gray-200 pt-3 flex justify-between font-bold">
+                <div className="border-t border-gray-300 pt-4 flex justify-between font-extrabold text-lg">
                   <span>Total</span>
-                  <span>₱14,995</span>
+                  <span className="text-black">₱14,995</span>
                 </div>
               </div>
-              <button className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-lg font-medium transition-colors">
+              <button className="w-full bg-gradient-to-r from-black to-gray-800 hover:from-orange-500 hover:to-yellow-400 text-white py-4 rounded-xl font-bold text-lg shadow transition-all duration-200">
                 PROCEED TO CHECKOUT
               </button>
-              <p className="text-xs text-center mt-3 text-gray-500">
+              <p className="text-xs text-center mt-4 text-gray-500">
                 Taxes and shipping calculated at checkout
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* You may also like */}
+        <div className="mt-16">
+          <h2 className="text-xl font-bold text-black mb-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            You may also like
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 p-4 flex flex-col items-center">
+                <img src="ceiling.jpg" alt="Product" className="w-32 h-32 object-cover rounded-lg mb-3" />
+                <div className="font-semibold text-black mb-1">Modern LED Chandelier</div>
+                <div className="text-orange-500 font-bold mb-1">₱12,995</div>
+                <button className="bg-black text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition-colors text-sm">
+                  Add to Cart
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>

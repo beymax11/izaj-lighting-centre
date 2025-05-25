@@ -18,6 +18,7 @@ type Product = {
 const ProductList: React.FC = () => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
   const [user, setUser] = useState<{ name: string } | null>({
     name: 'Daniel',
   });
@@ -381,22 +382,34 @@ const ProductList: React.FC = () => {
       {/* Main Content */}
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-1/5 p-6 border-r">
-          <h3 className="font-bold text-black mb-4">SHOP</h3>
-          <ul className="space-y-2 text-sm text-black">
-            <li className="font-bold">All Lighting Fixtures</li>
-            <li className="pl-2 hover:underline cursor-pointer">Ceiling Lights</li>
-            <li className="pl-2 hover:underline cursor-pointer">Semi Flush Mounted Lights</li>
-            <li className="pl-2 hover:underline cursor-pointer">Chandelier</li>
-            <li className="pl-2 hover:underline cursor-pointer">Cluster Chandelier</li>
-            <li className="pl-2 hover:underline cursor-pointer">Pendant Lights</li>
-            <li className="pl-2 hover:underline cursor-pointer">Floor Lamps</li>
-            <li className="pl-2 hover:underline cursor-pointer">Table Lamps</li>
-            <li className="pl-2 hover:underline cursor-pointer">Rechargeable Table Lamps</li>
-            <li className="pl-2 hover:underline cursor-pointer">Wall Lights</li>
-            <li className="pl-2 hover:underline cursor-pointer">Painting & Bathroom Lights</li>
-          </ul>
-        </aside>
+         <aside className="w-1/5 p-6 border-r">
+                <h3 className="font-bold text-black mb-4">SHOP</h3>
+                <ul className="space-y-2 text-sm text-black">
+                  <li className="font-bold flex items-center justify-between cursor-pointer select-none" onClick={() => setSidebarDropdownOpen(v => !v)}>
+                    <span>All Lighting Fixtures</span>
+                    <Icon
+                      icon="mdi:chevron-down"
+                      className={`ml-2 transition-transform duration-200 ${sidebarDropdownOpen ? "rotate-180" : ""}`}
+                      width="20"
+                      height="20"
+                    />
+                  </li>
+                  {sidebarDropdownOpen && (
+                    <ul className="pl-4 space-y-1">
+                      <li className="hover:underline cursor-pointer">Ceiling Lights</li>
+                      <li className="hover:underline cursor-pointer">Semi Flush Mounted Lights</li>
+                      <li className="hover:underline cursor-pointer">Chandelier</li>
+                      <li className="hover:underline cursor-pointer">Cluster Chandelier</li>
+                      <li className="hover:underline cursor-pointer">Pendant Lights</li>
+                      <li className="hover:underline cursor-pointer">Floor Lamps</li>
+                      <li className="hover:underline cursor-pointer">Table Lamps</li>
+                      <li className="hover:underline cursor-pointer">Rechargeable Table Lamps</li>
+                      <li className="hover:underline cursor-pointer">Wall Lights</li>
+                      <li className="hover:underline cursor-pointer">Painting & Bathroom Lights</li>
+                    </ul>
+                  )}
+                </ul>
+              </aside>
 
         {/* Product List */}
         <main className="w-4/5 p-6">

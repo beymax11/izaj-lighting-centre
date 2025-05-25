@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect, useRef, useCallback } from "react";
-import { FaFacebookF, FaGoogle, FaLinkedinIn, FaEye, FaEyeSlash } from "react-icons/fa";
+import { Icon } from "@iconify/react";
+
 
 // Types
 interface UserData {
@@ -72,8 +73,8 @@ const FormInput: React.FC<{
   autoFocus = false,
   endAdornment
 }) => (
-  <div className="mb-4">
-    <label htmlFor={id} className="block text-left text-sm font-medium text-gray-700 mb-1">
+  <div className="mb-2">
+    <label htmlFor={id} className="block text-left text-xs font-medium text-gray-700 mb-0.5">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
@@ -88,12 +89,12 @@ const FormInput: React.FC<{
         autoFocus={autoFocus}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
-        className={`bg-white border ${error ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-3 px-4 w-full transition-colors duration-200`}
+        className={`bg-white border ${error ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm transition-colors duration-200`}
       />
       {endAdornment}
     </div>
     {error && (
-      <p id={`${id}-error`} className="mt-1 text-sm text-red-600 text-left" role="alert">
+      <p id={`${id}-error`} className="mt-0.5 text-xs text-red-600 text-left" role="alert">
         {error}
       </p>
     )}
@@ -130,7 +131,7 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
   const { strength, label, color } = getStrength();
   
   return password ? (
-    <div className="mt-2" aria-live="polite">
+    <div className="mt-1" aria-live="polite">
       <div className="flex h-1 overflow-hidden bg-gray-200 rounded">
         {[...Array(5)].map((_, i) => (
           <div 
@@ -139,7 +140,7 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
           />
         ))}
       </div>
-      <p className="text-xs mt-1 text-gray-600 text-left">{label}</p>
+      <p className="text-xs mt-0.5 text-gray-600 text-left">{label}</p>
     </div>
   ) : null;
 };
@@ -363,59 +364,54 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
 
   return (
   <div className="w-full">
-
-      {/* Optional close button in corner */}
-      {onClose && (
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
-          aria-label="Close"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      )}
-      
-      <div className="px-6 sm:px-8 py-8" role="dialog" aria-labelledby="auth-form-title">
+      <div className="px-3 sm:px-4 py-4" role="dialog" aria-labelledby="auth-form-title">
         <form onSubmit={handleSubmit} className="w-full" noValidate>
-            <h1 
+          {/* Logo at the top */}
+          <div className="flex justify-center mb-3">
+            <img
+              src="izaj.jpg"
+              alt="Izaj Logo"
+              className="h-12 w-12 rounded-full object-cover shadow"
+              style={{ background: "#fff" }}
+            />
+          </div>
+          <h1 
             id="auth-form-title" 
-            className="font-bold text-xl sm:text-2xl mb-6 text-gray-800 text-center"
-            >
+            className="font-bold text-lg sm:text-xl mb-3 text-gray-800 text-center"
+          >
             {isLoginForm ? "Welcome Back" : "Create Account"}
-            </h1>
+          </h1>
           
           {/* Social Login */}
-          <div className="flex justify-center space-x-4 my-4">
+          <div className="flex justify-center space-x-2 my-2">
             <SocialButton 
-              icon={<FaFacebookF size={16} />}
+              icon={<Icon icon="fa6-brands:facebook-f" width={18} height={18} />}
               label={`Sign ${isLoginForm ? 'in' : 'up'} with Facebook`}
               onClick={() => handleSocialLogin('Facebook')}
               color="text-blue-600"
             />
             <SocialButton 
-              icon={<FaGoogle size={16} />}
+              icon={<Icon icon="fa6-brands:google" width={18} height={18} />}
               label={`Sign ${isLoginForm ? 'in' : 'up'} with Google`}
               onClick={() => handleSocialLogin('Google')}
               color="text-red-500"
             />
             <SocialButton 
-              icon={<FaLinkedinIn size={16} />}
+              icon={<Icon icon="fa6-brands:linkedin-in" width={18} height={18} />}
               label={`Sign ${isLoginForm ? 'in' : 'up'} with LinkedIn`}
               onClick={() => handleSocialLogin('LinkedIn')}
               color="text-blue-700"
             />
           </div>
           
-          <div className="flex items-center my-4">
+          <div className="flex items-center my-2">
             <div className="flex-grow border-t border-gray-300"></div>
-            <span className="mx-4 text-xs sm:text-sm text-gray-500">or continue with email</span>
+            <span className="mx-2 text-xs text-gray-500">or continue with email</span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
           
           {state.errors.general && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm mb-4" role="alert">
+            <div className="bg-red-50 text-red-600 p-2 rounded-md text-xs mb-2" role="alert">
               {state.errors.general}
             </div>
           )}
@@ -451,15 +447,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
           />
           
           {/* Password Input */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-1">
-              <label htmlFor="password" className="block text-left text-sm font-medium text-gray-700">
+          <div className="mb-2">
+            <div className="flex justify-between items-center mb-0.5">
+              <label htmlFor="password" className="block text-left text-xs font-medium text-gray-700">
                 Password <span className="text-red-500">*</span>
               </label>
               {isLoginForm && (
                 <button 
                   type="button"
-                  className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                   onClick={() => console.log('Forgot password flow')}
                 >
                   Forgot password?
@@ -477,19 +473,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
                 required
                 aria-invalid={!!state.errors.password && state.touched.password}
                 aria-describedby={state.errors.password && state.touched.password ? "password-error" : undefined}
-                className={`bg-white border ${state.errors.password && state.touched.password ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 sm:py-3 px-4 w-full transition-colors duration-200`}
+                className={`bg-white border ${state.errors.password && state.touched.password ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm transition-colors duration-200`}
               />
               <button 
                 type="button" 
                 onClick={() => dispatch({ type: 'TOGGLE_PASSWORD_VISIBILITY' })}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 aria-label={state.showPassword ? "Hide password" : "Show password"}
               >
-                {state.showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                {state.showPassword ? (
+                  <Icon icon="fa6-solid:eye-slash" width={16} height={16} />
+                ) : (
+                  <Icon icon="fa6-solid:eye" width={16} height={16} />
+                )}
               </button>
             </div>
             {state.errors.password && state.touched.password && (
-              <p id="password-error" className="mt-1 text-xs sm:text-sm text-red-600 text-left" role="alert">
+              <p id="password-error" className="mt-0.5 text-xs text-red-600 text-left" role="alert">
                 {state.errors.password}
               </p>
             )}
@@ -513,15 +513,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
           
           {/* Remember Me (only for login) */}
           {isLoginForm && (
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-2">
               <input
                 id="rememberMe"
                 type="checkbox"
                 checked={state.rememberMe}
                 onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'rememberMe', value: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="rememberMe" className="ml-2 block text-xs sm:text-sm text-gray-700">
+              <label htmlFor="rememberMe" className="ml-2 block text-xs text-gray-700">
                 Remember me
               </label>
             </div>
@@ -531,7 +531,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
           <button 
             type="submit" 
             disabled={state.isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 sm:py-3 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-4 flex items-center justify-center disabled:bg-blue-400 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md text-sm transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-2 flex items-center justify-center disabled:bg-blue-400 disabled:cursor-not-allowed"
             aria-busy={state.isLoading}
           >
             {state.isLoading ? (
@@ -551,13 +551,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, o
           <button
             type="button"
             onClick={() => console.log('Continue as guest')}
-            className="w-full border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mt-3 hover:bg-gray-50 text-sm"
+            className="w-full border border-gray-300 text-gray-700 font-medium py-2 px-3 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mt-2 hover:bg-gray-50 text-xs"
           >
             Continue as Guest
           </button>
           
           {/* Toggle Form Link */}
-            <p className="text-gray-600 mt-4 text-sm text-center">
+            <p className="text-gray-600 mt-2 text-xs text-center">
             {isLoginForm ? "Don't have an account?" : "Already have an account?"}{' '}
             <button 
               type="button"

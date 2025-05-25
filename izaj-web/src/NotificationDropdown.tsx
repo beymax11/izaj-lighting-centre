@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 
 interface NotificationDropdownProps {
@@ -7,6 +7,7 @@ interface NotificationDropdownProps {
 
 export default function NotificationDropdown({ user }: NotificationDropdownProps) {
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Example notification data
   const notifications = [
@@ -57,8 +58,22 @@ export default function NotificationDropdown({ user }: NotificationDropdownProps
     }
   };
 
+  useEffect(() => {
+    if (!isNotificationDropdownOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsNotificationDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isNotificationDropdownOpen]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
     <button
       onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
       className="relative text-black hover:text-orange-500 transition-colors duration-200"

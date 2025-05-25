@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import AuthForm from './AuthForm';
 import ItemDescription from './item-description';
 import Cart from './cart';
@@ -28,11 +28,34 @@ interface UserData {
   email: string;
 }
 
+const PrivateRoute: React.FC<{
+  user: UserData | null;
+  children: React.ReactNode;
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ user, children, setIsModalOpen }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!user) {
+      setIsModalOpen(true);
+      if (location.pathname !== "/") {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [user, setIsModalOpen, navigate, location.pathname]);
+
+  // Always render nothing if not logged in, so user stays on current page
+  if (!user) return null;
+  return <>{children}</>;
+};
+
 const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginForm, setIsLoginForm] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false); // <-- Add this line
 
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
@@ -50,116 +73,289 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/" element={
-        <VideoStreamingUI 
-        setIsModalOpen={setIsModalOpen} 
-        user={user} 
-        setIsAccountDropdownOpen={setIsAccountDropdownOpen}
-        isAccountDropdownOpen={isAccountDropdownOpen}
-        handleLogout={handleLogout}
+        <Route
+          path="/cart"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <Cart />
+            </PrivateRoute>
+          }
         />
-      } />
-      <Route path="/product-list" element={<ProductList />} />
-      <Route path="/my-favorites" element={<MyFavorites />} />
-      <Route path="/my-purchase" element={<MyPurchase />} />
-      <Route path="/my-profile" element={<MyProfile />} />
-      <Route path="/cart" element={<Cart/>} />
-      <Route path="/addresses" element={<Addresses />} />
-      <Route path="/chatnow" element={<ChatNow />} />
-      <Route path="/banks-cards" element={<BanksCards />} />
-      <Route path="/change-password" element={<ChangePassword />} />
-      <Route path="/new" element={<Collection />} />
-      <Route path="/aboutus" element={<Aboutus />} />
-      <Route path="/contactus" element={<Contactus />} />
-      <Route path="/sales" element={<Sales />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/item-description" element={<ItemDescription />} />
+        <Route
+          path="/my-favorites"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <MyFavorites />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-purchase"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <MyPurchase />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-profile"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <MyProfile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/addresses"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <Addresses />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/banks-cards"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <BanksCards />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <PrivateRoute user={user} setIsModalOpen={setIsModalOpen}>
+              <ChangePassword />
+            </PrivateRoute>
+          }
+        />
+        {/* Public routes */}
+        <Route path="/" element={
+          <VideoStreamingUI 
+            setIsModalOpen={setIsModalOpen} 
+            user={user} 
+            setIsAccountDropdownOpen={setIsAccountDropdownOpen}
+            isAccountDropdownOpen={isAccountDropdownOpen}
+            handleLogout={handleLogout}
+          />
+        } />
+        <Route
+          path="/product-list"
+          element={<ProductList />}
+        />
+        <Route path="/chatnow" element={<ChatNow />} />
+        <Route path="/new" element={<Collection />} />
+        <Route path="/aboutus" element={<Aboutus />} />
+        <Route path="/contactus" element={<Contactus />} />
+        <Route path="/sales" element={<Sales />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/item-description" element={<ItemDescription />} />
       </Routes>
 
       {isModalOpen && (
   <div
-    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 p-4"
+    style={{
+      background: "rgba(30, 41, 59, 0.45)", // dark blue-gray overlay
+      backdropFilter: "blur(8px)", // glassmorphism blur
+      WebkitBackdropFilter: "blur(8px)",
+      transition: "background 0.3s",
+    }}
     onClick={() => setIsModalOpen(false)}
   >
     <div
-      className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+      className="relative w-full max-w-4xl flex flex-col md:flex-row overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.85)",
+        borderRadius: "2rem",
+        boxShadow: "0 8px 40px 0 rgba(0,0,0,0.25)",
+        border: "1.5px solid rgba(200,200,255,0.18)",
+        maxHeight: "600px",
+        minHeight: "400px",
+        height: "600px",
+        overflow: "hidden",
+        backdropFilter: "blur(2px)",
+      }}
       onClick={(e) => e.stopPropagation()}
     >
-    {/* Left Column - Slideshow with Gradient Overlay */}
-<div className="hidden md:block md:w-1/2 relative overflow-hidden">
-  {/* Slideshow container */}
-  <div className="absolute inset-0 animate-slide-fade z-0">
-    {/* Background slideshow (replace with your own images) */}
-    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-      style={{ backgroundImage: `url('/ceiling.jpg')`, animation: 'fade 15s infinite 0s' }} />
-    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-      style={{ backgroundImage: `url('/pendant.jpg')`, animation: 'fade 15s infinite 5s' }} />
-    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-      style={{ backgroundImage: `url('/cluster.jpg')`, animation: 'fade 15s infinite 10s' }} />
-  </div>
+      {/* Left Column - Slideshow with Gradient Overlay */}
+      <div className="hidden md:block md:w-1/2 relative overflow-hidden">
+        {/* Slideshow container */}
+        <div className="absolute inset-0 animate-slide-fade z-0">
+          {/* Background slideshow (replace with your own images) */}
+          <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{ backgroundImage: `url('/ceiling.jpg')`, animation: 'fade 15s infinite 0s' }} />
+          <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{ backgroundImage: `url('/pendant.jpg')`, animation: 'fade 15s infinite 5s' }} />
+          <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{ backgroundImage: `url('/cluster.jpg')`, animation: 'fade 15s infinite 10s' }} />
+        </div>
 
-  {/* Gradient overlay */}
-  <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/30 to-transparent z-10"></div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/30 to-transparent z-10"></div>
 
-  {/* Text overlay */}
-  <div className="relative z-20 flex flex-col items-center justify-center h-full text-white text-center p-8">
-    <h2 
-      className="text-3xl font-bold" 
-      style={{ 
-      fontFamily: "'Playfair Display', serif", 
-      textShadow: "10px 10px 10px rgba(0, 0, 0, 0.5)" 
-      }}
-    >
-      LIGHT UP YOUR SPACE
-    </h2>
-    <p className="mt-4 max-w-xs text-sm text-gray-200">
-      Discover premium chandeliers and lighting that reflect your lifestyle and elegance.
-    </p>
-  </div>
-</div>
+        {/* Text overlay */}
+        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white text-center p-8">
+          <h2 
+            className="text-3xl font-bold" 
+            style={{ 
+            fontFamily: "'Playfair Display', serif", 
+            textShadow: "10px 10px 10px rgba(0, 0, 0, 0.5)" 
+            }}
+          >
+            LIGHT UP YOUR SPACE
+          </h2>
+          <p className="mt-4 max-w-xs text-sm text-gray-200">
+            Discover premium chandeliers and lighting that reflect your lifestyle and elegance.
+          </p>
+        </div>
+      </div>
 
 
       {/* Right Column - Auth Form */}
-      <div className="w-full md:w-1/2 p-6 sm:p-8">
-        <button
-          onClick={() => setIsModalOpen(false)}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          aria-label="Close"
+      <div
+        className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-center"
+        style={{
+          height: "100%",
+          maxHeight: "100%",
+          overflow: "hidden",
+          flex: 1,
+          background: "rgba(255,255,255,0.92)",
+          boxShadow: "0 2px 16px 0 rgba(0,0,0,0.08)",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            maxHeight: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
         >
-          <Icon icon="mdi:close" width="20" height="20" />
-        </button>
-        <AuthForm
-          isLoginForm={isLoginForm}
-          toggleForm={toggleForm}
-          onLogin={handleLogin}
-          onClose={() => setIsModalOpen(false)}
-        />
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 bg-white/70 hover:bg-white/90 rounded-full p-2 shadow transition-all duration-200 border border-gray-200"
+            aria-label="Close"
+            style={{
+              backdropFilter: "blur(2px)",
+              WebkitBackdropFilter: "blur(2px)",
+              transition: "all 0.2s",
+            }}
+          >
+            <Icon icon="mdi:close" width="20" height="20" />
+          </button>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              maxHeight: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <AuthForm
+              isLoginForm={isLoginForm}
+              toggleForm={toggleForm}
+              onLogin={handleLogin}
+              onClose={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
 )}
 
 
-  </Router>
+      {/* Floating Chat Conversation */}
+      {isChatOpen && (
+        <div
+          className="fixed bottom-24 right-8 z-50 w-80 bg-white rounded-xl shadow-2xl flex flex-col"
+          style={{ minHeight: "400px", maxHeight: "70vh" }}
+        >
+          <div className="flex items-center justify-between px-4 py-3 bg-yellow-400 rounded-t-xl">
+            <span className="font-bold text-black">Chat with Us</span>
+            <button
+              onClick={() => setIsChatOpen(false)}
+              className="text-black hover:text-red-500"
+              aria-label="Close Chat"
+            >
+              <Icon icon="mdi:close" width="20" height="20" />
+            </button>
+          </div>
+          <div className="flex-1 p-4 overflow-y-auto text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            {/* Placeholder conversation */}
+            <div className="mb-2">
+              <div className="bg-gray-100 rounded-lg p-2 mb-1 w-fit">Hello! How can we help you today?</div>
+              <div className="text-xs text-gray-400">Support • just now</div>
+            </div>
+            {/* Add more messages or connect to real chat here */}
+          </div>
+          <div className="p-3 border-t flex">
+            <input
+              type="text"
+              placeholder="Type your message..."
+              className="flex-1 border rounded-l-lg px-3 py-2 focus:outline-none"
+              disabled
+            />
+            <button
+              className="bg-yellow-400 text-black px-4 py-2 rounded-r-lg font-bold"
+              disabled
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
 
+      {/* Floating Messages Icon with bounce effect (no shadow while bouncing) */}
+      <button
+        type="button"
+        onClick={() => setIsChatOpen((v) => !v)}
+        className="fixed z-50 bottom-8 right-8 rounded-full p-4 hover:bg-orange-500 transition-colors animate-bounce-custom"
+        style={{
+          backgroundColor: "#000000",
+          boxShadow: "none",
+        }}
+        aria-label="Chat Now"
+      >
+        <Icon icon="mdi:message-text-outline" color="white" width="32" height="32" />
+      </button>
+      {/* Custom bounce animation */}
+      <style>
+        {`
+          @keyframes soft-bounce {
+        0%, 100% { transform: translateY(0);}
+        20% { transform: translateY(-14px);}
+        40% { transform: translateY(0);}
+        60% { transform: translateY(-7px);}
+        80% { transform: translateY(0);}
+          }
+          .animate-bounce-custom {
+        animation: soft-bounce 1.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+          }
+        `}
+      </style>
+    </Router>
   );
 };
-const LightingCategory = () => {
+const LightingCategory: React.FC<{ user: UserData | null }> = ({ user }) => {
   const allItems = [
-    { id: 1, name: "Ceiling Lights", image: "ceiling.avif" }, // fixed typo
+    { id: 1, name: "Ceiling Lights", image: "ceiling.avif" },
     { id: 2, name: "Chandelier", image: "chandelier.avif" },
     { id: 3, name: "Pendant Lights", image: "pendant.avif" },
     { id: 4, name: "Wall Lights", image: "wall.avif" },
     { id: 5, name: "Table Lamps", image: "table.avif" },
     { id: 6, name: "Cluster Chandelier", image: "cluster2.avif" },
     { id: 7, name: "Floor Lamps", image: "floor.avif" },
-    // Removed duplicate Table Lamps with leading space and different image
     { id: 8, name: "Painting Lights", image: "painting.avif" },
     { id: 9, name: "Indoor Lights", image: "indoor.avif" },
   ];
 
   const [currentPage, setCurrentPage] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const firstPageItems = allItems.slice(0, 6);
   const secondPageItems = allItems.slice(6, 10);
 
@@ -167,8 +363,20 @@ const LightingCategory = () => {
     setCurrentPage((prev) => (prev === 0 ? 1 : 0));
   };
 
+  // Add this style block for the animation
+  const slideLeftKeyframes = `
+    @keyframes slideLeft {
+      0% { transform: translateX(0);}
+      100% { transform: translateX(-16px);}
+    }
+    .slide-left-anim {
+      animation: slideLeft 0.4s cubic-bezier(0.4,0,0.2,1) forwards;
+    }
+  `;
+
   return (
     <>
+      <style>{slideLeftKeyframes}</style>
       <div className="flex justify-between items-center mb-4 px-8 mt-16 mx-8">
         <h2 className="text-2xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
           LIGHTING CATEGORY
@@ -176,6 +384,7 @@ const LightingCategory = () => {
         <div className="flex items-center">
           <Link
             to="/product-list"
+            state={user ? { user } : undefined}
             className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
             style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
           >
@@ -188,7 +397,6 @@ const LightingCategory = () => {
         className="relative group"
         style={{
           minHeight: "220px",
-          overflowX: "auto",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
@@ -211,8 +419,13 @@ const LightingCategory = () => {
             pointerEvents: currentPage === 0 ? "auto" : "none",
           }}
         >
-          {firstPageItems.map((item) => (
-            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative">
+          {firstPageItems.map((item, idx) => (
+            <div
+              key={item.id}
+              className="flex-shrink-0 w-48 flex flex-col items-center relative"
+              onMouseEnter={() => setHoveredIndex(idx)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
               <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
                 <img
                   src={item.image}
@@ -220,21 +433,29 @@ const LightingCategory = () => {
                   className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
                 />
               </div>
-              <div className="relative group">
+              <div className="relative">
                 <h3
                   className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
                   style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
                 >
-                  <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
+                  <span
+                    className={`inline-flex items-center transition-transform duration-500 ${
+                      hoveredIndex === idx ? "slide-left-anim" : ""
+                    }`}
+                  >
                     {item.name}
-                  </span>
-                  <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <Icon 
-                      icon="cil:arrow-right" 
-                      className="h-5 w-5 text-black" 
-                      width="20" 
-                      height="20" 
-                    />
+                    <span
+                      className={`ml-2 transition-opacity duration-500 ${
+                        hoveredIndex === idx ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
+                      <Icon
+                        icon="cil:arrow-right"
+                        className="h-5 w-5 text-black"
+                        width="20"
+                        height="20"
+                      />
+                    </span>
                   </span>
                 </h3>
               </div>
@@ -250,8 +471,13 @@ const LightingCategory = () => {
             pointerEvents: currentPage === 1 ? "auto" : "none",
           }}
         >
-          {secondPageItems.map((item) => (
-            <div key={item.id} className="flex-shrink-0 w-48 flex flex-col items-center relative">
+          {secondPageItems.map((item, idx) => (
+            <div
+              key={item.id}
+              className="flex-shrink-0 w-48 flex flex-col items-center relative"
+              onMouseEnter={() => setHoveredIndex(idx + 6)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
               <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
                 <img
                   src={item.image}
@@ -259,21 +485,29 @@ const LightingCategory = () => {
                   className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
                 />
               </div>
-              <div className="relative group">
+              <div className="relative">
                 <h3
                   className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
                   style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
                 >
-                  <span className="inline-block group-hover:translate-x-[-10px] transition-transform duration-500">
+                  <span
+                    className={`inline-flex items-center transition-transform duration-500 ${
+                      hoveredIndex === idx + 6 ? "slide-left-anim" : ""
+                    }`}
+                  >
                     {item.name}
-                  </span>
-                  <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <Icon 
-                      icon="cil:arrow-right" 
-                      className="h-5 w-5 text-black" 
-                      width="20" 
-                      height="20" 
-                    />
+                    <span
+                      className={`ml-2 transition-opacity duration-500 ${
+                        hoveredIndex === idx + 6 ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
+                      <Icon
+                        icon="cil:arrow-right"
+                        className="h-5 w-5 text-black"
+                        width="20"
+                        height="20"
+                      />
+                    </span>
                   </span>
                 </h3>
               </div>
@@ -629,10 +863,14 @@ const VideoStreamingUI: React.FC<{
             </h3>
             <ul>
               <li className="mb-3">
-                <Link to="/product-list" className="flex items-center group">
+                <Link 
+                  to="/product-list" 
+                  state={user ? { user } : undefined}
+                  className="flex items-center group"
+                >
                   <Icon icon="mdi:lightbulb-outline" className="mr-2 text-gray-600 group-hover:text-orange-500" width="22" height="22" />
                   <span className="group-hover:text-orange-500 group-hover:translate-x-1 transition-transform duration-200">
-                    All Lighting Fixtures
+                    All Lighting Fixtures 
                   </span>
                 </Link>
               </li>
@@ -793,7 +1031,7 @@ const VideoStreamingUI: React.FC<{
 
 
 
-      <LightingCategory />
+      <LightingCategory user={user} />
 
 {/* About Us Section - Plain Version */}
 <div className="mt-16 mb-16 px-4">
@@ -893,9 +1131,7 @@ const VideoStreamingUI: React.FC<{
         className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
         style={{ zIndex: 10 }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
+        <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
       </button>
     )}
 
@@ -905,9 +1141,7 @@ const VideoStreamingUI: React.FC<{
         className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
         style={{ zIndex: 10 }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
       </button>
     )}
   </div>
@@ -955,7 +1189,12 @@ const VideoStreamingUI: React.FC<{
         <p className="text-5xl font-semibold" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "0.2em" }}>NEW COLLECTION</p>
         <p className="mt-1 text-lg" style={{ fontFamily: "'Poppins', serif" }}>Free Delivery & Installation</p>
         <div className="flex items-center justify-center mt-4 px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300 w-40">
-            <Link to="/product-list" className="text-center" style={{ fontFamily: "'Poppins', serif" }}>
+            <Link
+              to="/product-list"
+              state={user ? { user } : undefined}
+              className="text-center"
+              style={{ fontFamily: "'Poppins', serif" }}
+            >
             SHOP NOW
             </Link>
         </div>  
@@ -1249,6 +1488,7 @@ const VideoStreamingUI: React.FC<{
 
 
       </main>
+     
     </div>
   );
 };
