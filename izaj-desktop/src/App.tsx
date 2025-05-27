@@ -7,6 +7,7 @@ import Payments from './payments';
 import Users from './users';
 import Login from './login';
 import Messages from './messages';
+import Profile from './profile';
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -63,17 +64,17 @@ function App() {
       window.removeEventListener('mousemove', handleDrag);
       window.removeEventListener('mouseup', handleDragEnd);
     };
-  }, [dragging]);
+  }, );
 
-  const navigationItems = [
-    { icon: 'mdi:view-dashboard', label: 'DASHBOARD' },
-    { icon: 'mdi:message-outline', label: 'MESSAGES' },
-    { icon: 'mdi:shopping-outline', label: 'PRODUCTS' },
-    { icon: 'mdi:clipboard-list-outline', label: 'ORDERS' },
-    { icon: 'mdi:account-outline', label: 'USERS' },
-    { icon: 'mdi:credit-card-outline', label: 'PAYMENTS' },
-    { icon: 'mdi:chart-bar', label: 'REPORTS' },
-  ];
+const navigationItems = [
+  { icon: 'mdi:view-dashboard', label: 'DASHBOARD' },
+  { icon: 'mdi:message-outline', label: 'MESSAGES' },
+  { icon: 'mdi:shopping-outline', label: 'PRODUCTS' },
+  { icon: 'mdi:clipboard-list-outline', label: 'ORDERS' },
+  { icon: 'mdi:credit-card-outline', label: 'PAYMENTS' },
+  { icon: 'mdi:chart-bar', label: 'REPORTS' },
+  { icon: 'mdi:account-outline', label: 'USERS' }, // USERS moved here
+];
 
   const handleNavigation = (page: string) => {
     setCurrentPage(page);
@@ -107,6 +108,8 @@ function App() {
         return <Payments />;
       case 'REPORTS':
         return <Reports />;
+      case 'PROFILE':
+        return <Profile />;
       case 'DASHBOARD':
       default:
         return (
@@ -410,10 +413,12 @@ function App() {
       <aside
         className={`
           m-0 lg:m-4 z-50 fixed lg:static top-0 left-0
-          h-[90vh] max-h-[90vh] transition-all duration-300
+          h-[calc(100vh-3rem)] mb-2
+          overflow-hidden
+          transition-all duration-300
           ${sidebarCollapsed ? 'w-20' : 'w-64'}
           bg-white shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border-r border-white flex flex-col
-          shrink-0 overflow-hidden rounded-none lg:rounded-2xl
+          shrink-0 rounded-none lg:rounded-2xl
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
         `}
         style={{
@@ -451,71 +456,78 @@ function App() {
             </h1>
           )}
         </div>
-        <nav className={`${sidebarCollapsed ? 'p-2' : 'p-6'} flex-1`}>
-          <ul className="space-y-2">
-            {navigationItems.map((item, idx) => (
-              <li key={idx}>
-                <button
-                  className={`w-full flex items-center transition-all duration-200 ${
-                    sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2'
-                  } text-gray-800 hover:bg-yellow-100 rounded-lg font-medium relative group ${
-                    currentPage === item.label ? 'bg-yellow-100 border-l-4 border-yellow-400 shadow-md' : ''
-                  }`}
-                  onClick={() => handleNavigation(item.label)}
-                >
-                  <Icon icon={item.icon} className={`${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-800 group-hover:scale-110 transition-transform`} />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        {/* Divider above profile section */}
-        <div className="border-t border-yellow-100 my-2"></div>
-        {/* Profile Section */}
-        <div className={`flex flex-col items-center ${sidebarCollapsed ? 'px-2' : 'px-6'} pb-6 gap-2`}>
-          <button
-            className={`flex items-center w-full transition ${
-              sidebarCollapsed ? 'justify-center px-2 py-3 mb-2' : 'gap-3 mb-4 justify-start'
-            }`}
+        {/* Scrollable nav + profile */}
+        <div className="flex-1 overflow-y-auto flex flex-col">
+          <nav className={`${sidebarCollapsed ? 'p-2' : 'p-6'} flex-1`}>
+            <ul className="space-y-2">
+              {navigationItems.map((item, idx) => (
+                <li key={idx}>
+                  <button
+                    className={`w-full flex items-center transition-all duration-200 ${
+                      sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2'
+                    } text-gray-800 hover:bg-yellow-100 rounded-lg font-medium relative group ${
+                      currentPage === item.label ? 'bg-yellow-100 border-l-4 border-yellow-400 shadow-md' : ''
+                    }`}
+                    onClick={() => handleNavigation(item.label)}
+                  >
+                    <Icon icon={item.icon} className={`${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-800 group-hover:scale-110 transition-transform`} />
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          {/* Divider above profile section */}
+          <div className="border-t border-yellow-100 my-2"></div>
+          {/* Profile Section */}
+          <div
+            className={`flex flex-col items-center ${sidebarCollapsed ? 'px-2' : 'px-6'} pb-6 gap-2`}
+            style={{ marginTop: '-3rem' }} // Move up the profile/settings/logout section higher
           >
-            <img
-              src="/profile.webp"
-              alt="Profile"
-              className="w-8 h-8 rounded-full bg-gray-300 border-2 border-yellow-200"
-            />
-            {!sidebarCollapsed && (
-              <span className="text-sm font-medium text-gray-600 hover:text-gray-800">Profile</span>
-            )}
-          </button>
-          <button
-            className={`flex items-center w-full transition ${
-              sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 justify-start'
-            }`}
-          >
-            <Icon
-              icon="mdi:cog-outline"
-              className={`${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400`}
-            />
-            {!sidebarCollapsed && (
-              <span className="text-sm font-medium text-gray-600 hover:text-gray-800">Settings</span>
-            )}
-          </button>
-          {/* Log Out Button */}
-          <button
-            className={`flex items-center w-full mt-2 transition ${
-              sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 justify-start'
-            }`}
-            onClick={() => setIsLoggedIn(false)}
-          >
-            <Icon
-              icon="mdi:logout"
-              className={`${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-red-400`}
-            />
-            {!sidebarCollapsed && (
-              <span className="text-sm font-medium text-red-600 hover:text-red-800">Log Out</span>
-            )}
-          </button>
+            <button
+              className={`flex items-center w-full transition ${
+                sidebarCollapsed ? 'justify-center px-2 py-3 mb-2' : 'gap-3 mb-4 justify-start'
+              }`}
+              onClick={() => setCurrentPage('PROFILE')}
+            >
+              <img
+                src="/profile.webp"
+                alt="Profile"
+                className="w-8 h-8 rounded-full bg-gray-300 border-2 border-yellow-200"
+              />
+              {!sidebarCollapsed && (
+                <span className="text-sm font-medium text-gray-600 hover:text-gray-800">Profile</span>
+              )}
+            </button>
+            <button
+              className={`flex items-center w-full transition ${
+                sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 justify-start'
+              }`}
+            >
+              <Icon
+                icon="mdi:cog-outline"
+                className={`${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400`}
+              />
+              {!sidebarCollapsed && (
+                <span className="text-sm font-medium text-gray-600 hover:text-gray-800">Settings</span>
+              )}
+            </button>
+            {/* Log Out Button */}
+            <button
+              className={`flex items-center w-full mt-2 transition ${
+                sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 justify-start'
+              }`}
+              onClick={() => setIsLoggedIn(false)}
+            >
+              <Icon
+                icon="mdi:logout"
+                className={`${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-red-400`}
+              />
+              {!sidebarCollapsed && (
+                <span className="text-sm font-medium text-red-600 hover:text-red-800">Log Out</span>
+              )}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -523,19 +535,18 @@ function App() {
       <div
         className="flex-1 flex flex-col h-screen max-h-screen overflow-hidden transition-all duration-300"
       >
-        {/* Header */}
-        <header
-          className={`relative bg-white shadow-2xl border border-white
-            px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
-            backdrop-blur-md
-            ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
-          `}
-          style={{
-            borderLeft: '6px solid #fff',
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(0, 0, 0, 0.04)',
-            maxHeight: '80px', // Limit header height
-          }}
-        >
+      <header
+  className={`bg-white shadow-2xl border border-white
+    px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
+    backdrop-blur-md
+    ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
+  `}
+  style={{
+    borderLeft: '6px solid #fff',
+    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(0, 0, 0, 0.04)',
+    maxHeight: '80px',
+  }}
+>
           <div className="flex items-center justify-between">
             {/* Left side: Always show sidebar toggle and search */}
             <div className="flex items-center gap-2 sm:gap-4 flex-1">
