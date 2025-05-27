@@ -158,7 +158,6 @@ function Messages(props: {
           <div className="flex items-center gap-3 px-7 py-7 border-b border-yellow-100 bg-gradient-to-r from-yellow-50 to-white">
             <Icon icon="mdi:message-outline" className="text-yellow-400 w-8 h-8 drop-shadow" />
             <h2 className="text-2xl font-extrabold text-gray-800 tracking-wide drop-shadow">Messages</h2>
-            {/* Removed search icon button */}
           </div>
           <div className="px-4 py-2">
             <input
@@ -233,9 +232,9 @@ function Messages(props: {
                   <div
                     className={`relative max-w-md px-5 py-3 rounded-3xl shadow-lg transition-all duration-200
                     ${msg.fromMe
-											? 'bg-gradient-to-br from-yellow-200/80 to-yellow-100/90 text-gray-800 rounded-br-md'
-											: 'bg-gradient-to-br from-white/80 to-gray-100/90 text-gray-700 rounded-bl-md border border-yellow-50'
-										}
+                      ? 'bg-gradient-to-br from-yellow-200/80 to-yellow-100/90 text-gray-800 rounded-br-md'
+                      : 'bg-gradient-to-br from-white/80 to-gray-100/90 text-gray-700 rounded-bl-md border border-yellow-50'
+                    }
                     ${msg.fromMe ? 'ml-8' : 'mr-2'}
                   `}
                   >
@@ -281,7 +280,6 @@ function Messages(props: {
           </div>
         </div>
       </div>
-      {/* Remove floating modal and icon from here */}
     </div>
   );
 }
