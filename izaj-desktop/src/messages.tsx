@@ -1,24 +1,25 @@
 import { Icon } from '@iconify/react';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Dummy data for messages
 const messageListData = [
 	{
 		id: 1,
 		name: 'Juan Dela Cruz',
-		lastMessage: 'Hello, I have a question about my order.',
+		lastMessage: 'Hello, I have a question about my order #12345',
 		time: '10:30 AM',
 		unread: true,
+		important: true,
 		avatar: '/profile.webp',
 		conversation: [
 			{
 				fromMe: false,
-				text: 'Hello, I have a question about my order.',
+				text: 'Hello, I have a question about my order #12345',
 				time: '10:30 AM',
 			},
 			{
 				fromMe: true,
-				text: 'Hi Juan! Sure, how can I help you?',
+				text: 'Hi Juan! I\'m here to help you with your order. What would you like to know?',
 				time: '10:31 AM',
 			},
 			{
@@ -34,6 +35,7 @@ const messageListData = [
 		lastMessage: 'Thank you for the fast delivery!',
 		time: 'Yesterday',
 		unread: false,
+		important: false,
 		avatar: '/profile.webp',
 		conversation: [
 			{
@@ -43,446 +45,374 @@ const messageListData = [
 			},
 			{
 				fromMe: true,
-				text: 'You\'re welcome, Maria!',
-			 time: '09:01 AM',
+				text: 'You\'re welcome, Maria! We\'re glad you received your order. Is there anything else you need help with?',
+				time: '09:01 AM',
 			},
 		],
 	},
 	{
 		id: 3,
-		name: 'System',
-		lastMessage: 'Your invoice for June is ready.',
+		name: 'Pedro Reyes',
+		lastMessage: 'I need to cancel my order #12347',
 		time: '2d ago',
 		unread: false,
-		avatar: '/izaj.jpg',
+		important: true,
+		avatar: '/profile.webp',
 		conversation: [
 			{
 				fromMe: false,
-				text: 'Your invoice for June is ready.',
+				text: 'I need to cancel my order #12347',
 				time: '2d ago',
 			},
 		],
 	},
 ];
 
-function Messages(props: {
-  showFloat?: boolean;
-  setShowFloat?: (v: boolean) => void;
-  floatPos?: { x: number; y: number };
-  setFloatPos?: (pos: { x: number; y: number }) => void;
-  dragging?: boolean;
-  setDragging?: (v: boolean) => void;
-  showFloatIcon?: boolean;
-  setShowFloatIcon?: (v: boolean) => void;
-  handleDragStart?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-  selectedMessageId?: number | null;
-  setSelectedMessageId?: (id: number) => void;
-}) {
-  // Use selectedMessageId from props if provided, else local state
-  const [selectedId, setSelectedId] = useState(messageListData[0].id);
-  const selectedMessageId = props.selectedMessageId ?? selectedId;
-  const setSelectedIdCombined = props.setSelectedMessageId ?? setSelectedId;
+function Messages() {
+	const [selectedFilter, setSelectedFilter] = useState('all');
+	const [searchQuery, setSearchQuery] = useState('');
+	const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
+	const [newMessageText, setNewMessageText] = useState('');
+	const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
+	const [isTyping, setIsTyping] = useState(false);
 
-  const [messageList, setMessageList] = useState(messageListData);
-  const [search, setSearch] = useState('');
-  const [input, setInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const conversationEndRef = useRef<HTMLDivElement>(null);
+	// Ref for auto-scrolling conversation
+	const conversationEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Keep local selectedId in sync with prop if provided
-  useEffect(() => {
-    if (props.selectedMessageId !== undefined && props.selectedMessageId !== null) {
-      setSelectedId(props.selectedMessageId);
-    }
-  }, [props.selectedMessageId]);
+	const filteredMessages = messageListData.filter(message => {
+		const matchesSearch = message.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			message.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const selectedMessage = messageList.find((msg) => msg.id === selectedMessageId) ?? messageList[0];
+		if (selectedFilter === 'unread') return matchesSearch && message.unread;
+		if (selectedFilter === 'important') return matchesSearch && message.important;
+		return matchesSearch;
+	});
 
-  // Filtered messages for search
-  const filteredMessages = messageList.filter(
-    (msg) =>
-      msg.name.toLowerCase().includes(search.toLowerCase()) ||
-      msg.lastMessage.toLowerCase().includes(search.toLowerCase())
-  );
+	const handleMessageSelect = (messageId: number) => {
+		setSelectedMessage(messageId);
+		const message = messageListData.find(m => m.id === messageId);
+		if (message && message.unread) {
+			message.unread = false;
+		}
+	};
 
-  // Scroll to bottom on new message
-  useEffect(() => {
-    conversationEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selectedMessageId, selectedMessage?.conversation.length]);
+	const handleSendMessage = () => {
+		if (!newMessageText.trim() || !selectedMessage) return;
+		const message = messageListData.find(m => m.id === selectedMessage);
+		if (message) {
+			message.conversation.push({
+				fromMe: true,
+				text: newMessageText,
+				time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+			});
+			message.lastMessage = newMessageText;
+			message.time = 'Just now';
+			setNewMessageText('');
+		}
+	};
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setMessageList((prev) =>
-      prev.map((msg) =>
-        msg.id === selectedMessage.id
-          ? {
-              ...msg,
-              lastMessage: input,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              conversation: [
-                ...(msg.conversation || []),
-                {
-                  fromMe: true,
-                  text: input,
-                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                },
-              ],
-            }
-          : msg
-      )
-    );
-    setInput('');
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
-  };
+	const handleBulkSelect = (messageId: number) => {
+		setSelectedMessages(prev => {
+			if (prev.includes(messageId)) {
+				return prev.filter(id => id !== messageId);
+			}
+			return [...prev, messageId];
+		});
+	};
 
-  const handleSelect = (id: number) => {
-    setSelectedIdCombined(id);
-    setMessageList((prev) =>
-      prev.map((msg) =>
-        msg.id === id ? { ...msg, unread: false } : msg
-      )
-    );
-  };
+	const handleMarkAsRead = () => {
+		selectedMessages.forEach(id => {
+			const message = messageListData.find(m => m.id === id);
+			if (message) message.unread = false;
+		});
+		setSelectedMessages([]);
+	};
 
-  // fallback no-op for setShowFloat
-  const setShowFloatSafe = props.setShowFloat ?? (() => {});
+	const handleMarkAsImportant = () => {
+		selectedMessages.forEach(id => {
+			const message = messageListData.find(m => m.id === id);
+			if (message) message.important = !message.important;
+		});
+		setSelectedMessages([]);
+	};
 
-  return (
-    <div className="w-full h-[70vh] flex items-center justify-center mt-18">
-      <div className="flex h-[80vh] w-[1200px] bg-gradient-to-br from-yellow-50 via-white to-yellow-100 rounded-3xl shadow-2xl overflow-hidden border border-yellow-100">
-        {/* Left: Messages List */}
-        <div className="w-88 min-w-[320px] border-r border-yellow-100 bg-gradient-to-b from-white via-yellow-50 to-white flex flex-col backdrop-blur-md bg-opacity-80">
-          <div className="flex items-center gap-3 px-7 py-7 border-b border-yellow-100 bg-gradient-to-r from-yellow-50 to-white">
-            <Icon icon="mdi:message-outline" className="text-yellow-400 w-8 h-8 drop-shadow" />
-            <h2 className="text-2xl font-extrabold text-gray-800 tracking-wide drop-shadow">Messages</h2>
-          </div>
-          <div className="px-4 py-2">
-            <input
-              type="text"
-              placeholder="Search messages..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-200 bg-white shadow transition-all duration-200 focus:shadow-lg"
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {filteredMessages.length === 0 && (
-              <div className="text-center text-gray-400 py-8">No messages found.</div>
-            )}
-            {filteredMessages.map((msg) => (
-              <button
-                key={msg.id}
-                onClick={() => handleSelect(msg.id)}
-                className={`w-full flex items-center gap-4 px-7 py-5 transition group border-b border-yellow-50
-                ${selectedId === msg.id ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 shadow-inner ring-2 ring-yellow-200' : 'hover:bg-yellow-50'}
-                ${msg.unread ? 'font-semibold' : ''}
-                rounded-xl mb-1
-              `}
-              >
-                <div className="relative">
-                  <img
-                    src={msg.avatar}
-                    alt={msg.name}
-                    className="w-12 h-12 rounded-full border-2 border-yellow-200 bg-gray-100 shadow-lg"
-                  />
-                  {msg.unread && (
-                    <span className="absolute top-0 right-0 w-3 h-3 bg-yellow-400 border-2 border-white rounded-full shadow"></span>
-                  )}
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-800 group-hover:text-yellow-600">{msg.name}</span>
-                    <span className="text-xs text-gray-400">{msg.time}</span>
-                  </div>
-                  <span className="text-sm text-gray-500 truncate block mt-1">{msg.lastMessage}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-        {/* Right: Conversation */}
-        <div className="flex-1 flex flex-col bg-gradient-to-br from-white to-yellow-50 backdrop-blur-md bg-opacity-80">
-          <div className="flex items-center gap-4 px-10 py-7 border-b border-yellow-100 bg-gradient-to-r from-yellow-50 to-white">
-            <div className="ml-auto flex gap-2">
-              <button
-                className="p-2 rounded-full hover:bg-yellow-100 transition"
-                onClick={() => setShowFloatSafe(true)}
-              >
-                <Icon icon="mdi:arrow-expand" className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto px-10 py-8 bg-transparent custom-scrollbar">
-            <div className="flex flex-col gap-6">
-              {selectedMessage?.conversation?.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}
-                >
-                  {!msg.fromMe && (
-                    <img
-                      src={selectedMessage.avatar}
-                      alt={selectedMessage.name}
-                      className="w-8 h-8 rounded-full border border-yellow-100 shadow"
-                    />
-                  )}
-                  <div
-                    className={`relative max-w-md px-5 py-3 rounded-3xl shadow-lg transition-all duration-200
-                    ${msg.fromMe
-                      ? 'bg-gradient-to-br from-yellow-200/80 to-yellow-100/90 text-gray-800 rounded-br-md'
-                      : 'bg-gradient-to-br from-white/80 to-gray-100/90 text-gray-700 rounded-bl-md border border-yellow-50'
-                    }
-                    ${msg.fromMe ? 'ml-8' : 'mr-2'}
-                  `}
-                  >
-                    <div className="text-base leading-relaxed">{msg.text}</div>
-                    <div className="text-xs text-gray-400 mt-2 text-right">{msg.time}</div>
-                    {msg.fromMe && (
-                      <Icon icon="mdi:check-all" className="absolute bottom-2 right-2 w-4 h-4 text-blue-400" />
-                    )}
-                  </div>
-                </div>
-              ))}
-              <div ref={conversationEndRef} />
-            </div>
-          </div>
-          {/* Message input */}
-          <div className="px-10 py-5 border-t border-yellow-100 bg-gradient-to-r from-yellow-50 to-white">
-            <form className="flex items-center gap-3" onSubmit={handleSend}>
-              <button type="button" className="p-2 rounded-full hover:bg-yellow-100 transition" tabIndex={-1}>
-                <Icon icon="mdi:paperclip" className="w-6 h-6 text-yellow-400" />
-              </button>
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Type your message..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    handleSend(e as unknown as React.FormEvent<HTMLFormElement>);
-                  }
-                }}
-                className="flex-1 px-5 py-3 border border-yellow-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-200 bg-white shadow transition-all duration-200 focus:shadow-lg"
-              />
-              <button
-                type="submit"
-                className="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg transition flex items-center gap-2"
-                disabled={!input.trim()}
-              >
-                <Icon icon="mdi:send" className="w-5 h-5" />
-                Send
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+	const handleDeleteMessages = () => {
+		selectedMessages.forEach(id => {
+			const index = messageListData.findIndex(m => m.id === id);
+			if (index !== -1) {
+				messageListData.splice(index, 1);
+			}
+		});
+		setSelectedMessages([]);
+	};
+
+	// Effect for auto-scroll to last message when conversation updates or new message
+	useEffect(() => {
+		if (conversationEndRef.current) {
+			conversationEndRef.current.scrollIntoView({ behavior: 'smooth' });
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectedMessage, messageListData.find(m => m.id === selectedMessage)?.conversation.length, newMessageText]);
+
+	return (
+		<div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f7f8fa]">
+			{/* Section Header */}
+			<header className="px-8 py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+				<div className="max-w-7xl mx-auto">
+					<h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800">
+						<Icon icon="mdi:message-outline" className="text-purple-400 w-8 h-8" />
+						Messages
+					</h2>
+				</div>
+			</header>
+
+			{/* Main content should take all remaining space and be scrollable only in the conversation */}
+			<main className="flex-1 px-8 py-8 bg-[#f7f8fa] overflow-hidden">
+				{/* Update the height here to a smaller value, e.g. h-[470px] */}
+				<div className="max-w-7xl mx-auto flex flex-row gap-8 h-[650px]">
+					{/* Left Column - Messages List */}
+					<div className="w-[375px] min-w-[320px] max-w-[430px] bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col p-5">
+						{/* Search and Filter */}
+						<div className="mb-5">
+							<div className="relative flex gap-2">
+								<div className="relative flex-1">
+									<Icon icon="mdi:magnify" className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+									<input
+										type="text"
+										placeholder="Search messages..."
+										className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-200 bg-[#f9f9fc]"
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+									/>
+								</div>
+								<div className="relative">
+									<select
+										className="appearance-none bg-white border border-gray-200 rounded-lg py-2 pl-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-purple-200 focus:ring-2 focus:ring-purple-100"
+										value={selectedFilter}
+										onChange={(e) => setSelectedFilter(e.target.value)}
+									>
+										<option value="all">All</option>
+										<option value="unread">Unread</option>
+										<option value="important">Important</option>
+									</select>
+									<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+										<Icon icon="mdi:chevron-down" className="w-5 h-5" />
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{/* Bulk Actions */}
+						{selectedMessages.length > 0 && (
+							<div className="flex items-center gap-3 mb-3 p-3 bg-purple-50 rounded-lg border border-purple-100">
+								<span className="text-sm text-purple-600">{selectedMessages.length} selected</span>
+								<button 
+									className="px-3 py-1 text-sm text-purple-600 hover:bg-purple-100 rounded transition"
+									onClick={handleMarkAsRead}
+								>
+									Mark as Read
+								</button>
+								<button 
+									className="px-3 py-1 text-sm text-purple-600 hover:bg-purple-100 rounded transition"
+									onClick={handleMarkAsImportant}
+								>
+									Mark as Important
+								</button>
+								<button 
+									className="px-3 py-1 text-sm text-red-600 hover:bg-red-100 rounded transition"
+									onClick={handleDeleteMessages}
+								>
+									Delete
+								</button>
+							</div>
+						)}
+
+						{/* Messages List */}
+						<div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+							{filteredMessages.length === 0 && (
+								<div className="text-gray-400 text-center mt-10">No messages found</div>
+							)}
+							{filteredMessages.map((message) => (
+								<div 
+									key={message.id} 
+									className={`relative flex items-center gap-4 p-3 rounded-xl border cursor-pointer transition
+										${selectedMessage === message.id ? 'bg-purple-100 border-purple-300 shadow-sm' : 'bg-white border-gray-100 hover:bg-gray-50'}
+										${message.unread ? 'ring-2 ring-purple-100' : ''}
+									`}
+									onClick={() => handleMessageSelect(message.id)}
+								>
+									<div className="flex-shrink-0 w-11 h-11 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center overflow-hidden">
+										<img src={message.avatar} alt={message.name} className="w-full h-full object-cover" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center justify-between">
+											<h3 className={`font-semibold truncate ${message.unread ? 'text-purple-700' : 'text-gray-800'}`}>{message.name}</h3>
+											<span className="text-xs text-gray-400 font-medium">{message.time}</span>
+										</div>
+										<p className={`truncate text-sm mt-1 ${message.unread ? 'font-medium text-gray-800' : 'text-gray-500'}`}>{message.lastMessage}</p>
+									</div>
+									{/* Checkbox and Star Icon Container (vertical column) */}
+									<div className="flex flex-col items-center gap-2 pr-1">
+										<input 
+											type="checkbox"
+											checked={selectedMessages.includes(message.id)}
+											onChange={(e) => {
+												e.stopPropagation();
+												handleBulkSelect(message.id);
+											}}
+											className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 mb-1"
+										/>
+										<Icon 
+											icon={message.important ? "mdi:star" : "mdi:star-outline"} 
+											className={`w-5 h-5 ${message.important ? 'text-yellow-400' : 'text-gray-300'}`}
+											onClick={(e) => {
+												e.stopPropagation();
+												message.important = !message.important;
+											}}
+										/>
+										{message.unread && <span className="w-2 h-2 rounded-full bg-purple-600 mt-1"></span>}
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+
+					{/* Right Column - Conversation View */}
+					<div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-100 p-0 flex flex-col h-full overflow-hidden">
+						{selectedMessage ? (
+							<div className="flex flex-col h-full">
+								{/* Conversation Header */}
+								<div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-[#faf8ff] flex-shrink-0">
+									<div className="flex items-center gap-3">
+										<img 
+											src={messageListData.find(m => m.id === selectedMessage)?.avatar} 
+											alt="Avatar" 
+											className="w-10 h-10 rounded-full border border-purple-100"
+										/>
+										<div>
+											<h3 className="font-semibold text-gray-900">
+												{messageListData.find(m => m.id === selectedMessage)?.name}
+											</h3>
+											<p className="text-xs text-gray-400 tracking-wide">
+												{isTyping ? 'Typing...' : 'Active now'}
+											</p>
+										</div>
+									</div>
+								</div>
+
+								{/* Messages */}
+								<div className="flex-1 py-6 px-6 space-y-2 custom-scrollbar bg-[#f9f9fc] overflow-y-auto">
+									{messageListData.find(m => m.id === selectedMessage)?.conversation.map((msg, idx, arr) => (
+										<div key={idx} className="flex flex-col items-center">
+											<div className={`w-full flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}>
+												<div
+													className={`
+														max-w-[70%] rounded-xl px-4 py-2 shadow 
+														${msg.fromMe ? 'bg-gradient-to-l from-purple-600 to-purple-500 text-white self-end' : 'bg-white border border-gray-100 text-gray-800 self-start'}
+													`}
+													style={{
+														borderTopRightRadius: msg.fromMe ? 8 : 24,
+														borderTopLeftRadius: msg.fromMe ? 24 : 8
+													}}
+												>
+													<p className="break-words">{msg.text}</p>
+													<div className="flex items-center gap-2 mt-1">
+														<span className={`text-[0.75rem] ${msg.fromMe ? 'text-purple-100' : 'text-gray-400'}`}>{msg.time}</span>
+														{msg.fromMe && (
+															<span className="text-xs opacity-70">
+																<Icon icon="mdi:check-all" className="w-4 h-4" />
+															</span>
+														)}
+													</div>
+												</div>
+											</div>
+											{/* Only add the scroll "anchor" on the last message */}
+											{idx === arr.length - 1 && (
+												<div ref={conversationEndRef} />
+											)}
+										</div>
+									))}
+								</div>
+
+								{/* Quick Reply Templates */}
+								<div className="px-6 pt-2 pb-1 border-t bg-white flex gap-2 overflow-x-auto flex-shrink-0">
+									{[
+										"Thank you for your order!",
+										"Your order is being processed",
+										"How can I help you?",
+										"Your order has been shipped"
+									].map((text, idx) => (
+										<button
+											key={idx}
+											className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full whitespace-nowrap hover:bg-purple-50 border transition"
+											onClick={() => setNewMessageText(text)}
+										>
+											{text}
+										</button>
+									))}
+								</div>
+
+								{/* Message Input */}
+								<form
+									className="flex gap-2 px-6 pb-6 pt-3 bg-white flex-shrink-0"
+									onSubmit={e => {
+										e.preventDefault();
+										handleSendMessage();
+									}}
+								>
+									<button
+										type="button"
+										className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
+										title="Attach file"
+									>
+										<Icon icon="mdi:paperclip" className="w-6 h-6" />
+									</button>
+									<input
+										type="text"
+										placeholder="Type a message..."
+										className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-200"
+										value={newMessageText}
+										onChange={(e) => {
+											setNewMessageText(e.target.value);
+											setIsTyping(true);
+											setTimeout(() => setIsTyping(false), 1000);
+										}}
+									/>
+									<button
+										type="submit"
+										className="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm transition font-medium"
+									>
+										Send
+									</button>
+								</form>
+							</div>
+						) : (
+							<div className="h-full flex items-center justify-center text-gray-400">
+								<div className="text-center">
+									<Icon icon="mdi:message-outline" className="w-16 h-16 mx-auto mb-4" />
+									<p className="text-lg font-semibold text-gray-500">Select a conversation to view</p>
+									<p className="text-sm mt-2 text-gray-400">Choose from your customer support conversations</p>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			</main>
+			<style>{`
+				.custom-scrollbar::-webkit-scrollbar {
+					width: 8px;
+					background: #f9f9fc;
+				}
+				.custom-scrollbar::-webkit-scrollbar-thumb {
+					background: #e4e2f8;
+					border-radius: 6px;
+				}
+				.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+					background: #cfcdf2;
+				}
+			`}</style>
+		</div>
+	);
 }
-
-// Floating Conversation Modal as a separate component
-Messages.FloatingModal = function FloatingModal({
-  showFloat,
-  setShowFloat,
-  floatPos,
-  dragging,
-  handleDragStart,
-  selectedMessageId,
-  setShowFloatIcon,
-}: {
-  showFloat: boolean;
-  setShowFloat: (v: boolean) => void;
-  floatPos: { x: number; y: number };
-  dragging: boolean;
-  handleDragStart: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-  selectedMessageId: number | null;
-  setShowFloatIcon: (v: boolean) => void;
-}) {
-  const [messageList, setMessageList] = useState(messageListData);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const conversationEndRef = useRef<HTMLDivElement>(null);
-  const selectedMessage = messageList.find((msg) => msg.id === selectedMessageId) ?? messageList[0];
-  const [input, setInput] = useState('');
-
-  // Scroll to bottom on new message
-  useEffect(() => {
-    conversationEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selectedMessageId, selectedMessage?.conversation.length]);
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setMessageList((prev) =>
-      prev.map((msg) =>
-        msg.id === selectedMessage.id
-          ? {
-              ...msg,
-              lastMessage: input,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              conversation: [
-                ...(msg.conversation || []),
-                {
-                  fromMe: true,
-                  text: input,
-                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                },
-              ],
-            }
-          : msg
-      )
-    );
-    setInput('');
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
-  };
-
-  // fallback for optional props
-  const setShowFloatIconSafe = setShowFloatIcon ?? (() => {});
-  const handleDragStartSafe = handleDragStart ?? (() => {});
-
-  if (!showFloat) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-      <div
-        className="draggable-modal relative rounded-3xl shadow-2xl border border-yellow-100 w-[500px] max-w-full h-[80vh] flex flex-col pointer-events-auto"
-        style={{
-          position: 'absolute',
-          left: Math.max(0, Math.min(floatPos.x, window.innerWidth - 500)),
-          top: Math.max(0, Math.min(floatPos.y, window.innerHeight - (window.innerHeight * 0.8))),
-          maxWidth: '100vw',
-          maxHeight: '80vh',
-          cursor: dragging ? 'grabbing' : 'default',
-          background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(16px) saturate(180%)',
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-        }}
-      >
-        <div
-          className="flex items-center justify-between px-6 py-4 border-b border-yellow-100 bg-gradient-to-r from-yellow-50 to-white rounded-t-3xl cursor-move select-none"
-          onMouseDown={handleDragStartSafe}
-        >
-          <span className="font-bold text-gray-800 text-lg drop-shadow">
-            {selectedMessage?.name || 'Conversation'}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              className="p-2 rounded-full hover:bg-yellow-100 transition"
-              onClick={() => {
-                setShowFloat(false);
-                setShowFloatIconSafe(true);
-              }}
-              aria-label="Minimize"
-            >
-              <Icon icon="mdi:minus" className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              className="p-2 rounded-full hover:bg-yellow-100 transition"
-              onClick={() => setShowFloat(false)}
-              aria-label="Close"
-            >
-              <Icon icon="mdi:close" className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4 bg-transparent custom-scrollbar">
-          <div className="flex flex-col gap-6">
-            {selectedMessage?.conversation?.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}
-              >
-                {!msg.fromMe && (
-                  <img
-                    src={selectedMessage.avatar}
-                    alt={selectedMessage.name}
-                    className="w-7 h-7 rounded-full border border-yellow-100 shadow"
-                  />
-                )}
-                <div
-                  className={`relative max-w-xs px-4 py-2 rounded-3xl shadow-lg transition-all duration-200
-                    ${msg.fromMe
-                      ? 'bg-gradient-to-br from-yellow-200/80 to-yellow-100/90 text-gray-800 rounded-br-md'
-                      : 'bg-gradient-to-br from-white/80 to-gray-100/90 text-gray-700 rounded-bl-md border border-yellow-50'
-                    }
-                    ${msg.fromMe ? 'ml-8' : 'mr-2'}
-                  `}
-                >
-                  <div className="text-base leading-relaxed">{msg.text}</div>
-                  <div className="text-xs text-gray-400 mt-2 text-right">{msg.time}</div>
-                  {msg.fromMe && (
-                    <Icon icon="mdi:check-all" className="absolute bottom-2 right-2 w-4 h-4 text-blue-400" />
-                  )}
-                </div>
-              </div>
-            ))}
-            <div ref={conversationEndRef} />
-          </div>
-        </div>
-        <div className="px-6 py-4 border-t border-yellow-100 bg-gradient-to-r from-yellow-50 to-white rounded-b-3xl">
-          <form className="flex items-center gap-3" onSubmit={handleSend}>
-            <button type="button" className="p-2 rounded-full hover:bg-yellow-100 transition" tabIndex={-1}>
-              <Icon icon="mdi:paperclip" className="w-6 h-6 text-yellow-400" />
-            </button>
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Type your message..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  handleSend(e as unknown as React.FormEvent<HTMLFormElement>);
-                }
-              }}
-              className="flex-1 px-5 py-3 border border-yellow-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-200 bg-white shadow transition-all duration-200 focus:shadow-lg"
-            />
-            <button
-              type="submit"
-              className="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg transition flex items-center gap-2"
-              disabled={!input.trim()}
-            >
-              <Icon icon="mdi:send" className="w-5 h-5" />
-              Send
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Floating message icon (lower right)
-Messages.FloatingIcon = function FloatingIcon({
-  showFloatIcon,
-  setShowFloatIcon,
-  setShowFloat,
-}: {
-  showFloatIcon: boolean;
-  setShowFloatIcon: (v: boolean) => void;
-  setShowFloat: (v: boolean) => void;
-}) {
-  if (!showFloatIcon) return null;
-  return (
-    <button
-      className="fixed z-50 bottom-8 right-8 bg-yellow-400 hover:bg-yellow-500 text-white rounded-full shadow-lg p-4 transition flex items-center justify-center animate-bounce"
-      style={{
-        boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)',
-        backdropFilter: 'blur(8px) saturate(180%)',
-      }}
-      onClick={() => {
-        setShowFloat(true);
-        setShowFloatIcon(false);
-      }}
-      aria-label="Open Messages"
-    >
-      <Icon icon="mdi:message-outline" className="w-7 h-7 drop-shadow" />
-    </button>
-  );
-};
 
 export default Messages;

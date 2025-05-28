@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import Products from './products';
 import Orders from './orders';
 import Reports from './reports';
 import Payments from './payments';
-import Users from './users';
+import Feedbacks from './feedbacks';
 import Login from './login';
 import Messages from './messages';
 import Profile from './profile';
@@ -18,16 +18,6 @@ function App() {
  
   const [salesExpanded, setSalesExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Floating conversation modal state (moved from Messages)
-  const [showFloat, setShowFloat] = useState(false);
-  const [floatPos, setFloatPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const [showFloatIcon, setShowFloatIcon] = useState(false);
-  const dragOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  // For passing selected message id and setter to Messages
-  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
 
   // Add state for card order
   const [cardOrder, setCardOrder] = useState(['customer', 'order', 'earning']);
@@ -42,47 +32,6 @@ function App() {
     setCardOrder(items);
   };
 
-  // Modal drag handlers
-  const handleModalDragStart = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    setDragging(true);
-    const rect = (e.target as HTMLDivElement).closest('.draggable-modal')?.getBoundingClientRect();
-    if (rect) {
-      dragOffset.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      };
-    }
-    document.body.style.userSelect = 'none';
-  };
-
-  const handleModalDrag = (e: MouseEvent) => {
-    if (!dragging) return;
-    setFloatPos({
-      x: e.clientX - dragOffset.current.x,
-      y: e.clientY - dragOffset.current.y,
-    });
-  };
-
-  const handleModalDragEnd = () => {
-    setDragging(false);
-    document.body.style.userSelect = '';
-  };
-
-  // Attach/detach modal drag listeners
-  useEffect(() => {
-    if (dragging) {
-      window.addEventListener('mousemove', handleModalDrag);
-      window.addEventListener('mouseup', handleModalDragEnd);
-    } else {
-      window.removeEventListener('mousemove', handleModalDrag);
-      window.removeEventListener('mouseup', handleModalDragEnd);
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleModalDrag);
-      window.removeEventListener('mouseup', handleModalDragEnd);
-    };
-  }, [dragging]);
-
 const navigationItems = [
   { icon: 'mdi:view-dashboard', label: 'DASHBOARD' },
   { icon: 'mdi:message-outline', label: 'MESSAGES' },
@@ -90,52 +39,38 @@ const navigationItems = [
   { icon: 'mdi:clipboard-list-outline', label: 'ORDERS' },
   { icon: 'mdi:credit-card-outline', label: 'PAYMENTS' },
   { icon: 'mdi:chart-bar', label: 'REPORTS' },
-  { icon: 'mdi:account-outline', label: 'USERS' }, // USERS moved here
+  { icon: 'mdi:star-outline', label: 'FEEDBACKS' },
 ];
 
   const handleNavigation = (page: string) => {
     setCurrentPage(page);
   };
 
-  const renderContent = () => {
-    switch (currentPage) {
-      case 'MESSAGES':
-        return (
-          <Messages
-            showFloat={showFloat}
-            setShowFloat={setShowFloat}
-            floatPos={floatPos}
-            setFloatPos={setFloatPos}
-            dragging={dragging}
-            setDragging={setDragging}
-            showFloatIcon={showFloatIcon}
-            setShowFloatIcon={setShowFloatIcon}
-            handleDragStart={handleModalDragStart}
-            selectedMessageId={selectedMessageId}
-            setSelectedMessageId={setSelectedMessageId}
-          />
-        );
-      case 'PRODUCTS':
-        return <Products />;
-      case 'ORDERS':
-        return <Orders />;
-      case 'USERS':
-        return <Users />;
-      case 'PAYMENTS':
-        return <Payments />;
-      case 'REPORTS':
-        return <Reports />;
-      case 'PROFILE':
-        return <Profile />;
-      case 'SETTINGS':
-        return <Settings />;
-      case 'DASHBOARD':
-      default:
+const renderContent = () => {
+  switch (currentPage) {
+    case 'MESSAGES':
+      return <Messages />;
+    case 'PRODUCTS':
+      return <Products />;
+    case 'ORDERS':
+      return <Orders />;
+    case 'FEEDBACKS':
+      return <Feedbacks/>;
+    case 'PAYMENTS':
+      return <Payments />;
+    case 'REPORTS':
+      return <Reports />;
+    case 'PROFILE':
+      return <Profile />;
+    case 'SETTINGS':
+      return <Settings />;
+    case 'DASHBOARD':
+    default:
         return (
           <div className="flex-1 flex flex-col h-0">
             <main
               className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'px-8'} py-8 bg-white
-                scrollbar-thin scrollbar-thumb-yellow-200 scrollbar-track-gray-100 transition-all duration-300 rounded-3xl`}
+                scrollbar-thin scrollbar-thumb-yellow-200 scrollbar-track-gray-100 transition-all duration-300 rounded-3xl mb-24`}
               style={{
                 minHeight: 0,
                 boxShadow: '0 4px 32px 0 rgba(252, 211, 77, 0.07)',
@@ -303,8 +238,8 @@ const navigationItems = [
                   </Droppable>
                 </DragDropContext>
 
-                {/* Bottom Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Bottom Row Stats Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-40">
                   {/* Sales Report Container */}
                   <div className="lg:col-span-2">
                     <div
@@ -420,7 +355,7 @@ const navigationItems = [
 
                   {/* Best Selling Container */}
                   <div className="lg:col-span-1">
-                    <div className="bg-white rounded-2xl shadow-lg border-l-4 border-pink-200 p-6 transition-transform duration-200 hover:scale-[1.01] hover:shadow-2xl hover:border-pink-400 lg:sticky lg:top-8">
+                    <div className="bg-white rounded-2xl shadow-lg border-l-4 border-pink-200 p-6 transition-transform duration-200 hover:scale-[1.01] hover:shadow-2xl hover:border-pink-400">
                       <div className="flex items-center gap-2 mb-6">
                         <Icon icon="mdi:star" className="text-pink-400 w-6 h-6" />
                         <h3 className="text-lg font-semibold text-gray-800">Best Selling</h3>
@@ -483,11 +418,11 @@ const navigationItems = [
         className={`fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 lg:hidden ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setMobileMenuOpen(false)}
       ></div>
-      {/* Sidebar: hidden on mobile, slide-in menu */}
+      {/* Sidebar */}
       <aside
         className={`
           m-0 lg:m-4 z-50 fixed lg:static top-0 left-0
-          h-[calc(100vh-3rem)] mb-2
+          h-[calc(100vh-2rem)]
           overflow-hidden
           transition-all duration-300
           ${sidebarCollapsed ? 'w-20' : 'w-64'}
@@ -551,12 +486,11 @@ const navigationItems = [
               ))}
             </ul>
           </nav>
-          {/* Divider above profile section */}
-          <div className="border-t border-yellow-100 my-2"></div>
+      
           {/* Profile Section */}
           <div
             className={`flex flex-col items-center ${sidebarCollapsed ? 'px-2' : 'px-6'} pb-6 gap-2`}
-            style={{ marginTop: '-3rem' }} // Move up the profile/settings/logout section higher
+            style={{ marginTop: '-4rem' }}
           >
             <button
               className={`flex items-center w-full transition ${
@@ -606,22 +540,26 @@ const navigationItems = [
         </div>
       </aside>
 
-      {/* Content area - adjust margin for floating sidebar */}
-      <div
-        className="flex-1 flex flex-col h-screen max-h-screen overflow-hidden transition-all duration-300"
-      >
-      <header
-  className={`bg-white shadow-2xl border border-white
-    px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
-    backdrop-blur-md
-    ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
-  `}
-  style={{
-    borderLeft: '6px solid #fff',
-    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(0, 0, 0, 0.04)',
-    maxHeight: '80px',
-  }}
->
+      {/* Header - Completely separate from main content */}
+    {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && (
+  <header
+    className={`bg-white shadow-2xl border border-white
+      px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
+      backdrop-blur-md
+      ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
+    `}
+    style={{
+      borderLeft: '6px solid #fff',
+      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+      height: 'auto',
+      minHeight: '80px',
+      position: 'fixed',
+      top: 0,
+      right: sidebarCollapsed ? '2rem' : '0',
+      left: sidebarCollapsed ? '7.5rem' : '17rem',
+      zIndex: 40
+    }}
+  >
           <div className="flex items-center justify-between">
             {/* Left side: Always show sidebar toggle and search */}
             <div className="flex items-center gap-2 sm:gap-4 flex-1">
@@ -656,26 +594,17 @@ const navigationItems = [
             </div>
           </div>
         </header>
+      )}
+
+      {/* Main Content Area */}
+     <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ?'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE' ? '' : 'mt-28'}`}>
         {/* Main Content */}
-        <div className="flex-1 min-h-0 overflow-auto">
-          {renderContent()}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            {renderContent()}
+          </div>
         </div>
       </div>
-      {/* Floating Conversation Modal and Icon (always rendered) */}
-      <Messages.FloatingModal
-        showFloat={showFloat}
-        setShowFloat={setShowFloat}
-        floatPos={floatPos}
-        dragging={dragging}
-        setShowFloatIcon={setShowFloatIcon}
-        handleDragStart={handleModalDragStart}
-        selectedMessageId={selectedMessageId}
-      />
-      <Messages.FloatingIcon
-        showFloatIcon={showFloatIcon}
-        setShowFloatIcon={setShowFloatIcon}
-        setShowFloat={setShowFloat}
-      />
     </div>
   );
 };
