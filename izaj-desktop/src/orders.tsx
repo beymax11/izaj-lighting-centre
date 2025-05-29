@@ -75,7 +75,7 @@ const sampleOrders: Order[] = [
   },
 ];
 
-function Orders() {
+function Orders({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) => void }) {
   const stats: Stat[] = [
     { label: 'Pending', count: 222, bgColor: 'bg-yellow-50', borderColor: 'border-yellow-100', textColor: 'text-yellow-400' },
     { label: 'Shipping', count: 100, bgColor: 'bg-blue-50', borderColor: 'border-blue-100', textColor: 'text-blue-400' },
@@ -124,6 +124,7 @@ function Orders() {
     const order = paginatedOrders[orderIdx];
     if (order.status === 'Accept') {
       setModalOrderIdx(orderIdx);
+      setIsOverlayOpen(true);
     } else {
       setOrders((prev) => {
         const globalIdx = (currentPage - 1) * ordersPerPage + orderIdx;
@@ -137,7 +138,10 @@ function Orders() {
     }
   };
 
-  const closeModal = () => setModalOrderIdx(null);
+  const closeModal = () => {
+    setModalOrderIdx(null);
+    setIsOverlayOpen(false);
+  };
 
   const confirmOrder = () => {
     if (modalOrderIdx === null) return;
@@ -403,7 +407,7 @@ function Orders() {
               className="absolute top-6 right-6 text-gray-400 hover:text-yellow-500 text-2xl z-50 bg-white/70 rounded-full p-1 shadow-lg focus:outline-none border border-yellow-100 transition"
               onClick={(e) => {
                 e.stopPropagation();
-                setModalOrderIdx(null);
+                closeModal();
               }}
               aria-label="Close modal"
               type="button"

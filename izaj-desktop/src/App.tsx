@@ -15,6 +15,9 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState('DASHBOARD');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
  
   const [salesExpanded, setSalesExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -110,13 +113,16 @@ const renderContent = () => {
     case 'MESSAGES':
       return <Messages />;
     case 'PRODUCTS':
-      return <Products />;
+      return <Products 
+        showAddProductModal={showAddProductModal} 
+        setShowAddProductModal={setShowAddProductModal} 
+      />;
     case 'ORDERS':
-      return <Orders />;
+      return <Orders setIsOverlayOpen={setIsOverlayOpen} />;
     case 'FEEDBACKS':
-      return <Feedbacks/>;
+      return <Feedbacks setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
     case 'PAYMENTS':
-      return <Payments />;
+      return <Payments setIsOverlayOpen={setIsOverlayOpen} />;
     case 'REPORTS':
       return <Reports />;
     case 'PROFILE':
@@ -129,13 +135,13 @@ const renderContent = () => {
           <div className="flex-1 flex flex-col h-0">
             <main
               className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'px-8'} py-8 bg-white
-                scrollbar-thin scrollbar-thumb-yellow-200 scrollbar-track-gray-100 transition-all duration-300 rounded-3xl mb-24`}
+                scrollbar-thin scrollbar-thumb-yellow-200 scrollbar-track-gray-100 transition-all duration-300 rounded-3xl mb-8`}
               style={{
                 minHeight: 0,
                 boxShadow: '0 4px 32px 0 rgba(252, 211, 77, 0.07)',
               }}
             >
-              <div className="max-w-7xl mx-auto space-y-10">
+              <div className="max-w-7xl mx-auto space-y-10 pb-8">
                 <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800 mb-8">
                   <Icon icon="mdi:view-dashboard" className="text-yellow-400 w-8 h-8" />
                   Dashboard
@@ -298,7 +304,7 @@ const renderContent = () => {
                 </DragDropContext>
 
                 {/* Bottom Row Stats Cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-40">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                   {/* Sales Report Container */}
                   <div className="lg:col-span-2">
                     <div
@@ -599,156 +605,151 @@ const renderContent = () => {
         </div>
       </aside>
 
-      {/* Header - Completely separate from main content */}
-    {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && (
-  <header
-    className={`bg-white shadow-2xl border border-white
-      px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 transition-all duration-300
-      backdrop-blur-md
-      ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
-    `}
-    style={{
-      borderLeft: '6px solid #fff',
-      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-      height: 'auto',
-      minHeight: '80px',
-      position: 'fixed',
-      top: 0,
-      right: sidebarCollapsed ? '2rem' : '0',
-      left: sidebarCollapsed ? '7.5rem' : '17rem',
-      zIndex: 100
-    }}
-  >
-          <div className="flex items-center justify-between">
-            {/* Left side: Always show sidebar toggle and search */}
-            <div className="flex items-center gap-2 sm:gap-4 flex-1">
-              {/* Mobile menu button */}
-              <button
-                className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition lg:hidden"
-                onClick={() => setMobileMenuOpen(true)}
+      {/* Main Content Area */}
+     <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ?'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE'  || currentPage === 'SETTINGS' ? '' : 'mt-4'} scrollbar-none`}>
+        {/* Dashboard Main Content */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto scrollbar-none">
+            {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && !isOverlayOpen && !showAddProductModal && !isFeedbackModalOpen && (
+              <header
+                className={`bg-white shadow-2xl border border-white
+                  px-4 sm:px-8 py-3 rounded-none sm:rounded-2xl shrink-0 transition-all duration-300
+                  backdrop-blur-md mb-4 mt-2
+                  ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
+                `}
+                style={{
+                  borderLeft: '6px solid #fff',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+                  height: 'auto',
+                  minHeight: '65px',
+                  position: 'relative',
+                  zIndex: 100
+                }}
               >
-                <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
-              </button>
-              {/* Desktop sidebar toggle */}
-              <button
-                className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition hidden lg:block"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              >
-                <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
-              </button>
-              <div className="relative min-w-0 flex-1 max-w-xs ml-2">
-                <Icon icon="mdi:magnify" className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-150 focus:border-yellow-200 bg-white shadow"
-                />
-              </div>
-            </div>
-            {/* Right side: Always show notification */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="relative notification-container" style={{ overflow: 'visible' }}>
-                <button 
-                  className="p-2 rounded-lg bg-white hover:bg-yellow-100 border border-yellow-100 shadow transition relative"
-                  onClick={toggleNotifications}
-                >
-                  <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-600" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-                
-                {/* Notification Dropdown */}
-                {notificationsOpen && (
-                  <div 
-                    className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100"
-                    style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 10px)',
-                      right: '0',
-                      zIndex: 101
-                    }}
-                  >
-                    <div className="p-4 border-b border-gray-100">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-semibold text-gray-800">Notifications</h3>
-                        {unreadCount > 0 && (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAllAsRead();
-                            }}
-                            className="text-sm text-blue-600 hover:text-blue-800"
-                          >
-                            Mark all as read
-                          </button>
-                        )}
-                      </div>
+                <div className="flex items-center justify-between">
+                  {/* Left side: Always show sidebar toggle and search */}
+                  <div className="flex items-center gap-2 sm:gap-4 flex-1">
+                    {/* Mobile menu button */}
+                    <button
+                      className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition lg:hidden"
+                      onClick={() => setMobileMenuOpen(true)}
+                    >
+                      <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
+                    </button>
+                    {/* Desktop sidebar toggle */}
+                    <button
+                      className="p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition hidden lg:block"
+                      onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    >
+                      <Icon icon="mdi:menu" className="w-6 h-6 text-gray-600" />
+                    </button>
+                    <div className="relative min-w-0 flex-1 max-w-xs ml-2">
+                      <Icon icon="mdi:magnify" className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search..."
+                        className="w-full pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-150 focus:border-yellow-200 bg-white shadow"
+                      />
                     </div>
-                    <div className="max-h-96 overflow-y-auto">
-                      {notifications.length > 0 ? (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                              !notification.read ? 'bg-blue-50' : ''
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleNotificationClick(notification.id);
-                            }}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`p-2 rounded-lg ${
-                                notification.type === 'order' ? 'bg-green-100' :
-                                notification.type === 'payment' ? 'bg-blue-100' :
-                                'bg-yellow-100'
-                              }`}>
-                                <Icon 
-                                  icon={
-                                    notification.type === 'order' ? 'mdi:shopping-outline' :
-                                    notification.type === 'payment' ? 'mdi:credit-card-outline' :
-                                    'mdi:alert-outline'
-                                  }
-                                  className={`w-5 h-5 ${
-                                    notification.type === 'order' ? 'text-green-600' :
-                                    notification.type === 'payment' ? 'text-blue-600' :
-                                    'text-yellow-600'
-                                  }`}
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-medium text-gray-800">{notification.title}</p>
-                                <p className="text-sm text-gray-600">{notification.message}</p>
-                                <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
-                              </div>
-                              {!notification.read && (
-                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  </div>
+                  {/* Right side: Always show notification */}
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="relative notification-container" style={{ overflow: 'visible' }}>
+                      <button 
+                        className="p-2 rounded-lg bg-white hover:bg-yellow-100 border border-yellow-100 shadow transition relative"
+                        onClick={toggleNotifications}
+                      >
+                        <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-600" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      
+                      {/* Notification Dropdown */}
+                      {notificationsOpen && (
+                        <div 
+                          className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100"
+                          style={{
+                            position: 'absolute',
+                            top: 'calc(100% + 10px)',
+                            right: '0',
+                            zIndex: 101
+                          }}
+                        >
+                          <div className="p-4 border-b border-gray-100">
+                            <div className="flex justify-between items-center">
+                              <h3 className="font-semibold text-gray-800">Notifications</h3>
+                              {unreadCount > 0 && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAllAsRead();
+                                  }}
+                                  className="text-sm text-blue-600 hover:text-blue-800"
+                                >
+                                  Mark all as read
+                                </button>
                               )}
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-gray-500">
-                          No notifications
+                          <div className="max-h-96 overflow-y-auto scrollbar-none">
+                            {notifications.length > 0 ? (
+                              notifications.map((notification) => (
+                                <div
+                                  key={notification.id}
+                                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                                    !notification.read ? 'bg-blue-50' : ''
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNotificationClick(notification.id);
+                                  }}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className={`p-2 rounded-lg ${
+                                      notification.type === 'order' ? 'bg-green-100' :
+                                      notification.type === 'payment' ? 'bg-blue-100' :
+                                      'bg-yellow-100'
+                                    }`}>
+                                      <Icon 
+                                        icon={
+                                          notification.type === 'order' ? 'mdi:shopping-outline' :
+                                          notification.type === 'payment' ? 'mdi:credit-card-outline' :
+                                          'mdi:alert-outline'
+                                        }
+                                        className={`w-5 h-5 ${
+                                          notification.type === 'order' ? 'text-green-600' :
+                                          notification.type === 'payment' ? 'text-blue-600' :
+                                          'text-yellow-600'
+                                        }`}
+                                      />
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="font-medium text-gray-800">{notification.title}</p>
+                                      <p className="text-sm text-gray-600">{notification.message}</p>
+                                      <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                                    </div>
+                                    {!notification.read && (
+                                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-4 text-center text-gray-500">
+                                No notifications
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-      )}
-
-      {/* Main Content Area */}
-     <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ?'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE'  || currentPage === 'SETTINGS' ? '' : 'mt-28'}`}>
-        {/* Main Content */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto">
+                </div>
+              </header>
+            )}
             {renderContent()}
           </div>
         </div>

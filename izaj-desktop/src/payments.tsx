@@ -14,7 +14,7 @@ interface Payment {
   amount: number;
 }
 
-function Payments() {
+function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) => void }) {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -80,10 +80,12 @@ function Payments() {
 
   const handleRowClick = (payment: Payment) => {
     setSelectedPayment(payment);
+    setIsOverlayOpen(true);
   };
 
   const closeModal = () => {
     setSelectedPayment(null);
+    setIsOverlayOpen(false);
   };
 
   // Mock data
@@ -182,8 +184,8 @@ function Payments() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <main className="flex-1 px-8 py-8 bg-white overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full">
+      <main className="flex-1 px-8 py-8 bg-white">
         {/* Section Header */}
         <div className="max-w-7xl mx-auto mb-8">
           <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800 mb-2">
@@ -406,7 +408,7 @@ function Payments() {
                 <Icon icon="mdi:close" className="w-6 h-6" />
               </button>
 
-              <div className="p-10 pb-2 relative z-10 flex-1 w-full">
+              <div className="p-10 pb-2 relative z-10 flex-1 w-full overflow-y-auto">
                 <h3 id="modal-title" className="text-3xl font-extrabold mb-5 text-gray-800 flex items-center gap-2">
                   <Icon icon="mdi:credit-card" className="text-yellow-400 text-2xl" />
                   Payment Details
@@ -557,8 +559,6 @@ function Payments() {
                   </div>
                 </div>
               </div>
-
-             
             </div>
           </div>
         )}

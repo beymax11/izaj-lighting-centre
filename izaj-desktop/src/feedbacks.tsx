@@ -14,7 +14,7 @@ interface Feedback {
   replies?: { date: string; text: string }[];
 }
 
-function Feedbacks() {
+function Feedbacks({ setIsFeedbackModalOpen }: { setIsFeedbackModalOpen: (isOpen: boolean) => void }) {
   const [activeFilter, setActiveFilter] = useState('All Feedbacks');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFeedbacks, setSelectedFeedbacks] = useState<string[]>([]);
@@ -57,6 +57,7 @@ function Feedbacks() {
     if (feedback) {
       setSelectedFeedback(feedback);
       setIsModalOpen(true);
+      setIsFeedbackModalOpen(true);
     }
   };
 
@@ -67,6 +68,7 @@ function Feedbacks() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedFeedback(null);
+    setIsFeedbackModalOpen(false);
   };
 
   const handleReply = () => {
@@ -170,8 +172,8 @@ function Feedbacks() {
   });
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <main className="flex-1 px-8 py-8 bg-white overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full">
+      <main className="flex-1 px-8 py-8 bg-white">
         {/* Section Header */}
         <div className="max-w-7xl mx-auto mb-8">
           <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800 mb-2">

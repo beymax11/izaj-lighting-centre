@@ -4,9 +4,13 @@ import { useState } from 'react';
 import { AddProductModal } from './components/AddProductModal';
 import Stock from './pages/Stock';
 
-function Products() {
+interface ProductsProps {
+  showAddProductModal: boolean;
+  setShowAddProductModal: (show: boolean) => void;
+}
+
+function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps) {
   const [filter, setFilter] = useState<'all' | 'sale'>('all');
-  const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<'products' | 'stock'>('products');
 
@@ -72,8 +76,8 @@ function Products() {
     : products;
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <main className="flex-1 px-8 py-6 overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full">
+      <main className="flex-1 px-8 py-6">
         {view === 'stock' ? (
           <Stock 
             onViewChange={(newView => {
@@ -90,87 +94,89 @@ function Products() {
         ) : (
           <>
             {/* Header section */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <div className="flex items-center gap-3">
-                  <Icon icon="mdi:package-variant" className="text-3xl text-red-400" />
-                  <div className="relative">
-                    <button 
-                      onClick={() => setShowDropdown(!showDropdown)}
-                      className="flex items-center gap-2 text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors"
-                    >
-                      {filter === 'sale' ? 'Sale' : 'Products'}
-                      <Icon icon="mdi:chevron-down" className="text-xl" />
-                    </button>
-                    
-                    {/* Updated Dropdown Menu */}
-                    {showDropdown && (
-                      <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-10">
-                        <button
-                          onClick={() => {
-                            setFilter('all');
-                            setView('products');
-                            setShowDropdown(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                            filter === 'all' && view === 'products'
-                              ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <Icon icon="mdi:grid" className="text-lg" />
-                          Products
-                        </button>
-                        <button
-                          onClick={() => {
-                            setView('stock');
-                            setShowDropdown(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                            view === 'stock'
-                              ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <Icon icon="mdi:package-variant" className="text-lg" />
-                          Stock
-                        </button>
-                        <button
-                          onClick={() => {
-                            setFilter('sale');
-                            setView('products');
-                            setShowDropdown(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                            filter === 'sale' && view === 'products'
-                              ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <Icon icon="mdi:tag-outline" className="text-lg" />
-                          Sale
-                        </button>
-                      </div>
-                    )}
+            {!showAddProductModal && (
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <Icon icon="mdi:package-variant" className="text-3xl text-red-400" />
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowDropdown(!showDropdown)}
+                        className="flex items-center gap-2 text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors"
+                      >
+                        {filter === 'sale' ? 'Sale' : 'Products'}
+                        <Icon icon="mdi:chevron-down" className="text-xl" />
+                      </button>
+                      
+                      {/* Updated Dropdown Menu */}
+                      {showDropdown && (
+                        <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-10">
+                          <button
+                            onClick={() => {
+                              setFilter('all');
+                              setView('products');
+                              setShowDropdown(false);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                              filter === 'all' && view === 'products'
+                                ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Icon icon="mdi:grid" className="text-lg" />
+                            Products
+                          </button>
+                          <button
+                            onClick={() => {
+                              setView('stock');
+                              setShowDropdown(false);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                              view === 'stock'
+                                ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Icon icon="mdi:package-variant" className="text-lg" />
+                            Stock
+                          </button>
+                          <button
+                            onClick={() => {
+                              setFilter('sale');
+                              setView('products');
+                              setShowDropdown(false);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                              filter === 'sale' && view === 'products'
+                                ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            <Icon icon="mdi:tag-outline" className="text-lg" />
+                            Sale
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  <p className="text-gray-500 mt-1">
+                    {filter === 'sale' 
+                      ? 'Manage product sales and discounts' 
+                      : 'Manage product inventory and listings'}
+                  </p>
                 </div>
-                <p className="text-gray-500 mt-1">
-                  {filter === 'sale' 
-                    ? 'Manage product sales and discounts' 
-                    : 'Manage product inventory and listings'}
-                </p>
+                <button
+                  className="flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
+                  }}
+                  onClick={() => setShowAddProductModal(true)}
+                >
+                  <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
+                  {filter === 'sale' ? 'Add Sale' : 'Add Products'}
+                </button>
               </div>
-              <button
-                className="flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
-                style={{
-                  boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
-                }}
-                onClick={() => setShowAddProductModal(true)}
-              >
-                <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
-                {filter === 'sale' ? 'Add Sale' : 'Add Products'}
-              </button>
-            </div>
+            )}
 
             <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl border border-white p-8 mb-8"
               style={{
