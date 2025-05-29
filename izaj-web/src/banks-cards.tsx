@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
+import FavoritesDropdown from './FavoritesDropdown';
+import NotificationDropdown from './NotificationDropdown';
 
 const MyPurchase: React.FC = () => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
@@ -8,9 +10,10 @@ const MyPurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Banks & Cards');
 
   const paymentTabs = ['Banks & Cards', 'E-Wallet'];
-  const [user, setUser] = useState<{ name: string } | null>({
+  const [user, setUser] = useState<{ name: string; email: string } | null>({
     name: 'Daniel ',
-  }); // Hardcoded user for example
+    email: 'daniel@example.com', // Added mock email
+  });
  
   const handleLogout = () => {
     setUser(null);
@@ -59,21 +62,22 @@ const MyPurchase: React.FC = () => {
               {!user ? (
                 <div className="flex items-center space-x-4">
                   <button
-                    className="text-gray-700 hover:text-indigo-600 transition-colors duration-200"
+                    className="text-black hover:text-orange-500 transition-colors duration-200"
                     aria-label="Login"
                   >
                     <Icon icon="lucide:user" width="28" height="28" />
                   </button>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-gray-700 cursor-pointer hover:text-indigo-600"
-                    width="28"
-                    height="28"
-                  />
+                  {/* FavoritesDropdown and NotificationDropdown for not logged in */}
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
-                      className="text-gray-700 cursor-pointer hover:text-indigo-600"
+                      className="text-black cursor-pointer hover:text-orange-500"
                       width="28"
                       height="28"
                     />
@@ -88,55 +92,60 @@ const MyPurchase: React.FC = () => {
                       aria-haspopup="true"
                       aria-expanded={isAccountDropdownOpen}
                     >
-                      <Icon icon="lucide:user" width="30" height="30" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200" />
+                      <Icon icon="lucide:user" width="30" height="30" className="text-black hover:text-orange-500 transition-colors duration-200" />
                       <div className="flex flex-col ml-2 text-left">
                         <span className="font-medium text-sm text-gray-500 leading-none" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}>
                           Hello {user.name}
                         </span>
-                        <div className="flex items-center text-gray-800">
+                        <div className="flex items-center text-black">
                           <span className="font-medium text-lg" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
                             My Account
                           </span>
-                          <Icon icon="mdi:chevron-down" width="20" height="20" className="ml-1 text-gray-700" />
+                          <Icon icon="mdi:chevron-down" width="20" height="20" className="ml-1 text-black" />
                         </div>
                       </div>
                     </button>
 
                     {isAccountDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 animate-fade-in transition-all">
-                        <ul className="py-2 text-sm text-gray-700">
-                          <li>
-                            <Link to="/my-profile" className="block px-4 py-2 hover:bg-gray-50 transition-colors">
-                              My Account
-                            </Link>
-                          </li>
-                          <li>
-                            <Link to="/my-purchases" className="block px-4 py-2 hover:bg-gray-50 transition-colors">
-                              My Purchases
-                            </Link>
-                          </li>
-                          <li>
-                            <button
-                              onClick={handleLogout}
-                              className="block w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors"
-                            >
-                              Logout
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
+                          <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
+                            <div className="py-1">
+                              <Link
+                                to="/my-profile"
+                                className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+                              >
+                                <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+                                My Account
+                              </Link>
+                              <Link
+                                to="/my-purchase"
+                                className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+                              >
+                                <Icon icon="mdi:clipboard-list-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+                                My Purchases
+                              </Link>
+                              <hr className="border-gray-200 my-1" />
+                              <button
+                                onClick={handleLogout}
+                                className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
+                              >
+                                <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
+                                Logout
+                              </button>
+                            </div>
+                          </div>
+                        )}
                   </div>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-gray-700 cursor-pointer hover:text-indigo-600 ml-4"
-                    width="28"
-                    height="28"
-                  />
+                  {/* FavoritesDropdown and NotificationDropdown  */}
+                  <div className="flex items-center justify-center ml-4" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center ml-4" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
-                      className="text-gray-700 cursor-pointer hover:text-indigo-600 ml-4"
+                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
                       width="28"
                       height="28"
                     />

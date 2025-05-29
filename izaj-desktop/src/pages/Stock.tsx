@@ -1,8 +1,10 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
 
+type ViewType = 'products' | 'stock' | 'sale';
+
 interface StockProps {
-  onViewChange: (view: 'products' | 'sale') => void;
+  onViewChange: (view: ViewType) => void;
 }
 
 function Stock({ onViewChange }: StockProps) {

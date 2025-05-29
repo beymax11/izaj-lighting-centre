@@ -209,7 +209,7 @@ const ProductList: React.FC = () => {
                           </div>
                         )}
                   </div>
-                  {/* FavoritesDropdown and NotificationDropdown for logged in */}
+                  {/* FavoritesDropdown and NotificationDropdown  */}
                   <div className="flex items-center justify-center ml-4" style={{ marginTop: "4px" }}>
                     <FavoritesDropdown user={user} />
                   </div>

@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
+import FavoritesDropdown from './FavoritesDropdown';
+import NotificationDropdown from './NotificationDropdown';
 
 const SimpleContactUs: React.FC = () => {
     const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [email, setEmail] = useState('');
-    const [user, setUser] = useState<{ name: string } | null>({
+    const [user, setUser] = useState<{ name: string; email: string } | null>({
         name: 'Daniel',
+        email: 'daniel@example.com', // Added mock email
     }); // Hardcoded user for example
       
     const handleSubscribe = (e: React.FormEvent) => {
@@ -70,12 +73,12 @@ const SimpleContactUs: React.FC = () => {
                   >
                     <Icon icon="lucide:user" width="28" height="28" />
                   </button>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500"
-                    width="28"
-                    height="28"
-                  />
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
@@ -86,7 +89,7 @@ const SimpleContactUs: React.FC = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="flex items-center">
+                <div className="flex items-center space-x-4">
                   <div className="relative">
                     <button
                       onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
@@ -133,18 +136,18 @@ const SimpleContactUs: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
-                    width="28"
-                    height="28"
-                  />
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
-                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
-                    width="28"
-                    height="28"
+                      className="text-black cursor-pointer hover:text-orange-500"
+                      width="28"
+                      height="28"
                     />
                   </Link>
                 </div>

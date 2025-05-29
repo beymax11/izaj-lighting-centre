@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
+import FavoritesDropdown from './FavoritesDropdown';
+import NotificationDropdown from './NotificationDropdown';
 
 const MyPurchase: React.FC = () => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string } | null>({
+  const [user, setUser] = useState<{ name: string; email: string } | null>({
     name: 'Daniel ',
+    email: 'daniel@example.com', // Added a mock email
   }); // Hardcoded user for example
  
 
@@ -64,12 +67,13 @@ const MyPurchase: React.FC = () => {
                   >
                     <Icon icon="lucide:user" width="28" height="28" />
                   </button>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500"
-                    width="28"
-                    height="28"
-                  />
+                  {/* FavoritesDropdown and NotificationDropdown for not logged in */}
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
@@ -80,7 +84,7 @@ const MyPurchase: React.FC = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="flex items-center">
+                <div className="flex items-center space-x-4">
                   <div className="relative">
                     <button
                       onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
@@ -102,41 +106,46 @@ const MyPurchase: React.FC = () => {
                       </div>
                     </button>
 
-                    {isAccountDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 animate-fade-in transition-all">
-                        <ul className="py-2 text-sm text-black">
-                          <li>
-                            <Link to="/my-profile" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                              My Account
-                            </Link>
-                          </li>
-                          <li>
-                            <Link to="/my-purchases" className="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                              My Purchases
-                            </Link>
-                          </li>
-                          <li>
-                            <button
-                              onClick={handleLogout}
-                              className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
-                            >
-                              Logout
-                            </button>
-                          </li>
-                        </ul>
+                    {isAccountDropdownOpen && (user) && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
+                        <div className="py-1">
+                          <Link
+                            to="/my-profile"
+                            className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+                          >
+                            <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+                            My Account
+                          </Link>
+                          <Link
+                            to="/my-purchase"
+                            className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+                          >
+                            <Icon icon="mdi:clipboard-list-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+                            My Purchases
+                          </Link>
+                          <hr className="border-gray-200 my-1" />
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
+                          >
+                            <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
+                            Logout
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
-                    width="28"
-                    height="28"
-                  />
+                  {/* FavoritesDropdown and NotificationDropdown */}
+                  <div className="flex items-center justify-center ml-4" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center ml-4" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
-                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                      className="text-black cursor-pointer hover:text-orange-500"
                       width="28"
                       height="28"
                     />

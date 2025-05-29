@@ -2,7 +2,10 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
 import { AddProductModal } from './components/AddProductModal';
+import { ManageStockModal } from './components/ManageStockModal';
 import Stock from './pages/Stock';
+
+type ViewType = 'products' | 'stock' | 'sale';
 
 interface ProductsProps {
   showAddProductModal: boolean;
@@ -12,7 +15,8 @@ interface ProductsProps {
 function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps) {
   const [filter, setFilter] = useState<'all' | 'sale'>('all');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [view, setView] = useState<'products' | 'stock'>('products');
+  const [view, setView] = useState<ViewType>('products');
+  const [selectedProduct, setSelectedProduct] = useState<typeof products[0] | null>(null);
 
   const products = [
     {
@@ -75,21 +79,37 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
     ? products.filter(p => p.variant !== null)
     : products;
 
+  const handleViewChange = (newView: ViewType) => {
+    if (newView === 'products') {
+      setFilter('all');
+      setView('products');
+    } else if (newView === 'sale') {
+      setFilter('sale');
+      setView('products');
+    } else {
+      setView(newView);
+    }
+    setShowDropdown(false);
+  };
+
+  const handleUpdateStock = (newStock: number) => {
+    if (selectedProduct) {
+      const updatedProducts = products.map(p => 
+        p.name === selectedProduct.name 
+          ? { ...p, stock: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
+          : p
+      );
+      // In a real application, you would update the state or make an API call here
+      console.log('Updated products:', updatedProducts);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       <main className="flex-1 px-8 py-6">
         {view === 'stock' ? (
           <Stock 
-            onViewChange={(newView => {
-              if (newView === 'products') {
-                setFilter('all');
-                setView('products');
-              } else if (newView === 'sale') {
-                setFilter('sale');
-                setView('products');
-              }
-              setShowDropdown(false);
-            }) as (view: 'products' | 'sale') => void}
+            onViewChange={handleViewChange}
           />
         ) : (
           <>
@@ -112,13 +132,9 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
                       {showDropdown && (
                         <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-10">
                           <button
-                            onClick={() => {
-                              setFilter('all');
-                              setView('products');
-                              setShowDropdown(false);
-                            }}
+                            onClick={() => handleViewChange('products')}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                              filter === 'all' && view === 'products'
+                              view === 'products'
                                 ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
                                 : 'text-gray-700 hover:bg-gray-50'
                             }`}
@@ -127,10 +143,7 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
                             Products
                           </button>
                           <button
-                            onClick={() => {
-                              setView('stock');
-                              setShowDropdown(false);
-                            }}
+                            onClick={() => handleViewChange('stock')}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
                               view === 'stock'
                                 ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
@@ -141,13 +154,9 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
                             Stock
                           </button>
                           <button
-                            onClick={() => {
-                              setFilter('sale');
-                              setView('products');
-                              setShowDropdown(false);
-                            }}
+                            onClick={() => handleViewChange('sale')}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                              filter === 'sale' && view === 'products'
+                              view === 'sale'
                                 ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
                                 : 'text-gray-700 hover:bg-gray-50'
                             }`}
@@ -284,7 +293,10 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
                         </div>
                       </div>
 
-                      <button className="w-full py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg">
+                      <button 
+                        onClick={() => setSelectedProduct(product)}
+                        className="w-full py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg"
+                      >
                         <Icon icon="mdi:plus-box" width={20} />
                         {product.stock === 0 ? 'RESTOCK NOW' : 'MANAGE STOCK'}
                       </button>
@@ -294,11 +306,19 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
               </div>
             </div>
 
-            {/* Modal - Modified to handle both Product and Sale */}
+            {/* Modals */}
             {showAddProductModal && (
               <AddProductModal 
                 onClose={() => setShowAddProductModal(false)} 
                 mode={filter === 'sale' ? 'sale' : 'product'}
+              />
+            )}
+
+            {selectedProduct && (
+              <ManageStockModal
+                onClose={() => setSelectedProduct(null)}
+                product={selectedProduct}
+                onUpdateStock={handleUpdateStock}
               />
             )}
           </>

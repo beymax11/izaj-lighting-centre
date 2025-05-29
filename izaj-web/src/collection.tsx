@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
+import FavoritesDropdown from './FavoritesDropdown';
+import NotificationDropdown from './NotificationDropdown';
 
 type Product = {
   description: string;
@@ -19,8 +21,9 @@ const ProductList: React.FC = () => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
-  const [user, setUser] = useState<{ name: string } | null>({
+  const [user, setUser] = useState<{ name: string; email: string } | null>({
     name: 'Daniel',
+    email: 'daniel@example.com',
   });
   
   // State for sorting and filtering
@@ -132,12 +135,13 @@ const ProductList: React.FC = () => {
                   >
                     <Icon icon="lucide:user" width="28" height="28" />
                   </button>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500"
-                    width="28"
-                    height="28"
-                  />
+                  {/* FavoritesDropdown and NotificationDropdown for not logged in */}
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
@@ -148,7 +152,8 @@ const ProductList: React.FC = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="flex items-center">
+                <div className="flex items-center space-x-4">
+                  {/* User Dropdown */}
                   <div className="relative">
                     <button
                       onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
@@ -170,7 +175,7 @@ const ProductList: React.FC = () => {
                       </div>
                     </button>
 
-                    {isAccountDropdownOpen && (
+                    {isAccountDropdownOpen && (user) && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 animate-fade-in transition-all">
                         <ul className="py-2 text-sm text-black">
                           <li>
@@ -195,16 +200,17 @@ const ProductList: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <Icon
-                    icon="mingcute:notification-newdot-line"
-                    className="text-black cursor-pointer hover:text-orange-500 ml-4"
-                    width="28"
-                    height="28"
-                  />
+                  {/* FavoritesDropdown and NotificationDropdown for logged in */}
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <FavoritesDropdown user={user} />
+                  </div>
+                  <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                    <NotificationDropdown user={user} />
+                  </div>
                   <Link to="/cart">
                     <Icon
                       icon="mdi:cart-outline"
-                      className="text-black cursor-pointer hover:text-orange-500 ml-4"
+                      className="text-black cursor-pointer hover:text-orange-500"
                       width="28"
                       height="28"
                     />

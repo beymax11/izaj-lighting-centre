@@ -309,7 +309,7 @@ const renderContent = () => {
                   <div className="lg:col-span-2">
                     <div
                       className={`bg-white rounded-2xl shadow-lg border-l-4 border-indigo-200 p-6 transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl hover:border-indigo-400 cursor-pointer
-                        ${salesExpanded ? 'h-auto max-h-[900px]' : 'max-h-[340px] overflow-hidden'}
+                        ${salesExpanded ? 'h-auto' : 'h-[400px]'}
                       `}
                       onClick={() => setSalesExpanded((prev) => !prev)}
                     >
@@ -326,7 +326,7 @@ const renderContent = () => {
                           />
                         </span>
                       </div>
-                      <div className="h-64 relative">
+                      <div className="h-72 relative">
                         <svg className="w-full h-full" viewBox="0 0 500 240">
                           <defs>
                             <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -420,7 +420,7 @@ const renderContent = () => {
 
                   {/* Best Selling Container */}
                   <div className="lg:col-span-1">
-                    <div className="bg-white rounded-2xl shadow-lg border-l-4 border-pink-200 p-6 transition-transform duration-200 hover:scale-[1.01] hover:shadow-2xl hover:border-pink-400">
+                    <div className="bg-white rounded-2xl shadow-lg border-l-4 border-pink-200 p-6 transition-transform duration-200 hover:scale-[1.01] hover:shadow-2xl hover:border-pink-400 h-[400px]">
                       <div className="flex items-center gap-2 mb-6">
                         <Icon icon="mdi:star" className="text-pink-400 w-6 h-6" />
                         <h3 className="text-lg font-semibold text-gray-800">Best Selling</h3>
@@ -428,13 +428,13 @@ const renderContent = () => {
                           <option>Lightning</option>
                         </select>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-4 overflow-y-auto h-[calc(100%-4rem)]">
                         {[
                           { name: 'Ceiling Light', reviews: '456 Review', rating: 5 },
                           { name: 'Chandelier', reviews: '357 Review', rating: 5 },
                           { name: 'Cluster Chandelier', reviews: '365 Review', rating: 5 },
                           { name: 'Pendant Light', reviews: '589 Review', rating: 5 },
-                          { name: 'Floor Light', reviews: '432 Review', rating: 4 }
+                        
                         ].map((item, index) => (
                           <div key={index} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
                             <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">

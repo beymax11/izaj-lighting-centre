@@ -186,18 +186,20 @@ function Feedbacks({ setIsFeedbackModalOpen }: { setIsFeedbackModalOpen: (isOpen
         </div>
 
         {/* Stats Cards */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
-            <Icon icon="mdi:star-outline" className="w-10 h-10 text-yellow-400 mb-3" />
-            <span className="text-2xl font-bold text-gray-800">{feedbackData.length}</span>
-            <span className="text-gray-500 text-sm">Total Feedbacks</span>
-          </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
-            <Icon icon="mdi:star" className="w-10 h-10 text-blue-400 mb-3" />
-            <span className="text-2xl font-bold text-gray-800">
-              {(feedbackData.reduce((acc, curr) => acc + curr.rating, 0) / feedbackData.length).toFixed(1)}
-            </span>
-            <span className="text-gray-500 text-sm">Overall Rating</span>
+        <div className="max-w-7xl mx-auto flex justify-center mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform w-[300px]">
+              <Icon icon="mdi:star-outline" className="w-10 h-10 text-yellow-400 mb-3" />
+              <span className="text-2xl font-bold text-gray-800">{feedbackData.length}</span>
+              <span className="text-gray-500 text-sm">Total Feedbacks</span>
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform w-[300px]">
+              <Icon icon="mdi:star" className="w-10 h-10 text-blue-400 mb-3" />
+              <span className="text-2xl font-bold text-gray-800">
+                {(feedbackData.reduce((acc, curr) => acc + curr.rating, 0) / feedbackData.length).toFixed(1)}
+              </span>
+              <span className="text-gray-500 text-sm">Overall Rating</span>
+            </div>
           </div>
         </div>
 
