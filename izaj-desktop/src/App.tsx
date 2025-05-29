@@ -541,7 +541,7 @@ const renderContent = () => {
       </aside>
 
       {/* Header - Completely separate from main content */}
-    {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && (
+    {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && (
   <header
     className={`bg-white shadow-2xl border border-white
       px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
@@ -597,7 +597,7 @@ const renderContent = () => {
       )}
 
       {/* Main Content Area */}
-     <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ?'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE' ? '' : 'mt-28'}`}>
+     <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ?'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE'  || currentPage === 'SETTINGS' ? '' : 'mt-28'}`}>
         {/* Main Content */}
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">

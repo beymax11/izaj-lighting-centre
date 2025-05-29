@@ -40,16 +40,14 @@ const Profile: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f7f8fa]">
-      {/* Section Header - flush to the top, just like Messages */}
+   
       <header className="px-8 py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800">
             <Icon icon="mdi:account-circle" className="text-yellow-400 w-8 h-8" />
             Profile Settings
           </h2>
-          <p className="text-base text-gray-600 pl-11">
-            Manage your account information
-          </p>
+         
         </div>
       </header>
 
