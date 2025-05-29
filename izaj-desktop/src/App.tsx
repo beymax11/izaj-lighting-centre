@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import Products from './products';
@@ -18,9 +18,53 @@ function App() {
  
   const [salesExpanded, setSalesExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: 'New Order',
+      message: 'You have received a new order #1234',
+      time: '5 minutes ago',
+      read: false,
+      type: 'order'
+    },
+    {
+      id: 2,
+      title: 'Payment Received',
+      message: 'Payment of ₱2,500 has been received',
+      time: '1 hour ago',
+      read: false,
+      type: 'payment'
+    },
+    {
+      id: 3,
+      title: 'Low Stock Alert',
+      message: 'Product "Ceiling Light" is running low on stock',
+      time: '2 hours ago',
+      read: true,
+      type: 'alert'
+    }
+  ]);
 
   // Add state for card order
   const [cardOrder, setCardOrder] = useState(['customer', 'order', 'earning']);
+
+  // Add click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.notification-container')) {
+        setNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -30,6 +74,21 @@ function App() {
     items.splice(result.destination.index, 0, reorderedItem);
 
     setCardOrder(items);
+  };
+
+  const handleNotificationClick = (id: number) => {
+    setNotifications(notifications.map(notification => 
+      notification.id === id ? { ...notification, read: true } : notification
+    ));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
+  };
+
+  const toggleNotifications = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNotificationsOpen(!notificationsOpen);
   };
 
 const navigationItems = [
@@ -544,7 +603,7 @@ const renderContent = () => {
     {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && (
   <header
     className={`bg-white shadow-2xl border border-white
-      px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 overflow-hidden transition-all duration-300
+      px-4 sm:px-8 py-5 mt-2 sm:mt-6 rounded-none sm:rounded-2xl shrink-0 transition-all duration-300
       backdrop-blur-md
       ${sidebarCollapsed ? 'mx-0 sm:mx-2' : 'mx-0 sm:mx-8'}
     `}
@@ -557,7 +616,7 @@ const renderContent = () => {
       top: 0,
       right: sidebarCollapsed ? '2rem' : '0',
       left: sidebarCollapsed ? '7.5rem' : '17rem',
-      zIndex: 40
+      zIndex: 100
     }}
   >
           <div className="flex items-center justify-between">
@@ -588,9 +647,98 @@ const renderContent = () => {
             </div>
             {/* Right side: Always show notification */}
             <div className="flex items-center gap-2 sm:gap-4">
-              <button className="p-2 rounded-lg bg-white hover:bg-yellow-100 border border-yellow-100 shadow transition">
-                <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-600" />
-              </button>
+              <div className="relative notification-container" style={{ overflow: 'visible' }}>
+                <button 
+                  className="p-2 rounded-lg bg-white hover:bg-yellow-100 border border-yellow-100 shadow transition relative"
+                  onClick={toggleNotifications}
+                >
+                  <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-600" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Notification Dropdown */}
+                {notificationsOpen && (
+                  <div 
+                    className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 10px)',
+                      right: '0',
+                      zIndex: 101
+                    }}
+                  >
+                    <div className="p-4 border-b border-gray-100">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-gray-800">Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAllAsRead();
+                            }}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                              !notification.read ? 'bg-blue-50' : ''
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(notification.id);
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`p-2 rounded-lg ${
+                                notification.type === 'order' ? 'bg-green-100' :
+                                notification.type === 'payment' ? 'bg-blue-100' :
+                                'bg-yellow-100'
+                              }`}>
+                                <Icon 
+                                  icon={
+                                    notification.type === 'order' ? 'mdi:shopping-outline' :
+                                    notification.type === 'payment' ? 'mdi:credit-card-outline' :
+                                    'mdi:alert-outline'
+                                  }
+                                  className={`w-5 h-5 ${
+                                    notification.type === 'order' ? 'text-green-600' :
+                                    notification.type === 'payment' ? 'text-blue-600' :
+                                    'text-yellow-600'
+                                  }`}
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-800">{notification.title}</p>
+                                <p className="text-sm text-gray-600">{notification.message}</p>
+                                <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                              </div>
+                              {!notification.read && (
+                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-gray-500">
+                          No notifications
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
