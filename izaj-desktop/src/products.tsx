@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { AddProductModal } from './components/AddProductModal';
 import { ManageStockModal } from './components/ManageStockModal';
 import Stock from './pages/Stock';
-
-type ViewType = 'products' | 'stock' | 'sale';
+import { ViewType } from './types';
 
 interface ProductsProps {
   showAddProductModal: boolean;
@@ -145,7 +144,7 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
                           <button
                             onClick={() => handleViewChange('stock')}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                              view === 'stock'
+                              (view as ViewType) === 'stock'
                                 ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
                                 : 'text-gray-700 hover:bg-gray-50'
                             }`}
