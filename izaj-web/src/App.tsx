@@ -19,7 +19,6 @@ import ChatNow from './ChatNow';
 import MyFavorites from './MyFavorites';
 import NotificationDropdown from './NotificationDropdown';
 import FavoritesDropdown from './FavoritesDropdown';
-
 import { Link } from 'react-router-dom';
 import "./App.css";
 
