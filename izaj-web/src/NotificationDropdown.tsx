@@ -82,8 +82,8 @@ export default function NotificationDropdown({ user }: NotificationDropdownProps
       <Icon icon="mingcute:notification-line" className="w-7 h-7 translate-y-1" />
 
       {user && unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-        {unreadCount}
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
+          {unreadCount}
         </span>
       )}
     </button>

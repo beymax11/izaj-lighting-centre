@@ -1,0 +1,502 @@
+import React, { useRef, useState } from 'react';
+import { Icon } from '@iconify/react';
+import { Link } from 'react-router-dom';
+
+import ChatNow from '../ChatNow';
+
+
+const ItemDescription: React.FC = () => {
+  const [mainImage, setMainImage] = useState("aber.webp");
+  const [zoomStyle, setZoomStyle] = useState({});
+  const imgRef = useRef<HTMLDivElement>(null);
+  const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
+  const [isCareOpen, setIsCareOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  
+  const thumbnails = [
+    "aber.webp",
+    "aber2.webp",
+    "aber3.webp",
+    "aber4.webp"
+  ];
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imgRef.current) return;
+    
+    const { left, top, width, height } = imgRef.current.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    
+    setZoomStyle({
+      backgroundImage: `url(${mainImage})`,
+      backgroundPosition: `${x}% ${y}%`,
+      backgroundSize: '200%',
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({});
+  };
+
+
+   {/* Product Info Section */}
+  return (
+    <div className="bg-white min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto">
+          {/* Product Images */}
+          <div className="flex-1">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Thumbnails */}
+              <div className="flex md:flex-col gap-2 order-2 md:order-1">
+                {thumbnails.map((thumbnail, index) => (
+                  <img 
+                    key={index}
+                    src={thumbnail}
+                    className={`w-16 h-16 md:w-20 md:h-20 object-cover border cursor-pointer transition-all ${
+                      mainImage === thumbnail ? 'ring-2 ring-black' : 'border-gray-200'
+                    }`}
+                    onClick={() => setMainImage(thumbnail)}
+                    alt={`Thumbnail ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              {/* Main Product Image with Zoom Effect */}
+              <div className="flex-1 order-1 md:order-2">
+                <div 
+                  ref={imgRef}
+                  className="relative overflow-hidden rounded-lg aspect-square w-full"
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {/* Original Image */}
+                  <img
+                    src={mainImage}
+                    className="w-full h-full object-cover rounded-lg"
+                    alt="Product Image"
+                  />
+                  
+                  {/* Zoom Layer */}
+                  {Object.keys(zoomStyle).length > 0 && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        ...zoomStyle,
+                        backgroundRepeat: 'no-repeat',
+                        zIndex: 10
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Social Media Icons below main image */}
+                <div className="flex flex-col md:flex-row justify-between items-center mt-4 gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">Share:</span>
+                    <Icon icon="logos:messenger" className="w-5 h-5 text-blue-500 cursor-pointer hover:opacity-80" />
+                    <Icon icon="ic:baseline-facebook" className="w-5 h-5 text-blue-700 cursor-pointer hover:opacity-80" />
+                    <Icon icon="mdi:instagram" className="w-5 h-5 text-pink-500 cursor-pointer hover:opacity-80" />
+                    <Icon icon="mdi:twitter" className="w-5 h-5 text-blue-400 cursor-pointer hover:opacity-80" />
+                  </div>
+
+                  <div className="flex items-center text-gray-600 text-sm gap-1">
+                    <Icon icon="mdi:heart" className="text-red-500 text-lg" />
+                    Favorite (2.7k)
+                  </div>
+                </div>
+                {/* Product Description  */}
+                <div className="mt-4 p-4 ">
+                  <h3 className="font-bold text-black text-lg mb-2">PRODUCT DESCRIPTION</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-black">
+                    <li>Color: Black, Black + Gold</li>
+                    <li>Material: Iron art + Aluminum</li>
+                    <li>Width: 120cm</li>
+                  </ul>
+                </div>
+                {/* Payment & Security Section */}
+                <div className="mt-4 p-4 border-t border-gray-200">
+                  <h3 className="font-bold text-black text-lg mb-4">PAYMENT & SECURITY</h3>
+                  <div className="flex justify-center">
+                    <img 
+                      src="payment.webp" 
+                      alt="Payment security badges" 
+                      className="w-80 h-auto"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+          {/* Product Details */}
+          <div className="flex-1">
+            {/* Chat Now Button */}
+            <button 
+              className="border border-gray-300 px-4 py-2 rounded-lg text-sm mb-6 hover:bg-gray-50 flex items-center gap-2 transition-colors text-black"
+              onClick={() => setIsChatModalOpen(true)}
+            >
+              <Icon icon="material-symbols:chat-outline-rounded" className="text-lg" />
+              INQUIRE NOW
+            </button>
+
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">
+              Aberdeen | Modern LED Chandelier
+            </h2>
+
+            {/* Monthly Deals & Ratings */}
+            <div className="flex items-center mb-4 gap-2">
+              <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
+              <div className="flex items-center">
+                <span className="mr-1 text-black">4.5</span>
+                {[...Array(4)].map((_, i) => (
+                  <Icon key={i} icon="mdi:star" className="text-yellow-500 text-lg" />
+                ))}
+                <Icon icon="mdi:star-half" className="text-yellow-500 text-lg" />
+              </div>
+              <span className="text-gray-500 text-sm">7.3K Ratings | 10K+ Sold</span>
+            </div>
+
+            {/* Color Options */}
+            <div className="mb-6">
+              <p className="font-semibold mb-2 text-black">Color: Black</p>
+              <div className="flex gap-2">
+                <img src="floor.jpg" className="w-12 h-12 object-cover border border-gray-200 rounded cursor-pointer hover:ring-2 hover:ring-black" />
+                <img src="floor.jpg" className="w-12 h-12 object-cover border border-gray-200 rounded cursor-pointer hover:ring-2 hover:ring-black" />
+              </div>
+            </div>
+
+            {/* Price */}
+            <p className="text-2xl font-bold mb-4 text-black">₱16,995</p>
+
+            {/* Stock */}
+            <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-green-600">In Stock</span></p>
+
+            {/* Quantity & Branch Availability */}
+            <div className="flex flex-col gap-4 mb-8">
+              <div className="flex items-center gap-4">
+                <label className="font-medium text-black">Quantity:</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  defaultValue="1" 
+                  className="w-16 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:outline-none text-black" 
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="font-medium text-black">Branch Availability:</label>
+                <select className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-black focus:outline-none text-black">
+                  <option>San Pablo City</option>
+                  <option>Quezon</option>
+                  <option>Laguna</option>
+                  <option>Cavite</option>
+                  <option>Batangas</option>
+                  <option>Camarines Sur</option>
+                  <option>Sorsogon</option>
+                  <option>La Union</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Shipping Schedule */}
+            <div className="bg-yellow-100 p-4 rounded-lg mb-8 flex items-start">
+              <Icon 
+                icon="mdi:truck-delivery-outline" 
+                className="text-gray-800 text-2xl mr-3 mt-1 flex-shrink-0"
+              />
+              <div>
+                <h3 className="font-bold text-gray-800 mb-2">Shipping Schedule</h3>
+                <p className="text-gray-800 text-sm">
+                  Dispatched within 10-14 working days (for store pick up), 10-14 days (Metro Manila), and 14 days (Provincial).
+                </p>
+              </div>
+            </div>
+
+            {/* Buttons */} 
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <button 
+                className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2"
+              >
+                <Icon icon="mdi:cart-outline" className="text-lg" />
+                ADD TO CART
+              </button>
+              
+                <Link 
+                to="/checkout"
+                className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2"
+                >
+                <Icon icon="mdi:credit-card-outline" className="text-lg" />
+                BUY NOW
+                </Link>
+            </div>
+
+            {/* Wrap the following two sections in a fragment to avoid JSX errors */}
+            <>
+              {/* Delivery & Installation Section */}
+              <div className="mb-8 border-b border-gray-200 pb-6">
+                <button 
+                  className="w-full flex items-center justify-between text-xl font-semibold text-black mb-4"
+                  onClick={() => setIsDeliveryOpen(!isDeliveryOpen)}
+                >
+                  <span>DELIVERY & INSTALLATION</span>
+                  <Icon 
+                    icon={isDeliveryOpen ? "mdi:minus" : "mdi:plus"} 
+                    className="text-black text-xl" 
+                  />
+                </button>
+                
+                {isDeliveryOpen && (
+                  <div className="max-h-64 overflow-y-auto">
+                    <div className="space-y-4 pr-2">
+                      <h4 className="text-lg font-bold text-black">To ensure quality service, please read our Delivery and Installation guidelines:</h4>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li className="text-black">
+                          <strong>Free Delivery:</strong> Orders Php10,000 and above* 
+                          <span className="text-gray-600"> (within San Pablo City only)</span>
+                        </li>
+                        <li className="text-black">
+                          <strong>Free installation:</strong> Orders Php10,000 and above* 
+                          <span className="text-gray-600"> (within San Pablo City only)</span> Installation should be done on the same day of Delivery.
+                        </li>
+                        <li className="text-black">
+                          <strong>Regular Installation Fee</strong> – Php 900.00/pc*
+                        </li>
+                      </ul>
+                      <p className="text-gray-600">
+                        *Installations are applicable to lighting fixtures only.
+                      </p>
+
+                      <div className="pt-4">
+                        <h4 className="text-lg font-bold mb-2 text-black">Added notes on Delivery & Installation:</h4>
+                        <ul className="list-disc pl-6 space-y-2 text-black">
+                          <li>The customer shall be responsible to ensure that either he/she personally or a valid representative will receive the products and approve of its condition before the delivery team leaves. Damaged products should be pointed out to the delivery team upon delivery so a replacement may be scheduled.</li>
+                          <li>The customer should apply for all necessary gate passes, working and other permits needed for the delivery day.</li>
+                          <li>If the customer is not available to receive the delivery at the agreed day, new delivery will be scheduled with a corresponding delivery fee.</li>
+                          <li>Kindly check the condition of goods before signing receipt before the delivery team leaves as warranties are not indulged in our offers.</li>
+                          <li>For installation, the customer shall be responsible in ensuring that the ceiling are fit for installations. Gypsum boards without support are not fit for big fixture installation.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Care Instruction Section */}
+              <div className="mb-8 border-b border-gray-200 pb-6">
+                <button 
+                  className="w-full flex items-center justify-between text-xl font-semibold text-black mb-4"
+                  onClick={() => setIsCareOpen(!isCareOpen)}
+                >
+                  <span>CARE INSTRUCTION</span>
+                  <Icon 
+                    icon={isCareOpen ? "mdi:minus" : "mdi:plus"} 
+                    className="text-black text-xl" 
+                  />
+                </button>
+                {isCareOpen && (
+                  <div className="max-h-64 overflow-y-auto">
+                    <div className="border-t border-gray-200 pt-4 space-y-4 pr-2">
+                      <h4 className="font-semibold text-lg text-black">Care Instructions for Your Chandelier</h4>
+                      <div className="space-y-6">
+                        <div>
+                          <h5 className="font-medium mb-2 text-black">1. Identify How Your Chandelier Should be Handled</h5>
+                          <p className="text-gray-700">
+                            The type, size, and age of your chandelier will affect the steps you will have to take to care for it. If you
+                            have an antique or a crystal chandelier, for example, then you will need to take more precautions than
+                            if you have a newer or mass-produced chandelier. Check out advice from your chandelier's manufacturer
+                            for tips on how you should care for your chandelier and how often. You can find a lot of useful tips online
+                            as well.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-medium mb-2 text-black">2. Dismantle and Clean</h5>
+                          <p className="text-gray-700 mb-2">
+                            It is possible to clean a chandelier with just a dry cloth to avoid risk from the electrical components, but it isn't
+                            as effective and can actually take longer sometimes. A better method is to take your chandelier apart and hand
+                            clean it piece by piece. It is a little time consuming but doing it every few months or whenever you have an
+                            important event coming up will be enough. Experts suggest every two to six months, depending on
+                            the conditions in the room the chandelier is hanging.
+                          </p>
+                          <p className="text-gray-700 font-medium mb-1 text-black">Essentially, you need to:</p>
+                          <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                            <li>Carefully take the chandelier down</li>
+                            <li>Lay out each individual piece on a blanket</li>
+                            <li>Wash each piece with hot water and a little detergent</li>
+                            <li>Rinse, dry, polish, and then put the chandelier back together again</li>
+                          </ul>
+                          <p className="text-gray-700 mt-2">
+                            Take special care with crystals or other delicate components and be wary of electrical parts. Scheduling time to
+                            do this however often your chandelier needs it will keep it looking nice at all times.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-medium mb-2 text-black">3. Dust Weekly</h5>
+                          <p className="text-gray-700">
+                            When you are doing your daily or weekly cleaning, it can be easy to forget about your light fixtures which is
+                            how dust and grime can build up on them so easily, often without you noticing. Not only does this make it
+                            harder when it does come time to give them a thorough cleaning, it can be troublesome for people with
+                            asthma or allergies. Instead, don't forget to run your chandelier over with a duster at least once a week and get
+                            as much dust as you are able to. It won't always be possible to get your chandelier completely clean this way,
+                            but it will make things easier when you do your thorough cleaning as described above.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-medium mb-2 text-black">4. Hire a Professional</h5>
+                          <p className="text-gray-700">
+                            If dismantling and cleaning your chandelier seems too difficult or too much for you to do alone, consider hiring
+                            a professional cleaning company which specializes in chandeliers. Not only will the professional cleaners be
+                            able to take apart and reassemble your chandelier safely, they will also be able to give it that extra sparkle. It is
+                            a big job so if you don't have the time or skills, a professional pays for themselves. Check out cleaning
+                            companies in your area which can help you and schedule a visit every few months or so.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-medium mb-2 text-black">5. Regular Maintenance</h5>
+                          <p className="text-gray-700">
+                            Cleaning is only one aspect of keeping your chandelier looking good. You also need to make sure it is working
+                            properly and being put together correctly. Again, you can either pick this up yourself by looking for some online guides
+                            or YouTube videos or hire a professional who knows how to maintain chandeliers. If you have an antique or a
+                            particularly large chandelier then this will be even more important. There are companies which specialize in
+                            restoring antique chandeliers which have lost their shine. Even smaller modern chandeliers will need some
+                            maintenance every once in a while to keep them functional. Many companies will be able to clean and fix up
+                            your chandelier on the same visit, saving you both time and money. Don't forget to clean and change the
+                            light bulbs regularly as well.
+                          </p>
+                        </div>
+
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <p className="text-gray-700">
+                            Taking care of your chandelier can seem like a daunting task at first, but it is well worth it when you see how
+                            shiny and nice looking your chandelier will become. Whether you do it yourself or hire a professional,
+                            making regular chandelier cleaning, maintenance, and restoration a part of your cleaning routine along
+                            with weekly dusting will ensure your chandelier will always impress and make your home look good.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          </div>
+        </div>
+      </div>
+
+        
+      {/* Chat Modal */}
+      {isChatModalOpen && (
+        <div className="fixed inset-0 z-50">
+          {/* Backdrop with fade animation */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+            onClick={() => setIsChatModalOpen(false)}
+          />
+          
+          {/* Modal container with slide-up animation */}
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <div 
+              className="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button overlay */}
+              <button
+                onClick={() => setIsChatModalOpen(false)}
+                className="absolute -top-10 -right-10 md:top-4 md:right-4 z-10 p-2 text-white hover:text-gray-200 transition-colors"
+              >
+                <Icon icon="mdi:close" width={24} height={24} />
+              </button>
+              
+              {/* Chat component */}
+              <div className="h-full">
+                <ChatNow onClose={() => setIsChatModalOpen(false)} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Ratings, Feature Section, Footer */}
+      <div>
+        {/* Product Ratings */}
+        <div className="mt-12 max-w-7xl mx-auto">
+          <h3 className="text-2xl font-semibold text-black mb-6">PRODUCT RATINGS</h3>
+
+          {/* Review Box */}
+          <div className="border border-black rounded-lg p-6 shadow-sm relative">
+            <div className="flex items-start gap-4">
+              {/* User Avatar */}
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                  <Icon icon="qlementine-icons:user-16" className="w-12 h-12 text-gray-400" />
+                </div>
+              </div>
+
+              {/* Review Content */}
+              <div className="flex-1 space-y-2">
+                {/* User Name */}
+                <p className="font-semibold text-black">John D.</p>
+                
+                {/* Star Rating */}
+                <div className="flex items-center mb-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Icon key={i} icon="mdi:star" className={`w-5 h-5 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                  ))}
+                </div>
+
+                {/* Date and Variation */}
+                <p className="text-gray-500 text-sm">2025-03-14 12:00 | Variation: Black</p>
+                
+                {/* Ratings */}
+                <div className="space-y-1 mt-2">
+                  <p className="text-black">Performance: Good</p>
+                  <p className="text-black">Durability: Good</p>
+                  <p className="text-black">Quality: Good</p>
+                </div>
+                
+                {/* Comment */}
+                <div className="mt-2">
+                  <p className="text-black font-medium">Comment: <span className="font-normal">Very Good</span></p>
+                </div>
+
+                {/* Image */}
+                <div className="mt-3">
+                  <img 
+                    src="aber.webp" 
+                    alt="Review" 
+                    className="w-24 h-24 object-cover rounded-md border border-gray-200"
+                  />
+                </div>
+
+                {/* Like Button */}
+                <div className="flex items-center gap-4 mt-3">
+                  <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:thumb-up-outline" className="h-5 w-5" />
+                    <span>123</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* View More */}
+            <div className="absolute bottom-4 right-4">
+              <button className="text-sm text-gray-500 hover:underline">View More</button>
+            </div>
+          </div>
+        </div>
+
+       
+          
+        
+      </div>
+        
+     
+    </div>
+  );
+};
+
+export default ItemDescription;

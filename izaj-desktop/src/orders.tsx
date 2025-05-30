@@ -38,7 +38,6 @@ interface Order {
   discount: string;
   grandTotal: string;
   estimatedDeliveryDate: string;
-  customerSupportContact: string;
 }
 
 const sampleOrders: Order[] = [
@@ -71,7 +70,6 @@ const sampleOrders: Order[] = [
     discount: '₱ 100',
     grandTotal: '₱ 4,149',
     estimatedDeliveryDate: '03/15/2025',
-    customerSupportContact: 'support@company.com',
   },
 ];
 
@@ -542,13 +540,6 @@ function Orders({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) => v
                     <div className="flex justify-between text-lg font-extrabold text-yellow-600 mt-2">
                       <span>Grand Total:</span>
                       <span>{modalOrder.grandTotal}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Customer Support</span>
-                    <div className="flex items-center gap-2">
-                      <Icon icon="mdi:headset" className="text-lg text-blue-400" />
-                      <span className="text-sm">{modalOrder.customerSupportContact}</span>
                     </div>
                   </div>
                 </div>
