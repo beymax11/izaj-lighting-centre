@@ -180,12 +180,18 @@ const Header: React.FC<HeaderProps> = ({
 
               {/* Heart Icon */}
               <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
-                <FavoritesDropdown user={user} />
+                <FavoritesDropdown 
+                  user={user} 
+                  onOpenAuthModal={() => setIsModalOpen?.(true)}
+                />
               </div>
 
               {/* Notification Icon */}
               <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
-                <NotificationDropdown user={user} />
+                <NotificationDropdown 
+                  user={user} 
+                  onOpenAuthModal={() => setIsModalOpen?.(true)}
+                />
               </div>
 
               {/* Cart Icon */}
