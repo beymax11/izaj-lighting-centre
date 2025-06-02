@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
-
-
+import { Link } from "react-router-dom";
 
 type Product = {
   description: string;
@@ -16,13 +15,97 @@ type Product = {
   isOnSale?: boolean;
 };
 
-const ProductList: React.FC = () => {
+interface ProductListProps {
+  user?: {
+    name: string;
+    email: string;
+  } | null;
+}
+
+const ProductList: React.FC<ProductListProps> = ({ user }) => {
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
+  const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
+  const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
+  const [fansDropdownOpen, setFansDropdownOpen] = useState(false);
+  const [currentDealIndex, setCurrentDealIndex] = useState(0);
+  const [deals, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
+
+  // Sample deals data
+  useEffect(() => {
+    const sampleDeals = [
+      {
+        id: 1,
+        image: "ceiling.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 2,
+        image: "chadelier.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 3,
+        image: "cluster.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 4,
+        image: "pendant.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 5,
+        image: "floor.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 6,
+        image: "floor.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 7,
+        image: "floor.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+      {
+        id: 8,
+        image: "floor.jpg",
+        title: "Aberdeen | Modern LED Chandelier",
+        oldPrice: "₱16,995",
+        newPrice: "₱15,995",
+        discount: "10% off"
+      },
+    ];
+    
+    setDeals(sampleDeals);
+  }, []);
 
   // Mock product data - in a real app, this would come from an API
   useEffect(() => {
@@ -76,18 +159,22 @@ const ProductList: React.FC = () => {
   };
 
 
-
+ {/* Main Content */}
   return (
-    <div className="bg-white min-h-screen">
-     
-      {/* Main Content */}
+    <div className="bg-white min-h-screen px-24">
+      {/* Breadcrumb */}
+      <div className="text-sm text-black mb-6 pt-6">
+        <a href="/" className="hover:underline">Home</a>
+        <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
+        <span>All Lighting Fixtures</span>
+      </div>
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-1/5 p-6 border-r">
+        <aside className="w-1/6 p-6 pl-12 pr-4">
           <h3 className="font-bold text-black mb-4">SHOP</h3>
           <ul className="space-y-2 text-sm text-black">
             <li className="font-bold flex items-center justify-between cursor-pointer select-none" onClick={() => setSidebarDropdownOpen(v => !v)}>
-              <span>All Lighting Fixtures</span>
+              <span>Lighting Fixtures</span>
               <Icon
                 icon="mdi:chevron-down"
                 className={`ml-2 transition-transform duration-200 ${sidebarDropdownOpen ? "rotate-180" : ""}`}
@@ -95,6 +182,7 @@ const ProductList: React.FC = () => {
                 height="20"
               />
             </li>
+            
             {sidebarDropdownOpen && (
               <ul className="pl-4 space-y-1">
                 <li className="hover:underline cursor-pointer">Ceiling Lights</li>
@@ -109,11 +197,66 @@ const ProductList: React.FC = () => {
                 <li className="hover:underline cursor-pointer">Painting & Bathroom Lights</li>
               </ul>
             )}
+
+            <li className="font-bold flex items-center justify-between cursor-pointer select-none mt-4" onClick={() => setArchitecturalDropdownOpen(v => !v)}>
+              <span>Architectural Lights</span>
+              <Icon
+                icon="mdi:chevron-down"
+                className={`ml-2 transition-transform duration-200 ${architecturalDropdownOpen ? "rotate-180" : ""}`}
+                width="20"
+                height="20"
+              />
+            </li>
+            {architecturalDropdownOpen && (
+              <ul className="pl-4 space-y-1">
+                <li className="hover:underline cursor-pointer">Track Lights</li>
+                <li className="hover:underline cursor-pointer">Recessed Lights</li>
+                <li className="hover:underline cursor-pointer">Spot Lights</li>
+                <li className="hover:underline cursor-pointer">Strip Lights</li>
+                <li className="hover:underline cursor-pointer">Emergency Lights</li>
+              </ul>
+            )}
+
+            <li className="font-bold flex items-center justify-between cursor-pointer select-none mt-4" onClick={() => setMirrorsDropdownOpen(v => !v)}>
+              <span>Mirrors</span>
+              <Icon
+                icon="mdi:chevron-down"
+                className={`ml-2 transition-transform duration-200 ${mirrorsDropdownOpen ? "rotate-180" : ""}`}
+                width="20"
+                height="20"
+              />
+            </li>
+            {mirrorsDropdownOpen && (
+              <ul className="pl-4 space-y-1">
+                <li className="hover:underline cursor-pointer">Bathroom Mirrors</li>
+                <li className="hover:underline cursor-pointer">Wall Mirrors</li>
+                <li className="hover:underline cursor-pointer">LED Mirrors</li>
+                <li className="hover:underline cursor-pointer">Decorative Mirrors</li>
+              </ul>
+            )}
+
+            <li className="font-bold flex items-center justify-between cursor-pointer select-none mt-4" onClick={() => setFansDropdownOpen(v => !v)}>
+              <span>Ceiling Fans</span>
+              <Icon
+                icon="mdi:chevron-down"
+                className={`ml-2 transition-transform duration-200 ${fansDropdownOpen ? "rotate-180" : ""}`}
+                width="20"
+                height="20"
+              />
+            </li>
+            {fansDropdownOpen && (
+              <ul className="pl-4 space-y-1">
+                <li className="hover:underline cursor-pointer">Standard Fans</li>
+                <li className="hover:underline cursor-pointer">DC Fans</li>
+                <li className="hover:underline cursor-pointer">Industrial Fans</li>
+                <li className="hover:underline cursor-pointer">Outdoor Fans</li>
+              </ul>
+            )}
           </ul>
         </aside>
 
         {/* Product List */}
-        <main className="w-4/5 p-6">
+        <main className="w-5/6 p-6 px-24">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-black mb-3" style={{ fontFamily: "'Poppins', serif" }}>All Lighting Fixtures</h1>
             
@@ -132,12 +275,12 @@ const ProductList: React.FC = () => {
             {/* Filter and Sort Controls - Now Functional */}
             <div className="flex justify-between items-center mb-6 bg-gray-50 p-4 rounded-md">
               <div>
-                <label htmlFor="sort" className="mr-2 text-sm text-gray-700">Sort by:</label>
+                <label htmlFor="sort" className="mr-2 text-sm text-black">Sort by:</label>
                 <select 
                   id="sort" 
                   value={sortOption}
                   onChange={handleSortChange}
-                  className="border text-sm px-3 py-2 rounded-md focus:ring-2 focus:ring-black focus:outline-none"
+                  className="border text-sm px-3 py-2 rounded-md focus:ring-2 focus:ring-black focus:outline-none text-black"
                 >
                   <option>Alphabetical, A-Z</option>
                   <option>Alphabetical, Z-A</option>
@@ -147,18 +290,18 @@ const ProductList: React.FC = () => {
               </div>
               
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">{filteredProducts.length} products</span>
+                <span className="text-sm text-black">{filteredProducts.length} products</span>
                 <div className="flex">
                   <button 
                     onClick={() => handleViewModeChange('grid')}
-                    className={`p-1.5 border border-r-0 rounded-l-md ${viewMode === 'grid' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'}`}
+                    className={`p-1.5 border border-r-0 rounded-l-md ${viewMode === 'grid' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
                     title="Grid view"
                   >
                     <Icon icon="mdi:grid" width="16" height="16" />
                   </button>
                   <button 
                     onClick={() => handleViewModeChange('list')}
-                    className={`p-1.5 border rounded-r-md ${viewMode === 'list' ? 'bg-gray-200' : 'bg-white hover:bg-gray-100'}`}
+                    className={`p-1.5 border rounded-r-md ${viewMode === 'list' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
                     title="List view"
                   >
                     <Icon icon="mdi:format-list-bulleted" width="16" height="16" />
@@ -170,7 +313,7 @@ const ProductList: React.FC = () => {
 
          {/* Product Grid - Enhanced Design */}
 {viewMode === 'grid' ? (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
     {filteredProducts.map((product) => (
       <div key={product.id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group border border-gray-100">
         <div className="relative">
@@ -228,14 +371,14 @@ const ProductList: React.FC = () => {
           
           {product.isOnSale ? (
             <div className="mt-2 flex items-baseline space-x-2">
-              <p className="text-orange-600 text-lg font-bold">₱{product.price.toLocaleString()}</p>
+              <p className="text-black text-lg font-bold">₱{product.price.toLocaleString()}</p>
               <p className="text-gray-400 text-sm line-through">₱{product.originalPrice?.toLocaleString()}</p>
               <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">
                 {Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)}% OFF
               </span>
             </div>
           ) : (
-            <p className="text-orange-600 text-lg font-bold mt-2">₱{product.price.toLocaleString()}</p>
+            <p className="text-black text-lg font-bold mt-2">₱{product.price.toLocaleString()}</p>
           )}
           
           <p className="text-xs text-gray-500 mt-2 uppercase tracking-wider font-medium">Available for Inquiry</p>
@@ -302,7 +445,7 @@ const ProductList: React.FC = () => {
             <div className="mt-3 md:mt-0">
               {product.isOnSale ? (
                 <div className="flex items-center space-x-2">
-                  <p className="text-orange-600 text-2xl font-bold">₱{product.price.toLocaleString()}</p>
+                  <p className="text-black text-2xl font-bold">₱{product.price.toLocaleString()}</p>
                   <div className="flex flex-col items-end">
                     <p className="text-gray-400 text-sm line-through">₱{product.originalPrice?.toLocaleString()}</p>
                     <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">
@@ -311,7 +454,7 @@ const ProductList: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <p className="text-orange-600 text-2xl font-bold">₱{product.price.toLocaleString()}</p>
+                <p className="text-black text-2xl font-bold">₱{product.price.toLocaleString()}</p>
               )}
             </div>
           </div>
@@ -404,68 +547,116 @@ const ProductList: React.FC = () => {
     </div>
   </div>
 </div>
+
  {/* RECENTLY VIEWED */}
- <div className="mt-16 px-4">
-<h2 className="text-2xl font-bold text-black mb-8 text-left">RECENTLY VIEWED</h2>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    {/* Deal 1 */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      
-      <img
-        src="ceiling.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
+ <div className="mt-16 px-16 mx-16">
+          {/* Title */}
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+              RECENTLY VIEWED
+            </h2>
+            <Link
+              to="/product-list"
+              state={user ? { user } : undefined}
+              className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            >
+              View all
+            </Link>
+          </div>
+          
+          <div className="relative group" style={{
+            height: "500px", // Fixed height to prevent vertical scrolling
+            overflow: "hidden", // Hide overflow
+          }}>
+            {/* First Page with 4 items */}
+            <div
+              className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
+              style={{
+                opacity: currentDealIndex === 0 ? 1 : 0,
+                transform: `translateX(${currentDealIndex === 0 ? "0" : "-100%"})`,
+                pointerEvents: currentDealIndex === 0 ? "auto" : "none",
+              }}
+            >
+              {deals.slice(0, 4).map((deal) => (
+                <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                  <div className="relative overflow-hidden flex-grow">
+                    <img
+                      src={deal.image}
+                      alt={deal.title}
+                      className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+                    />
+                    <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                      RECENTLY VIEWED
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-black mt-4">{deal.title}</h3>
+                  <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+                  <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+                  <Link to="/item-description">
+                    <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
+                      CHOOSE OPTIONS
+                    </button>
+                  </Link>
+                </div>
+              ))}
+            </div>
 
-    {/* Repeat similar blocks for other deals */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      
-      <img
-        src="ceiling.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
+            {/* Second Page with next 4 items */}
+            <div
+              className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
+              style={{
+                opacity: currentDealIndex === 1 ? 1 : 0,
+                transform: `translateX(${currentDealIndex === 1 ? "0" : "100%"})`,
+                pointerEvents: currentDealIndex === 1 ? "auto" : "none",
+              }}
+            >
+              {deals.slice(4, 8).map((deal) => (
+                <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                  <div className="relative overflow-hidden flex-grow">
+                    <img
+                      src={deal.image}
+                      alt={deal.title}
+                      className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+                    />
+                    <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+                      RECENTLY VIEWED
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-black mt-4">{deal.title}</h3>
+                  <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+                  <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+                  <Link to="/item-description">
+                    <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
+                      CHOOSE OPTIONS
+                    </button>
+                  </Link>
+                </div>
+              ))}
+            </div>
 
-    {/* Add other deals as needed */}
-    {/* Repeat similar blocks for other deals */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-    
-      <img
-        src="ceiling.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
-    {/* Repeat similar blocks for other deals */}
-    <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      
-      <img
-        src="ceiling.jpg" 
-        alt="Aberdeen LED Chandelier"
-        className="w-full h-80 object-cover rounded-md"
-      />
-      <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-      <p className="text-gray-500 text-sm line-through">₱16,995</p>
-      <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-      <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">CHOOSE OPTIONS</button>
-    </div>
-  </div>
-</div>
+            {/* Navigation Buttons */}
+            {currentDealIndex === 1 && (
+              <button
+                onClick={() => setCurrentDealIndex(0)}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
+                style={{ zIndex: 10 }}
+              >
+                <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
+              </button>
+            )}
 
+            {currentDealIndex === 0 && (
+              <button
+                onClick={() => setCurrentDealIndex(1)}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
+                style={{ zIndex: 10 }}
+              >
+                <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
+              </button>
+            )}
+          </div>
+        </div>
 
     </div>
 

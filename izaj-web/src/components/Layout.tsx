@@ -12,6 +12,7 @@ interface LayoutProps {
   setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAccountDropdownOpen: boolean;
   handleLogout: () => void;
+  footerRef: React.RefObject<HTMLDivElement>;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -20,10 +21,11 @@ const Layout: React.FC<LayoutProps> = ({
   setIsModalOpen,
   setIsAccountDropdownOpen,
   isAccountDropdownOpen,
-  handleLogout
+  handleLogout,
+  footerRef
 }) => {
   return (
-    <div className="min-h-screen bg-white text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans overflow-x-hidden">
       <Header
         user={user}
         setIsModalOpen={setIsModalOpen}
@@ -34,7 +36,9 @@ const Layout: React.FC<LayoutProps> = ({
       <main className="p-0 mx-0 w-full">
         {children}
       </main>
-      <Footer />
+      <div ref={footerRef}>
+        <Footer />
+      </div>
     </div>
   );
 };

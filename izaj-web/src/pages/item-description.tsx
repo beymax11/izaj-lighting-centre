@@ -93,7 +93,7 @@ const ItemDescription: React.FC = () => {
                 {/* Social Media Icons below main image */}
                 <div className="flex flex-col md:flex-row justify-between items-center mt-4 gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">Share:</span>
+                    <span className="font-medium text-sm text-black">Share:</span>
                     <Icon icon="logos:messenger" className="w-5 h-5 text-blue-500 cursor-pointer hover:opacity-80" />
                     <Icon icon="ic:baseline-facebook" className="w-5 h-5 text-blue-700 cursor-pointer hover:opacity-80" />
                     <Icon icon="mdi:instagram" className="w-5 h-5 text-pink-500 cursor-pointer hover:opacity-80" />
@@ -388,110 +388,257 @@ const ItemDescription: React.FC = () => {
       </div>
 
         
-      {/* Chat Modal */}
+       {/* Chat Modal */}
       {isChatModalOpen && (
-        <div className="fixed inset-0 z-50">
-          {/* Backdrop with fade animation */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
-            onClick={() => setIsChatModalOpen(false)}
-          />
-          
-          {/* Modal container with slide-up animation */}
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <div 
-              className="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* No backdrop here, just the modal */}
+          <div
+            className="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button overlay */}
+            <button
+              onClick={() => setIsChatModalOpen(false)}
+              className="absolute -top-10 -right-10 md:top-4 md:right-4 z-10 p-2 text-white hover:text-gray-200 transition-colors"
             >
-              {/* Close button overlay */}
-              <button
-                onClick={() => setIsChatModalOpen(false)}
-                className="absolute -top-10 -right-10 md:top-4 md:right-4 z-10 p-2 text-white hover:text-gray-200 transition-colors"
-              >
-                <Icon icon="mdi:close" width={24} height={24} />
-              </button>
-              
-              {/* Chat component */}
-              <div className="h-full">
-                <ChatNow onClose={() => setIsChatModalOpen(false)} />
-              </div>
+              <Icon icon="mdi:close" width={24} height={24} />
+            </button>
+            {/* Chat component */}
+            <div className="h-full">
+              <ChatNow onClose={() => setIsChatModalOpen(false)} />
             </div>
           </div>
         </div>
       )}
 
-      {/* Product Ratings, Feature Section, Footer */}
-      <div>
-        {/* Product Ratings */}
-        <div className="mt-12 max-w-7xl mx-auto">
-          <h3 className="text-2xl font-semibold text-black mb-6">PRODUCT RATINGS</h3>
+      {/* Product Ratings */}
+      <div className="mt-12 max-w-7xl mx-auto px-4">
+        <h3 className="text-2xl font-semibold text-black mb-6">PRODUCT RATINGS & REVIEWS</h3>
 
-          {/* Review Box */}
-          <div className="border border-black rounded-lg p-6 shadow-sm relative">
-            <div className="flex items-start gap-4">
-              {/* User Avatar */}
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                  <Icon icon="qlementine-icons:user-16" className="w-12 h-12 text-gray-400" />
-                </div>
-              </div>
-
-              {/* Review Content */}
-              <div className="flex-1 space-y-2">
-                {/* User Name */}
-                <p className="font-semibold text-black">John D.</p>
-                
-                {/* Star Rating */}
-                <div className="flex items-center mb-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Icon key={i} icon="mdi:star" className={`w-5 h-5 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
-                  ))}
-                </div>
-
-                {/* Date and Variation */}
-                <p className="text-gray-500 text-sm">2025-03-14 12:00 | Variation: Black</p>
-                
-                {/* Ratings */}
-                <div className="space-y-1 mt-2">
-                  <p className="text-black">Performance: Good</p>
-                  <p className="text-black">Durability: Good</p>
-                  <p className="text-black">Quality: Good</p>
-                </div>
-                
-                {/* Comment */}
-                <div className="mt-2">
-                  <p className="text-black font-medium">Comment: <span className="font-normal">Very Good</span></p>
-                </div>
-
-                {/* Image */}
-                <div className="mt-3">
-                  <img 
-                    src="aber.webp" 
-                    alt="Review" 
-                    className="w-24 h-24 object-cover rounded-md border border-gray-200"
-                  />
-                </div>
-
-                {/* Like Button */}
-                <div className="flex items-center gap-4 mt-3">
-                  <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
-                    <Icon icon="mdi:thumb-up-outline" className="h-5 w-5" />
-                    <span>123</span>
-                  </button>
+        {/* Ratings Summary */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Overall Rating */}
+            <div className="flex-1">
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <h4 className="text-4xl font-bold text-black">4.5</h4>
+                  <div className="flex items-center justify-center my-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Icon key={i} icon="mdi:star" className={`w-5 h-5 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-sm">Based on 7.3K reviews</p>
                 </div>
               </div>
             </div>
 
-            {/* View More */}
-            <div className="absolute bottom-4 right-4">
-              <button className="text-sm text-gray-500 hover:underline">View More</button>
+            {/* Rating Breakdown */}
+            <div className="flex-1">
+              <div className="space-y-2">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <div key={rating} className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600 w-8">{rating}★</span>
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-yellow-400 rounded-full"
+                        style={{ width: `${(rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 5 : rating === 2 ? 3 : 2)}%` }}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-600 w-12">
+                      {rating === 5 ? '70%' : rating === 4 ? '20%' : rating === 3 ? '5%' : rating === 2 ? '3%' : '2%'}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-       
-          
-        
+        {/* Review Filters */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <button className="px-4 py-2 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition-colors">
+            All Reviews
+          </button>
+          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+            With Photos
+          </button>
+          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+            Verified Purchase
+          </button>
+        </div>
+
+        {/* Review Cards */}
+        <div className="space-y-6">
+          {/* Review Card 1 */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start gap-4">
+              {/* User Avatar */}
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Icon icon="qlementine-icons:user-16" className="w-8 h-8 text-gray-400" />
+                </div>
+              </div>
+
+              {/* Review Content */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="font-semibold text-black">John D.</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Icon key={i} icon="mdi:star" className={`w-4 h-4 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        ))}
+                      </div>
+                      <span className="text-gray-500 text-sm">2025-03-14</span>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-600">Verified Purchase</span>
+                </div>
+
+                {/* Review Images */}
+                <div className="flex gap-2 my-3">
+                  <img 
+                    src="aber.webp" 
+                    alt="Review" 
+                    className="w-20 h-20 object-cover rounded-md border border-gray-200 hover:opacity-90 cursor-pointer"
+                  />
+                  <img 
+                    src="aber2.webp" 
+                    alt="Review" 
+                    className="w-20 h-20 object-cover rounded-md border border-gray-200 hover:opacity-90 cursor-pointer"
+                  />
+                </div>
+
+                {/* Review Text */}
+                <p className="text-gray-700 mb-3">
+                  The chandelier exceeded my expectations! The quality is outstanding and it looks even better in person. The installation was smooth and the customer service was excellent.
+                </p>
+
+                {/* Review Metrics */}
+                <div className="grid grid-cols-3 gap-4 mb-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Performance</p>
+                    <div className="flex items-center gap-1">
+                      <Icon icon="mdi:star" className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">Excellent</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Durability</p>
+                    <div className="flex items-center gap-1">
+                      <Icon icon="mdi:star" className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">Good</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Quality</p>
+                    <div className="flex items-center gap-1">
+                      <Icon icon="mdi:star" className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">Excellent</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Review Actions */}
+                <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+                  <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:thumb-up-outline" className="h-5 w-5" />
+                    <span>123</span>
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:comment-outline" className="h-5 w-5" />
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:share-variant" className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Review Card 2 */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start gap-4">
+              {/* User Avatar */}
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Icon icon="qlementine-icons:user-16" className="w-8 h-8 text-gray-400" />
+                </div>
+              </div>
+
+              {/* Review Content */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="font-semibold text-black">Sarah M.</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Icon key={i} icon="mdi:star" className={`w-4 h-4 ${i < 5 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        ))}
+                      </div>
+                      <span className="text-gray-500 text-sm">2025-03-13</span>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-600">Verified Purchase</span>
+                </div>
+
+                {/* Review Text */}
+                <p className="text-gray-700 mb-3">
+                  Absolutely stunning piece! The craftsmanship is impeccable and it adds such elegance to our living room. The LED lights are bright but not harsh, creating the perfect ambiance.
+                </p>
+
+                {/* Review Metrics */}
+                <div className="grid grid-cols-3 gap-4 mb-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Performance</p>
+                    <div className="flex items-center gap-1">
+                      <Icon icon="mdi:star" className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">Excellent</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Durability</p>
+                    <div className="flex items-center gap-1">
+                      <Icon icon="mdi:star" className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">Excellent</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Quality</p>
+                    <div className="flex items-center gap-1">
+                      <Icon icon="mdi:star" className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">Excellent</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Review Actions */}
+                <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+                  <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:thumb-up-outline" className="h-5 w-5" />
+                    <span>89</span>
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:comment-outline" className="h-5 w-5" />
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700">
+                    <Icon icon="mdi:share-variant" className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Load More Button */}
+        <div className="text-center mt-8">
+          <button className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+            Load More Reviews
+          </button>
+        </div>
       </div>
         
      

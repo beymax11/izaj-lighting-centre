@@ -15,8 +15,8 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   const heroImages = [
     {
       image: "hero1.jpg",
-      heading: "IZAJ LIGHTING CENTRE",
-      subheading: "Our team is passionate about helping you find the perfect lighting.",
+      heading: "Soft Light, Slow Days",
+      subheading: "In a space where texture breathe and sunlight dances, soft lighting enhances the feeling of ease",
     },
     {
       image: "hero2.jpg",
@@ -124,16 +124,21 @@ const Home: React.FC<HomeProps> = ({ user }) => {
           />
 
           {/* Overlay Text */}
-          <div className="absolute bottom-4 left-4 bg-black/70 text-white text-left p-4 rounded-lg shadow-lg">
-            <h1 
-            className="text-2xl md:text-3xl font-bold mb-2" 
-            style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-            {heroImages[currentHeroIndex].heading}
-            </h1>
-            <p className="text-lg md:text-xl" style={{ fontFamily: "'Poppins', serif" }}>
-            {heroImages[currentHeroIndex].subheading}
-            </p>
+          <div className="absolute bottom-0 left-0 w-full bg-black/70 text-white p-8">
+            <div className="max-w-4xl">
+              <h1 
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4" 
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                {heroImages[currentHeroIndex].heading}
+              </h1>
+              <p 
+                className="text-xl md:text-2xl lg:text-3xl" 
+                style={{ fontFamily: "'Poppins', serif" }}
+              >
+                {heroImages[currentHeroIndex].subheading}
+              </p>
+            </div>
           </div>
 
           {/* Dots Navigation */}
@@ -167,11 +172,22 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         </div>
 
         {/* Monthly Deals Section */}
-        <div className="mt-16 px-8 mx-8">
+        <div className="mt-16 px-16 mx-16">
           {/* Title */}
-          <h2 className="text-2xl font-bold text-black mb-8 text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
-            MONTHLY DEALS
-          </h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+              Monthly Deals
+            </h2>
+            <Link
+            to="/product-list"
+            state={user ? { user } : undefined}
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+          >
+            View all
+        
+          </Link>
+          </div>
           
           <div className="relative group" style={{
             height: "500px", // Fixed height to prevent vertical scrolling
@@ -319,11 +335,21 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         </div>
 
         {/* Fresh Drops Section */}
-        <div className="mt-12 px-8 mx-8">
+        <div className="mt-8 px-16 mx-16">
           {/* Title */}
-          <h2 className="text-2xl font-bold text-black mb-8 text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
-            FRESH DROPS
-          </h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+              Fresh Drops
+            </h2>
+            <Link
+              to="/product-list"
+              state={user ? { user } : undefined}
+              className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            >
+              View all
+            </Link>
+          </div>
           
           <div className="relative group" style={{
             height: "500px",
@@ -426,7 +452,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         <div className="mt-16 px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {/* Top Picks Card */}
-            <div className="relative w-full h-80 rounded-lg overflow-hidden">
+            <div className="relative w-full h-64 rounded-lg overflow-hidden">
               <img
                 src="featured.jpg"
                 alt="Top Picks"
@@ -442,7 +468,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
             </div>
 
             {/* What's Hot Card */}
-            <div className="relative w-full h-80 rounded-lg overflow-hidden">
+            <div className="relative w-full h-64 rounded-lg overflow-hidden">
               <img
                 src="featured.jpg"
                 alt="What's Hot"

@@ -23,7 +23,7 @@ const ChangePass: React.FC = () => {
           <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-indigo-100 shadow-sm">
             <img src="profile.webp" alt="User" className="w-full h-full object-cover" />
           </div>
-          <div className="font-medium text-lg mb-6 text-center">Daniela Padilla</div>
+          <div className="font-medium text-lg mb-6 text-center text-black">Daniela Padilla</div>
         
             <ul className="w-full space-y-1">
             <li className="flex items-center p-3 bg-indigo-50 rounded-lg mb-1">
@@ -53,7 +53,7 @@ const ChangePass: React.FC = () => {
       
       {/* Right Column - Change Password Section */}
       <div className="flex-1">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">CHANGE PASSWORD</h2>
+      <h2 className="text-3xl font-bold mb-8 text-gray-800">CHANGE PASSWORD</h2>
         
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Header */}

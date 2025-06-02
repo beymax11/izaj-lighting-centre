@@ -22,12 +22,15 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
     { id: 7, name: "Floor Lamps", image: "floor.avif" },
     { id: 8, name: "Painting Lights", image: "painting.avif" },
     { id: 9, name: "Indoor Lights", image: "indoor.avif" },
+    { id: 10, name: "Outdoor Lights", image: "outdoor.avif" },
+    { id: 11, name: "Mirror", image: "mirror.avif" },
+    { id: 12, name: "Magnetic Lights", image: "magnetic.avif" },
   ];
 
   const [currentPage, setCurrentPage] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const firstPageItems = allItems.slice(0, 6);
-  const secondPageItems = allItems.slice(6, 10);
+  const secondPageItems = allItems.slice(6, 12);
 
   const handleNextClick = () => {
     setCurrentPage((prev) => (prev === 0 ? 1 : 0));
@@ -47,9 +50,9 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
   return (
     <>
       <style>{slideLeftKeyframes}</style>
-      <div className="flex justify-between items-center mb-4 px-8 mt-16 mx-8">
-        <h2 className="text-2xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
-          LIGHTING CATEGORY
+      <div className="flex justify-between items-center mb-4 px-8 mt-16 mx-20">
+        <h2 className="text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+          Lighting Category
         </h2>
         <div className="flex items-center">
           <Link
@@ -58,13 +61,13 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
             className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
             style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
           >
-            VIEW ALL
+            View all
           </Link>
         </div>
       </div>
 
       <div
-        className="relative group"
+        className="relative group mx-20"
         style={{
           minHeight: "220px",
           scrollbarWidth: "none",

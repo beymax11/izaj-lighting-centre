@@ -23,12 +23,12 @@ const AboutUs: React.FC = () => {
 
      {/* Main Content  */}
 <main className="flex-grow bg-gray-50 py-16">
-  <article className="relative max-w-5xl mx-auto bg-white rounded-3xl shadow-xl px-8 py-14 md:py-20 md:px-20 prose prose-lg prose-gray text-gray-800">
+  <article className="relative max-w-7xl mx-auto bg-white rounded-3xl shadow-xl px-8 py-14 md:py-20 md:px-20 prose prose-lg prose-gray text-gray-800">
     {/* Decorative vertical line for article feel */}
     <div className="hidden md:block absolute left-0 top-10 bottom-10 w-1 bg-gradient-to-b from-orange-400/30 via-gray-200 to-orange-400/30 rounded-full pointer-events-none"></div>
     <header>
       <h1 className="text-5xl font-extrabold mb-6 tracking-tight text-gray-900 text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
-        About Us
+        ABOUT US
       </h1>
     </header>
     <section>

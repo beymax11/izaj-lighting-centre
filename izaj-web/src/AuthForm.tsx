@@ -1,6 +1,5 @@
-import React, { useReducer, useEffect, useRef, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Icon } from "@iconify/react";
-
 
 // Types
 interface UserData {
@@ -9,20 +8,17 @@ interface UserData {
 }
 
 interface AuthFormProps {
-  isLoginForm: boolean;
-  toggleForm: () => void;
   onLogin: (userData: UserData) => void;
-  onClose?: () => void; // Optional close handler
+  onClose?: () => void;
 }
 
-interface FormState {
+interface FormData {
   name: string;
   email: string;
   password: string;
   confirmPassword: string;
   showPassword: boolean;
   rememberMe: boolean;
-  isLoading: boolean;
   errors: {
     name?: string;
     email?: string;
@@ -38,16 +34,55 @@ interface FormState {
   };
 }
 
-type FormAction =
-  | { type: 'SET_FIELD'; field: keyof FormState; value: any }
-  | { type: 'SET_ERROR'; field: keyof FormState['errors']; message: string }
-  | { type: 'SET_TOUCHED'; field: keyof FormState['touched']; value: boolean }
-  | { type: 'TOGGLE_PASSWORD_VISIBILITY' }
-  | { type: 'SET_LOADING'; value: boolean }
-  | { type: 'CLEAR_ERRORS' }
-  | { type: 'RESET_FORM' };
+// Constants
+const SOCIAL_PROVIDERS = [
+  { icon: "fa6-brands:facebook-f", label: "Facebook", color: "text-blue-600" },
+  { icon: "fa6-brands:google", label: "Google", color: "text-red-500" },
+  { icon: "fa6-brands:linkedin-in", label: "LinkedIn", color: "text-blue-700" }
+] as const;
 
-// Input component for reusability
+const initialFormData: FormData = {
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  showPassword: false,
+  rememberMe: false,
+  errors: {},
+  touched: {
+    name: false,
+    email: false,
+    password: false,
+    confirmPassword: false
+  }
+};
+
+// Custom hooks
+const useFormState = (initialState: FormData) => {
+  const [formData, setFormData] = useState<FormData>(initialState);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const updateField = useCallback((field: keyof FormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const setError = useCallback((field: keyof FormData['errors'], message: string) => {
+    setFormData(prev => ({
+      ...prev,
+      errors: { ...prev.errors, [field]: message }
+    }));
+  }, []);
+
+  return {
+    formData,
+    isLoading,
+    setIsLoading,
+    updateField,
+    setError
+  };
+};
+
+// Components
 const FormInput: React.FC<{
   id: string;
   type: string;
@@ -60,7 +95,7 @@ const FormInput: React.FC<{
   required?: boolean;
   autoFocus?: boolean;
   endAdornment?: React.ReactNode;
-}> = ({ 
+}> = React.memo(({ 
   id, 
   type, 
   label, 
@@ -73,8 +108,8 @@ const FormInput: React.FC<{
   autoFocus = false,
   endAdornment
 }) => (
-  <div className="mb-2">
-    <label htmlFor={id} className="block text-left text-xs font-medium text-gray-700 mb-0.5">
+  <div className="mb-4 group">
+    <label htmlFor={id} className="block text-left text-sm font-medium text-gray-700 mb-1.5 transition-colors duration-200 group-focus-within:text-blue-600">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
@@ -89,21 +124,21 @@ const FormInput: React.FC<{
         autoFocus={autoFocus}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
-        className={`bg-white border ${error ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm transition-colors duration-200 text-black placeholder-gray-500`}
+        className={`bg-white border-2 ${error ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:ring-opacity-50 rounded-xl py-2.5 px-4 w-full text-sm text-black placeholder-gray-400 transition-all duration-200 shadow-sm hover:border-gray-300`}
       />
       {endAdornment}
     </div>
     {error && (
-      <p id={`${id}-error`} className="mt-0.5 text-xs text-red-600 text-left" role="alert">
+      <p id={`${id}-error`} className="mt-1.5 text-xs text-red-600 text-left flex items-center" role="alert">
+        <Icon icon="fa6-solid:circle-exclamation" className="w-3 h-3 mr-1" />
         {error}
       </p>
     )}
   </div>
-);
+));
 
-// Password strength component
-const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
-  const getStrength = (): { strength: number; label: string; color: string } => {
+const PasswordStrength: React.FC<{ password: string }> = React.memo(({ password }) => {
+  const getStrength = useCallback((): { strength: number; label: string; color: string } => {
     if (!password) return { strength: 0, label: "", color: "bg-gray-200" };
     
     let strength = 0;
@@ -126,7 +161,7 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
       label: strength > 0 ? strengthMap[strength - 1].label : "", 
       color: strength > 0 ? strengthMap[strength - 1].color : "bg-gray-200" 
     };
-  };
+  }, [password]);
   
   const { strength, label, color } = getStrength();
   
@@ -143,581 +178,467 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
       <p className="text-xs mt-0.5 text-gray-600 text-left">{label}</p>
     </div>
   ) : null;
-};
+});
 
-// Social Button Component
 const SocialButton: React.FC<{
-  icon: React.ReactNode;
+  icon: string;
   label: string;
   onClick: () => void;
   color: string;
-}> = ({ icon, label, onClick, color }) => (
+}> = React.memo(({ icon, label, onClick, color }) => (
   <button 
     type="button"
     onClick={onClick}
-    className={`border border-gray-300 rounded-full flex justify-center items-center h-10 w-10 ${color} hover:bg-opacity-10 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+    className={`border-2 border-gray-200 rounded-xl flex justify-center items-center h-11 w-11 ${color} hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:scale-105 hover:border-gray-300 shadow-sm`}
     aria-label={label}
   >
-    {icon}
+    <Icon icon={icon} width={20} height={20} />
   </button>
-);
+));
 
-// Form reducer function
-const formReducer = (state: FormState, action: FormAction): FormState => {
-  switch (action.type) {
-    case 'SET_FIELD':
-      return { ...state, [action.field]: action.value };
-    case 'SET_ERROR':
-      return { 
-        ...state, 
-        errors: { ...state.errors, [action.field]: action.message } 
-      };
-    case 'SET_TOUCHED':
-      return { 
-        ...state, 
-        touched: { ...state.touched, [action.field]: action.value } 
-      };
-    case 'TOGGLE_PASSWORD_VISIBILITY':
-      return { ...state, showPassword: !state.showPassword };
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.value };
-    case 'CLEAR_ERRORS':
-      return { ...state, errors: {} };
-    case 'RESET_FORM':
-      return initialState;
-    default:
-      return state;
-  }
-};
+const LoadingSpinner: React.FC = React.memo(() => (
+  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+  </svg>
+));
 
-// Initial form state
-const initialState: FormState = {
-  name: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-  showPassword: false,
-  rememberMe: false,
-  isLoading: false,
-  errors: {},
-  touched: {
-    name: false,
-    email: false,
-    password: false,
-    confirmPassword: false
-  }
-};
+const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onClose }) => {
+  const [isRegisterActive, setIsRegisterActive] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const { formData: loginData, isLoading: isLoginLoading, setIsLoading: setLoginLoading, updateField: updateLoginField, setError: setLoginError } = useFormState(initialFormData);
+  const { formData: registerData, isLoading: isRegisterLoading, setIsLoading: setRegisterLoading, updateField: updateRegisterField, setError: setRegisterError } = useFormState(initialFormData);
 
-const AuthForm: React.FC<AuthFormProps> = ({ isLoginForm, toggleForm, onLogin, onClose }) => {
-  const [state, dispatch] = useReducer(formReducer, initialState);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  
-  // Close modal on escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onClose) {
-        onClose();
-      }
-    };
-    
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
-
-  // Close modal when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node) && onClose) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
-
-  // Focus first field when form type changes
-  useEffect(() => {
-    setTimeout(() => {
-      if (isLoginForm) {
-        emailInputRef.current?.focus();
-      } else {
-        nameInputRef.current?.focus();
-      }
-    }, 100);
-  }, [isLoginForm]);
-
-  // Reset form when switching between login and signup
-  useEffect(() => {
-    dispatch({ type: 'RESET_FORM' });
-  }, [isLoginForm]);
-
-  // Form validation
-  const validateField = useCallback((field: keyof FormState['touched'], value: string) => {
-    switch (field) {
-      case 'name':
-        if (!value.trim() && !isLoginForm) {
-          dispatch({ type: 'SET_ERROR', field: 'name', message: 'Name is required' });
-          return false;
-        }
-        dispatch({ type: 'SET_ERROR', field: 'name', message: '' });
-        return true;
-      
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value.trim()) {
-          dispatch({ type: 'SET_ERROR', field: 'email', message: 'Email is required' });
-          return false;
-        } else if (!emailRegex.test(value)) {
-          dispatch({ type: 'SET_ERROR', field: 'email', message: 'Please enter a valid email address' });
-          return false;
-        }
-        dispatch({ type: 'SET_ERROR', field: 'email', message: '' });
-        return true;
-      
-      case 'password':
-        if (!value) {
-          dispatch({ type: 'SET_ERROR', field: 'password', message: 'Password is required' });
-          return false;
-        } else if (value.length < 8) {
-          dispatch({ type: 'SET_ERROR', field: 'password', message: 'Password must be at least 8 characters' });
-          return false;
-        }
-        dispatch({ type: 'SET_ERROR', field: 'password', message: '' });
-        return true;
-      
-      case 'confirmPassword':
-        if (!isLoginForm && value !== state.password) {
-          dispatch({ type: 'SET_ERROR', field: 'confirmPassword', message: 'Passwords do not match' });
-          return false;
-        }
-        dispatch({ type: 'SET_ERROR', field: 'confirmPassword', message: '' });
-        return true;
-      
-      default:
-        return true;
+  const slides = [
+    { 
+      src: "slide.jpg", 
+      alt: "Lighting Design 1",
+      title: "Welcome to IZAJ",
+      subtitle: "Discover the perfect lighting for your space"
+    },
+    { 
+      src: "slide2.jpg", 
+      alt: "Lighting Design 2",
+      title: "Premium Lighting",
+      subtitle: "Transform your home with our curated collection"
+    },
+    { 
+      src: "slide3.jpg", 
+      alt: "Lighting Design 3",
+      title: "Expert Design",
+      subtitle: "Let us illuminate your vision"
     }
-  }, [state.password, isLoginForm]);
+  ];
 
-  // Handle field blur
-  const handleBlur = (field: keyof FormState['touched']) => {
-    dispatch({ type: 'SET_TOUCHED', field, value: true });
-    
-    switch (field) {
-      case 'name':
-        validateField('name', state.name);
-        break;
-      case 'email':
-        validateField('email', state.email);
-        break;
-      case 'password':
-        validateField('password', state.password);
-        break;
-      case 'confirmPassword':
-        validateField('confirmPassword', state.confirmPassword);
-        break;
-    }
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 3000); // Change slide every 3 seconds
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleToggleForm = useCallback(() => {
+    setIsRegisterActive(prev => !prev);
+  }, []);
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch({ type: 'CLEAR_ERRORS' });
-    
-    // Validate all fields
-    const isNameValid = isLoginForm || validateField('name', state.name);
-    const isEmailValid = validateField('email', state.email);
-    const isPasswordValid = validateField('password', state.password);
-    const isConfirmPasswordValid = isLoginForm || validateField('confirmPassword', state.confirmPassword);
-    
-    if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
-      return;
-    }
-    
+    setLoginLoading(true);
     try {
-      dispatch({ type: 'SET_LOADING', value: true });
-      
-      // Simulate API call
+      // Validate login form
+      if (!loginData.email || !loginData.password) {
+        setLoginError('general', "Please fill in all required fields");
+        return;
+      }
+
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const userData = {
-        name: isLoginForm ? state.email.split('@')[0] : state.name,
-        email: state.email
-      };
-      
-      // Call onLogin callback
-      onLogin(userData);
-      
-      // Close modal after successful login/signup
-      if (onClose) {
-        onClose();
-      }
-      
-      // Log success (for development)
-      console.log(`Successfully ${isLoginForm ? 'logged in' : 'signed up'} with`, { email: state.email });
-      
+      onLogin({
+        name: loginData.email.split('@')[0],
+        email: loginData.email
+      });
+      if (onClose) onClose();
     } catch (error) {
-      let errorMessage = "An unexpected error occurred";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      dispatch({ type: 'SET_ERROR', field: 'general', message: errorMessage });
+      setLoginError('general', "Login failed. Please try again.");
     } finally {
-      dispatch({ type: 'SET_LOADING', value: false });
+      setLoginLoading(false);
     }
   };
 
-  // Handle social login
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Initiating ${provider} login`);
-    // Implementation would connect to OAuth provider
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterLoading(true);
+    try {
+      // Validate register form
+      if (!registerData.name || !registerData.email || !registerData.password || !registerData.confirmPassword) {
+        setRegisterError('general', "Please fill in all required fields");
+        return;
+      }
+
+      if (registerData.password !== registerData.confirmPassword) {
+        setRegisterError('confirmPassword', "Passwords do not match");
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onLogin({
+        name: registerData.name,
+        email: registerData.email
+      });
+      if (onClose) onClose();
+    } catch (error) {
+      setRegisterError('general', "Registration failed. Please try again.");
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="auth-form-title" role="dialog" aria-modal="true">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+  const renderSocialButtons = useCallback((isLogin: boolean) => (
+    <div className="flex justify-center space-x-3 mb-4">
+      {SOCIAL_PROVIDERS.map(({ icon, label, color }) => (
+        <SocialButton
+          key={label}
+          icon={icon}
+          label={`${isLogin ? 'Sign in' : 'Sign up'} with ${label}`}
+          onClick={() => console.log(`${label} ${isLogin ? 'login' : 'signup'}`)}
+          color={color}
+        />
+      ))}
+    </div>
+  ), []);
 
-      {/* Modal container */}
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div 
-          ref={modalRef}
-          className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 w-full max-w-5xl"
-          style={{ height: '600px' }}
-        >
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full p-1 z-10"
-            aria-label="Close modal"
-          >
-            <Icon icon="mdi:close" width={20} height={20} />
-          </button>
+  const renderFormFields = useCallback((isLogin: boolean) => {
+    const data = isLogin ? loginData : registerData;
+    const updateField = isLogin ? updateLoginField : updateRegisterField;
 
-          <div className="flex flex-col md:flex-row h-full">
-            {/* Left Content Section */}
-            <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white p-8 flex-col justify-between relative overflow-hidden">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute inset-0" style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                }}></div>
-              </div>
+    return (
+      <div className="flex-1 min-h-0">
+        <div className="h-full flex flex-col">
+          {!isLogin && (
+            <FormInput
+              id="register-name"
+              type="text"
+              label="Full Name"
+              value={data.name}
+              placeholder="Your name"
+              onChange={(e) => updateField('name', e.target.value)}
+              onBlur={() => {}}
+              error={data.touched.name ? data.errors.name : undefined}
+              required
+              autoFocus
+            />
+          )}
 
-              {/* Content */}
-              <div className="relative z-10">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="bg-white/10 backdrop-blur-sm p-2 rounded-xl">
-                    <img
-                      src="izaj.jpg"
-                      alt="Izaj Logo"
-                      className="h-12 w-12 rounded-lg object-cover"
+          <FormInput
+            id={`${isLogin ? 'login' : 'register'}-phone-email`}
+            type="text"
+            label="Phone/Email"
+            value={data.email}
+            placeholder="Enter phone number or email"
+            onChange={(e) => updateField('email', e.target.value)}
+            onBlur={() => {}}
+            error={data.touched.email ? data.errors.email : undefined}
+            required
+            autoFocus={!isLogin}
+          />
+
+          {!isLogin ? (
+            <div className="mb-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="register-password" className="block text-left text-xs font-medium text-gray-700 mb-0.5">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="register-password"
+                      type={data.showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      value={data.password}
+                      onChange={(e) => updateField('password', e.target.value)}
+                      required
+                      className={`bg-white border ${data.errors.password && data.touched.password ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm text-black placeholder-gray-500`}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => updateField('showPassword', !data.showPassword)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      aria-label={data.showPassword ? "Hide password" : "Show password"}
+                    >
+                      <Icon icon={data.showPassword ? "fa6-solid:eye-slash" : "fa6-solid:eye"} width={16} height={16} />
+                    </button>
+                  </div>
+                  <PasswordStrength password={data.password} />
+                </div>
+                <div>
+                  <label htmlFor="register-confirm-password" className="block text-left text-xs font-medium text-gray-700 mb-0.5">
+                    Confirm Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="register-confirm-password"
+                      type={data.showPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={data.confirmPassword}
+                      onChange={(e) => updateField('confirmPassword', e.target.value)}
+                      required
+                      className={`bg-white border ${data.errors.confirmPassword && data.touched.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm text-black placeholder-gray-500`}
                     />
                   </div>
-                  <div>
-                    <span className="text-2xl font-bold tracking-tight">Izaj</span>
-                    <p className="text-blue-100 text-sm">Your Style, Your Way</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-3xl font-bold mb-3">
-                      {isLoginForm ? "Welcome Back!" : "Join Our Community"}
-                    </h2>
-                    <p className="text-blue-100 text-lg leading-relaxed">
-                      {isLoginForm 
-                        ? "Sign in to access your account and continue your shopping journey."
-                        : "Create an account to enjoy exclusive benefits and personalized shopping experience."}
+                  {data.touched.confirmPassword && data.errors.confirmPassword && (
+                    <p className="mt-1.5 text-xs text-red-600 text-left flex items-center" role="alert">
+                      <Icon icon="fa6-solid:circle-exclamation" className="w-3 h-3 mr-1" />
+                      {data.errors.confirmPassword}
                     </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="bg-green-400/20 p-2 rounded-lg">
-                          <Icon icon="mdi:shield-check" className="text-green-300" width={24} height={24} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">Secure Shopping</h3>
-                          <p className="text-blue-100 text-sm mt-1">Your data is protected with industry-standard security</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="bg-blue-400/20 p-2 rounded-lg">
-                          <Icon icon="mdi:lightning-bolt" className="text-blue-300" width={24} height={24} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">Fast Checkout</h3>
-                          <p className="text-blue-100 text-sm mt-1">Save your details for quicker purchases</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="bg-purple-400/20 p-2 rounded-lg">
-                          <Icon icon="mdi:gift" className="text-purple-300" width={24} height={24} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">Exclusive Offers</h3>
-                          <p className="text-blue-100 text-sm mt-1">Get access to special deals and promotions</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-0.5">
+                <label htmlFor="login-password" className="block text-left text-xs font-medium text-gray-700">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <button 
+                  type="button"
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                  onClick={() => console.log('Forgot password flow')}
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  id="login-password"
+                  type={data.showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={data.password}
+                  onChange={(e) => updateField('password', e.target.value)}
+                  required
+                  className={`bg-white border ${data.errors.password && data.touched.password ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm text-black placeholder-gray-500`}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => updateField('showPassword', !data.showPassword)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label={data.showPassword ? "Hide password" : "Show password"}
+                >
+                  <Icon icon={data.showPassword ? "fa6-solid:eye-slash" : "fa6-solid:eye"} width={16} height={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }, [loginData, registerData, updateLoginField, updateRegisterField]);
 
-              {/* Bottom Section */}
-              <div className="relative z-10 mt-8">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex -space-x-3">
-                        {[1, 2, 3, 4].map((i) => (
-                          <img
-                            key={i}
-                            src={`https://i.pravatar.cc/150?img=${i + 10}`}
-                            alt={`User ${i}`}
-                            className="w-10 h-10 rounded-full border-2 border-blue-800"
-                          />
-                        ))}
+  return (
+    <div className="fixed inset-0 z-50 overflow-hidden" aria-labelledby="auth-form-title" role="dialog" aria-modal="true">
+      <div 
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        aria-hidden="true"
+        onClick={onClose}
+      />
+
+      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0 z-50">
+        <div 
+          className="relative overflow-hidden rounded-3xl text-left sm:my-8 w-full max-w-5xl z-50 shadow-2xl" 
+          style={{ 
+            height: '650px', 
+            backgroundColor: '#FFFFFF'
+          }}
+        >
+         
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 z-20"
+            aria-label="Close modal"
+          >
+            <Icon icon="fa6-solid:xmark" className="w-5 h-5 text-gray-500" />
+          </button>
+          <div className="relative z-10 flex flex-col md:flex-row h-full">
+            <div className="w-full md:w-1/2 p-6 flex flex-col justify-between relative overflow-hidden">
+              <div className="space-y-4 flex-1 flex items-center justify-center">
+                <div className="text-center p-6 rounded-2xl max-w-md w-full">
+                  <div className="flex flex-col h-full">
+                    {isRegisterActive ? (
+                      <div className="animate-fadein">
+                        <h1 
+                          id="auth-form-title" 
+                          className="font-bold text-2xl sm:text-3xl mb-3 text-gray-800 text-center"
+                        >
+                          Welcome Back
+                        </h1>
+
+                        {renderSocialButtons(true)}
+
+                        <div className="flex items-center mb-6">
+                          <div className="flex-grow border-t border-gray-200"></div>
+                          <span className="mx-3 text-xs text-gray-500 font-medium">or continue with email</span>
+                          <div className="flex-grow border-t border-gray-200"></div>
+                        </div>
+
+                        {loginData.errors.general && (
+                          <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs mb-4 flex items-center" role="alert">
+                            <Icon icon="fa6-solid:circle-exclamation" className="w-4 h-4 mr-2" />
+                            {loginData.errors.general}
+                          </div>
+                        )}
+
+                        <form onSubmit={handleLoginSubmit}>
+                          {renderFormFields(true)}
+
+                          <div className="mt-auto pt-4">
+                            <div className="flex items-center mb-4">
+                              <input
+                                id="rememberMe"
+                                type="checkbox"
+                                checked={loginData.rememberMe}
+                                onChange={(e) => updateLoginField('rememberMe', e.target.checked)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
+                                Remember me
+                              </label>
+                            </div>
+
+                            <button 
+                              type="submit" 
+                              disabled={isLoginLoading}
+                              className="w-full text-gray-900 font-medium py-3 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 transition-all duration-200 transform hover:scale-[1.02]"
+                              style={{ backgroundColor: '#FFEB3B' }}
+                              aria-busy={isLoginLoading}
+                            >
+                              {isLoginLoading ? (
+                                <>
+                                  <LoadingSpinner />
+                                  <span>Signing In...</span>
+                                </>
+                              ) : (
+                                <span>Sign In</span>
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={handleToggleForm}
+                              className="w-full text-blue-600 hover:text-blue-800 text-sm font-medium mt-3 hover:underline transition-colors duration-200"
+                            >
+                              Don't have an account? Sign Up
+                            </button>
+                          </div>
+                        </form>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">Join our community</p>
-                        <p className="text-blue-100 text-xs">
-                          <span className="font-semibold">10,000+</span> happy customers
-                        </p>
+                    ) : (
+                      <div className="animate-fadein">
+                        <h1 
+                          id="auth-form-title" 
+                          className="font-bold text-2xl sm:text-3xl mb-3 text-gray-800 text-center"
+                        >
+                          Create Account
+                        </h1>
+
+                        {renderSocialButtons(false)}
+
+                        <div className="flex items-center mb-6">
+                          <div className="flex-grow border-t border-gray-200"></div>
+                          <span className="mx-3 text-xs text-gray-500 font-medium">or continue with email</span>
+                          <div className="flex-grow border-t border-gray-200"></div>
+                        </div>
+
+                        {registerData.errors.general && (
+                          <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs mb-4 flex items-center" role="alert">
+                            <Icon icon="fa6-solid:circle-exclamation" className="w-4 h-4 mr-2" />
+                            {registerData.errors.general}
+                          </div>
+                        )}
+
+                        <form onSubmit={handleRegisterSubmit}>
+                          {renderFormFields(false)}
+
+                          <div className="mt-auto pt-4">
+                            <button 
+                              type="submit" 
+                              disabled={isRegisterLoading}
+                              className="w-full text-gray-900 font-medium py-3 px-4 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 transition-all duration-200 transform hover:scale-[1.02]"
+                              style={{ backgroundColor: '#FFEB3B' }}
+                              aria-busy={isRegisterLoading}
+                            >
+                              {isRegisterLoading ? (
+                                <>
+                                  <LoadingSpinner />
+                                  <span>Signing Up...</span>
+                                </>
+                              ) : (
+                                <span>Sign Up</span>
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => console.log('Continue as guest')}
+                              className="w-full border-2 border-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mt-3 hover:bg-gray-50 text-sm transition-all duration-200 transform hover:scale-[1.02]"
+                            >
+                              Continue as Guest
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={handleToggleForm}
+                              className="w-full text-blue-600 hover:text-blue-800 text-sm font-medium mt-3 hover:underline transition-colors duration-200"
+                            >
+                              Already have an account? Sign In
+                            </button>
+                          </div>
+                        </form>
                       </div>
-                    </div>
-                    <div className="bg-green-400/20 px-3 py-1 rounded-full">
-                      <span className="text-green-300 text-sm font-medium">Active</span>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Form Section */}
-            <div className="w-full md:w-1/2 px-4 pt-5 pb-4 sm:p-6 flex flex-col">
-              <form onSubmit={handleSubmit} className="w-full flex flex-col flex-1" noValidate>
-                {/* Logo at the top (only visible on mobile) */}
-                <div className="flex justify-center mb-4 md:hidden">
-                  <img
-                    src="izaj.jpg"
-                    alt="Izaj Logo"
-                    className="h-16 w-16 rounded-full object-cover shadow-lg"
-                    style={{ background: "#fff" }}
-                  />
-                </div>
-
-                <h1 
-                  id="auth-form-title" 
-                  className="font-bold text-xl sm:text-2xl mb-4 text-gray-800 text-center"
-                >
-                  {isLoginForm ? "Welcome Back" : "Create Account"}
-                </h1>
-                
-                {/* Social Login */}
-                <div className="flex justify-center space-x-3 mb-4">
-                  <SocialButton 
-                    icon={<Icon icon="fa6-brands:facebook-f" width={18} height={18} />}
-                    label={`Sign ${isLoginForm ? 'in' : 'up'} with Facebook`}
-                    onClick={() => handleSocialLogin('Facebook')}
-                    color="text-blue-600"
-                  />
-                  <SocialButton 
-                    icon={<Icon icon="fa6-brands:google" width={18} height={18} />}
-                    label={`Sign ${isLoginForm ? 'in' : 'up'} with Google`}
-                    onClick={() => handleSocialLogin('Google')}
-                    color="text-red-500"
-                  />
-                  <SocialButton 
-                    icon={<Icon icon="fa6-brands:linkedin-in" width={18} height={18} />}
-                    label={`Sign ${isLoginForm ? 'in' : 'up'} with LinkedIn`}
-                    onClick={() => handleSocialLogin('LinkedIn')}
-                    color="text-blue-700"
-                  />
-                </div>
-                
-                <div className="flex items-center mb-4">
-                  <div className="flex-grow border-t border-gray-300"></div>
-                  <span className="mx-3 text-sm text-gray-500">or continue with email</span>
-                  <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-                
-                {state.errors.general && (
-                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4" role="alert">
-                    {state.errors.general}
-                  </div>
-                )}
-                
-                {/* Form Fields Container */}
-                <div className="flex-1 min-h-0">
-                  <div className="h-full flex flex-col">
-                    {/* Name Input (only for signup) */}
-                    {!isLoginForm && (
-                      <FormInput
-                        id="name"
-                        type="text"
-                        label="Full Name"
-                        value={state.name}
-                        placeholder="Your name"
-                        onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'name', value: e.target.value })}
-                        onBlur={() => handleBlur('name')}
-                        error={state.touched.name ? state.errors.name : undefined}
-                        required={!isLoginForm}
-                        autoFocus={!isLoginForm}
-                      />
-                    )}
-                    
-                    {/* Email Input */}
-                    <FormInput
-                      id="email"
-                      type="email"
-                      label="Email Address"
-                      value={state.email}
-                      placeholder="you@example.com"
-                      onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'email', value: e.target.value })}
-                      onBlur={() => handleBlur('email')}
-                      error={state.touched.email ? state.errors.email : undefined}
-                      required
-                      autoFocus={isLoginForm}
+            <div className="hidden md:flex md:w-1/2 p-6 flex-col justify-center items-center h-full relative">
+              <div className="w-full h-full relative overflow-hidden rounded-2xl shadow-lg">
+                {slides.map((slide, index) => (
+                  <div 
+                    key={slide.src} 
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+                      index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    }`}
+                  >
+                    <img
+                      src={slide.src}
+                      alt={slide.alt}
+                      className="w-full h-full object-cover rounded-2xl"
                     />
-                    
-                    {/* Password Input */}
-                    <div className="mb-2">
-                      <div className="flex justify-between items-center mb-0.5">
-                        <label htmlFor="password" className="block text-left text-xs font-medium text-gray-700">
-                          Password <span className="text-red-500">*</span>
-                        </label>
-                        {isLoginForm && (
-                          <button 
-                            type="button"
-                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                            onClick={() => console.log('Forgot password flow')}
-                          >
-                            Forgot password?
-                          </button>
-                        )}
-                      </div>
-                      <div className="relative">
-                        <input
-                          id="password"
-                          type={state.showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
-                          value={state.password}
-                          onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'password', value: e.target.value })}
-                          onBlur={() => handleBlur('password')}
-                          required
-                          aria-invalid={!!state.errors.password && state.touched.password}
-                          aria-describedby={state.errors.password && state.touched.password ? "password-error" : undefined}
-                          className={`bg-white border ${state.errors.password && state.touched.password ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md py-2 px-3 w-full text-sm transition-colors duration-200 text-black placeholder-gray-500`}
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => dispatch({ type: 'TOGGLE_PASSWORD_VISIBILITY' })}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                          aria-label={state.showPassword ? "Hide password" : "Show password"}
-                        >
-                          {state.showPassword ? (
-                            <Icon icon="fa6-solid:eye-slash" width={16} height={16} />
-                          ) : (
-                            <Icon icon="fa6-solid:eye" width={16} height={16} />
-                          )}
-                        </button>
-                      </div>
-                      {state.errors.password && state.touched.password && (
-                        <p id="password-error" className="mt-0.5 text-xs text-red-600 text-left" role="alert">
-                          {state.errors.password}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/80 rounded-2xl">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+                        <h2 className="text-5xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">
+                          {slide.title}
+                        </h2>
+                        <p className="text-xl text-white font-medium max-w-md drop-shadow-md">
+                          {slide.subtitle}
                         </p>
-                      )}
-                      {!isLoginForm && <PasswordStrength password={state.password} />}
+                      </div>
                     </div>
-                    
-                    {/* Confirm Password (only for signup) */}
-                    {!isLoginForm && (
-                      <FormInput
-                        id="confirmPassword"
-                        type={state.showPassword ? "text" : "password"}
-                        label="Confirm Password"
-                        value={state.confirmPassword}
-                        placeholder="Confirm your password"
-                        onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'confirmPassword', value: e.target.value })}
-                        onBlur={() => handleBlur('confirmPassword')}
-                        error={state.touched.confirmPassword ? state.errors.confirmPassword : undefined}
-                        required={!isLoginForm}
-                      />
-                    )}
                   </div>
-                </div>
-                
-                {/* Bottom Section */}
-                <div className="mt-auto pt-4">
-                  {/* Remember Me (only for login) */}
-                  {isLoginForm && (
-                    <div className="flex items-center mb-4">
-                      <input
-                        id="rememberMe"
-                        type="checkbox"
-                        checked={state.rememberMe}
-                        onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'rememberMe', value: e.target.checked })}
-                        className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor="rememberMe" className="ml-2 block text-xs text-gray-700">
-                        Remember me
-                      </label>
-                    </div>
-                  )}
-                  
-                  {/* Submit Button */}
-                  <button 
-                    type="submit" 
-                    disabled={state.isLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center disabled:bg-blue-400 disabled:cursor-not-allowed"
-                    aria-busy={state.isLoading}
-                  >
-                    {state.isLoading ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>{isLoginForm ? "Signing In..." : "Signing Up..."}</span>
-                      </>
-                    ) : (
-                      <span>{isLoginForm ? "Sign In" : "Sign Up"}</span>
-                    )}
-                  </button>
-                  
-                  {/* Guest access option */}
+                ))}
+              </div>
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
+                {slides.map((_, index) => (
                   <button
-                    type="button"
-                    onClick={() => console.log('Continue as guest')}
-                    className="w-full border border-gray-300 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mt-3 hover:bg-gray-50 text-sm"
-                  >
-                    Continue as Guest
-                  </button>
-                  
-                  {/* Toggle Form Link */}
-                  <p className="text-gray-600 mt-4 text-sm text-center">
-                    {isLoginForm ? "Don't have an account?" : "Already have an account?"}{' '}
-                    <button 
-                      type="button"
-                      onClick={toggleForm} 
-                      className="text-blue-600 font-medium hover:text-blue-800 hover:underline transition-colors"
-                    >
-                      {isLoginForm ? "Create account" : "Sign in"}
-                    </button>
-                  </p>
-                </div>
-              </form>
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentSlide ? 'bg-white scale-110' : 'bg-white/50'
+                    } hover:bg-white/80`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
