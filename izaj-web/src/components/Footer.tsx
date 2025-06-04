@@ -62,19 +62,19 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="font-bold text-xl mb-4 tracking-tight">OUR COMPANY</h3>
               <ul className="space-y-3">
-                <li><a href="#home" className="hover:text-orange-500 transition-colors text-base text-gray-700">Home</a></li>
-                <li><a href="#about-us" className="hover:text-orange-500 transition-colors text-base text-gray-700">About Us</a></li>
-                <li><a href="#subscribe" className="hover:text-orange-500 transition-colors text-base text-gray-700">Contact Us</a></li>
-                <li><a href="#subscribe" className="hover:text-orange-500 transition-colors text-base text-gray-700">Our Team</a></li>
+                <li><a href="/" className="hover:text-orange-500 transition-colors text-base text-gray-700">Home</a></li>
+                <li><a href="/aboutus" className="hover:text-orange-500 transition-colors text-base text-gray-700">About Us</a></li>
+                <li><a href="/contactus" className="hover:text-orange-500 transition-colors text-base text-gray-700">Contact Us</a></li>
+                <li><a href="/ourteam" className="hover:text-orange-500 transition-colors text-base text-gray-700">Our Team</a></li>
               </ul>
             </div>
             {/* More Info */}
             <div>
               <h3 className="font-bold text-xl mb-4 tracking-tight">MORE INFO</h3>
               <ul className="space-y-3">
-                <li><a href="#delivery" className="hover:text-orange-500 transition-colors text-base text-gray-700">Delivery & Installation</a></li>
-                <li><a href="#privacy" className="hover:text-orange-500 transition-colors text-base text-gray-700">Privacy Policy</a></li>
-                <li><a href="#returns" className="hover:text-orange-500 transition-colors text-base text-gray-700">Returns & Refunds</a></li>
+                <li><a href="/delivery" className="hover:text-orange-500 transition-colors text-base text-gray-700">Delivery & Installation</a></li>
+                <li><a href="/privacypolicy" className="hover:text-orange-500 transition-colors text-base text-gray-700">Privacy Policy</a></li>
+                <li><a href="/return" className="hover:text-orange-500 transition-colors text-base text-gray-700">Returns & Refunds</a></li>
                 <li><a href="#help" className="hover:text-orange-500 transition-colors text-base text-gray-700">Help & FAQs</a></li>
                 <li><a href="#terms" className="hover:text-orange-500 transition-colors text-base text-gray-700">Terms & Conditions</a></li>
                 <li><a href="#warranty" className="hover:text-orange-500 transition-colors text-base text-gray-700">Warranty Terms</a></li>

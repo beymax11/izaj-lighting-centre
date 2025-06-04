@@ -203,21 +203,4 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
 }
 
 // Add this CSS somewhere in your global styles
-const styles = `
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-`;

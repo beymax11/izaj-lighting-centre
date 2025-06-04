@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Icon } from '@iconify/react';
 
 const COOKIE_KEY = 'cookieConsent';
 
@@ -29,7 +30,7 @@ const CookieConsent = () => {
 
   const modal = (
     <div className="fixed bottom-6 left-6 z-[99999] max-w-sm w-[340px] animate-fade-in">
-      <div className="relative rounded-2xl border border-gray-200 shadow-2xl shadow-black/40 bg-gradient-to-br from-white via-gray-50 to-gray-200 p-5">
+      <div className="relative rounded-lg border border-gray-200 shadow-2xl shadow-black/40 bg-gradient-to-br from-white via-gray-50 to-gray-200 p-5">
         {/* Close button */}
         <button
           onClick={handleClose}
@@ -40,7 +41,7 @@ const CookieConsent = () => {
         </button>
         {/* Cookie Icon */}
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-2xl">🍪</span>
+          <Icon icon="mdi:cookie" className="w-8 h-8 text-black" />
           <h3 className="text-lg font-semibold text-gray-900">We Value Your Privacy</h3>
         </div>
         <p className="text-sm text-gray-700 mb-4">
@@ -49,7 +50,7 @@ const CookieConsent = () => {
         <div className="flex gap-2">
           <button
             onClick={handleAccept}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold rounded-lg shadow hover:from-yellow-500 hover:to-yellow-700 transition-colors text-sm"
+            className="flex-1 px-4 py-2 bg-black text-white font-semibold rounded-lg shadow hover:bg-gray-800 transition-colors text-sm"
           >
             Accept All
           </button>

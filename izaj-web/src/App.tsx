@@ -23,6 +23,9 @@ import ItemDescription from './pages/item-description';
 import CookiePolicy from './pages/cookiepolicy';
 import TermOfUse from './pages/termofuse';
 import TermsOfPurchase from './pages/termsofpurchase';
+import Delivery from './pages/delivery';
+import PrivacyPolicy from './pages/privacypolicy';
+import Return from './pages/return';
 import CookieConsent from './components/CookieConsent';
 import "./App.css";
 
@@ -38,7 +41,19 @@ interface ChatMessage {
 }
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(() => {
+    // Check for stored user data on initial load
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (storedUser) {
+      try {
+        return JSON.parse(storedUser);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        return null;
+      }
+    }
+    return null;
+  });
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,6 +87,13 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
+    // Clear stored data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
+    
+    // Clear user state
     setUser(null);
     setIsAccountDropdownOpen(false);
   };
@@ -126,6 +148,7 @@ const App: React.FC = () => {
       <Router>
         <Layout
           user={user}
+          setUser={setUser}
           setIsModalOpen={setIsModalOpen}
           setIsAccountDropdownOpen={setIsAccountDropdownOpen}
           isAccountDropdownOpen={isAccountDropdownOpen}
@@ -136,7 +159,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Home user={user} />} />
             <Route path="/product-list" element={<ProductList />} />
             <Route path="/chatnow" element={<ChatNow />} />
-            <Route path="/new" element={<Collection />} />
+            <Route path="/collection" element={<Collection />} />
             <Route path="/aboutus" element={<Aboutus />} />
             <Route path="/contactus" element={<Contactus />} />
             <Route path="/sales" element={<Sales />} />
@@ -145,6 +168,9 @@ const App: React.FC = () => {
             <Route path="/cookiepolicy" element={<CookiePolicy />} />
             <Route path="/termofuse" element={<TermOfUse />} />
             <Route path="/termsofpurchase" element={<TermsOfPurchase />} />
+            <Route path="/delivery" element={<Delivery />} />
+            <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+            <Route path="/return" element={<Return />} />
             <Route
               path="/cart"
               element={
@@ -215,7 +241,7 @@ const App: React.FC = () => {
               <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
                 <div className="w-full max-w-5xl mx-auto relative max-h-[80vh] overflow-y-auto">
                   <AuthForm
-                    onLogin={handleLogin}
+                    onAuthSuccess={handleLogin}
                     onClose={() => setIsModalOpen(false)}
                   />
                 </div>

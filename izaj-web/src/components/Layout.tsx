@@ -8,6 +8,7 @@ interface LayoutProps {
     name: string;
     email: string;
   } | null;
+  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string; } | null>>;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAccountDropdownOpen: boolean;
@@ -18,6 +19,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({
   children,
   user,
+  setUser,
   setIsModalOpen,
   setIsAccountDropdownOpen,
   isAccountDropdownOpen,
@@ -28,6 +30,7 @@ const Layout: React.FC<LayoutProps> = ({
     <div className="min-h-screen bg-white font-sans overflow-x-hidden">
       <Header
         user={user}
+        setUser={setUser}
         setIsModalOpen={setIsModalOpen}
         setIsAccountDropdownOpen={setIsAccountDropdownOpen}
         isAccountDropdownOpen={isAccountDropdownOpen}

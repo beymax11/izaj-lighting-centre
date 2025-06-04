@@ -122,7 +122,7 @@ const Cart: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* Main Content */}
       <div className="max-w-[94%] mx-auto mt-8 px-5 sm:px-8 ml-6 mr-6">
         {/* Shopping Header */}

@@ -140,19 +140,6 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               </p>
             </div>
           </div>
-
-          {/* Dots Navigation */}
-          <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {heroImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentHeroIndex(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === currentHeroIndex ? "bg-white" : "bg-gray-400"
-                }`}
-              />
-            ))}
-          </div>
         </div>
 
         <LightingCategory user={user} />
@@ -174,24 +161,24 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         {/* Monthly Deals Section */}
         <div className="mt-16 px-16 mx-16">
           {/* Title */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
               Monthly Deals
             </h2>
             <Link
-            to="/product-list"
+            to="/sales"
             state={user ? { user } : undefined}
             className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
             style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
           >
             View all
-        
           </Link>
           </div>
           
           <div className="relative group" style={{
-            height: "500px", // Fixed height to prevent vertical scrolling
-            overflow: "hidden", // Hide overflow
+            height: "500px",
+            overflow: "hidden",
+            marginTop: "-0.5rem" // Added negative margin to bring items closer
           }}>
             {/* First Page with 4 items */}
             <div
@@ -203,25 +190,30 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               }}
             >
               {deals.slice(0, 4).map((deal) => (
-                <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
                   <div className="relative overflow-hidden flex-grow">
                     <img
                       src={deal.image}
                       alt={deal.title}
-                      className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
                     />
-                    <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-                      MONTHLY DEALS
-                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-black mt-4">{deal.title}</h3>
-                  <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
-                  <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
-                  <Link to="/item-description">
-                    <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-                      CHOOSE OPTIONS
-                    </button>
-                  </Link>
+                  <div className="flex flex-col flex-grow justify-between mt-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
+                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+                      <p className="text-black text-sm font-medium mt-1 flex items-center gap-1">
+                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
+                        In Stock
+                      </p>
+                    </div>
+                    <Link to="/item-description" className="mt-3">
+                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
+                        CHOOSE OPTIONS
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -236,25 +228,30 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               }}
             >
               {deals.slice(4, 8).map((deal) => (
-                <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
                   <div className="relative overflow-hidden flex-grow">
                     <img
                       src={deal.image}
                       alt={deal.title}
-                      className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
                     />
-                    <span className="absolute top-4 left-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-                      MONTHLY DEALS
-                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-black mt-4">{deal.title}</h3>
-                  <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
-                  <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
-                  <Link to="/item-description">
-                    <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-                      CHOOSE OPTIONS
-                    </button>
-                  </Link>
+                  <div className="flex flex-col flex-grow justify-between mt-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
+                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+                      <p className="text-gray-500 text-sm font-medium mt-1 flex items-center gap-1">
+                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
+                        In Stock
+                      </p>
+                    </div>
+                    <Link to="/item-description" className="mt-3">
+                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
+                        CHOOSE OPTIONS
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -337,12 +334,12 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         {/* Fresh Drops Section */}
         <div className="mt-8 px-16 mx-16">
           {/* Title */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
               Fresh Drops
             </h2>
             <Link
-              to="/product-list"
+              to="/collection"
               state={user ? { user } : undefined}
               className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
@@ -354,6 +351,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
           <div className="relative group" style={{
             height: "500px",
             overflow: "hidden",
+            marginTop: "-0.5rem"
           }}>
             {/* First Page with 4 items */}
             <div
@@ -365,25 +363,30 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               }}
             >
               {deals.slice(0, 4).map((deal) => (
-                <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
                   <div className="relative overflow-hidden flex-grow">
                     <img
                       src={deal.image}
                       alt={deal.title}
-                      className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
                     />
-                    <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-                      FRESH DROPS
-                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-                  <p className="text-gray-500 text-sm line-through">₱16,995</p>
-                  <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-                  <Link to="/item-description">
-                    <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-                      CHOOSE OPTIONS
-                    </button>
-                  </Link>
+                  <div className="flex flex-col flex-grow justify-between mt-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
+                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+                      <p className="text-black text-sm font-medium mt-1 flex items-center gap-1">
+                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
+                        In Stock
+                      </p>
+                    </div>
+                    <Link to="/item-description" className="mt-3">
+                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
+                        CHOOSE OPTIONS
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -398,25 +401,30 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               }}
             >
               {deals.slice(4, 8).map((deal) => (
-                <div key={deal.id} className="p-6 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
                   <div className="relative overflow-hidden flex-grow">
                     <img
                       src={deal.image}
                       alt={deal.title}
-                      className="w-full h-72 object-cover transform transition-transform duration-300 hover:scale-110"
+                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
                     />
-                    <span className="absolute top-4 left-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-                      FRESH DROPS
-                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-black mt-4">Aberdeen | Modern LED Chandelier</h3>
-                  <p className="text-gray-500 text-sm line-through">₱16,995</p>
-                  <p className="text-black font-semibold">₱15,995 <span className="text-red-500">10% off</span></p>
-                  <Link to="/item-description">
-                    <button className="mt-4 w-full py-2 bg-black text-white font-semibold rounded-lg">
-                      CHOOSE OPTIONS
-                    </button>
-                  </Link>
+                  <div className="flex flex-col flex-grow justify-between mt-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
+                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
+                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
+                      <p className="text-black text-sm font-medium mt-1 flex items-center gap-1">
+                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
+                        In Stock
+                      </p>
+                    </div>
+                    <Link to="/item-description" className="mt-3">
+                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
+                        CHOOSE OPTIONS
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -428,9 +436,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
                 style={{ zIndex: 10 }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
               </button>
             )}
 
@@ -440,9 +446,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
                 style={{ zIndex: 10 }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
               </button>
             )}
           </div>

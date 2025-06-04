@@ -13,6 +13,7 @@ interface HeaderProps {
   setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAccountDropdownOpen: boolean;
   handleLogout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string; } | null>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -20,12 +21,44 @@ const Header: React.FC<HeaderProps> = ({
   setIsModalOpen,
   setIsAccountDropdownOpen,
   isAccountDropdownOpen,
-  handleLogout
+  handleLogout,
+  setUser
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLLIElement>(null);
   const navigate = useNavigate();
+
+  // Check for stored user data on component mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
+    }
+  }, [setUser]);
+
+  // Enhanced logout handler
+  const handleLogoutClick = () => {
+    // Clear stored data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
+    
+    // Call the original logout handler
+    handleLogout();
+    
+    // Close the dropdown
+    setIsAccountDropdownOpen(false);
+    
+    // Navigate to home page
+    navigate('/');
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -166,7 +199,7 @@ const Header: React.FC<HeaderProps> = ({
                         </Link>
                         <hr className="border-gray-200 my-1" />
                         <button
-                          onClick={handleLogout}
+                          onClick={handleLogoutClick}
                           className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
                         >
                           <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
@@ -299,7 +332,7 @@ const Header: React.FC<HeaderProps> = ({
                             </Link>
                           </li>
                           <li className="mb-3">
-                            <Link to="/new" className="flex items-center group">
+                            <Link to="/collection" className="flex items-center group">
                               <Icon icon="mdi:star-circle-outline" className="mr-2 text-gray-600 group-hover:text-orange-500" width="22" height="22" />
                               <span className="group-hover:text-orange-500 group-hover:translate-x-1 transition-transform duration-200">
                                 New Arrivals
@@ -397,7 +430,7 @@ const Header: React.FC<HeaderProps> = ({
               )}
             </li>
             <li>
-              <Link to="/new" className="text-black hover:border-b-2 border-black pb-1">
+              <Link to="/collection" className="text-black hover:border-b-2 border-black pb-1">
                 NEW
               </Link>
             </li>
