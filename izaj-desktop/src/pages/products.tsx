@@ -1,23 +1,44 @@
 // Products.tsx
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import { AddProductModal } from './components/AddProductModal';
-import { ManageStockModal } from './components/ManageStockModal';
-import Stock from './pages/Stock';
-import { ViewType } from './types';
+import { AddProductModal } from '../components/AddProductModal';
+import { ManageStockModal } from '../components/ManageStockModal';
+import Stock from './Stock';
+import { ViewType } from '../types';
+
+interface Product {
+  name: string;
+  category: string;
+  price: string;
+  stock: number;
+  status: string;
+  variant: number | null;
+  image: string;
+}
+
+interface FetchedProduct {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  category: string;
+  image: string;
+}
 
 interface ProductsProps {
   showAddProductModal: boolean;
   setShowAddProductModal: (show: boolean) => void;
 }
 
-function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps) {
+export function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps) {
+  const [showManageStockModal, setShowManageStockModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const [fetchedProducts, setFetchedProducts] = useState<FetchedProduct[]>([]);
   const [filter, setFilter] = useState<'all' | 'sale'>('all');
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<ViewType>('products');
-  const [selectedProduct, setSelectedProduct] = useState<typeof products[0] | null>(null);
-
-  const products = [
+  const [products, setProducts] = useState<Product[]>([
     {
       name: 'LED Surface Panel Light',
       category: 'Ceiling Light',
@@ -72,7 +93,8 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
       variant: null,
       image: '/pendant.jpg'
     },
-  ];
+  ]);
+  const [showFetchNotification, setShowFetchNotification] = useState(false);
 
   const filteredProducts = filter === 'sale'
     ? products.filter(p => p.variant !== null)
@@ -93,18 +115,62 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
 
   const handleUpdateStock = (newStock: number) => {
     if (selectedProduct) {
-      const updatedProducts = products.map(p => 
-        p.name === selectedProduct.name 
-          ? { ...p, stock: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
-          : p
+      setProducts(prevProducts => 
+        prevProducts.map(p => 
+          p.name === selectedProduct.name 
+            ? { ...p, stock: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
+            : p
+        )
       );
-      // In a real application, you would update the state or make an API call here
-      console.log('Updated products:', updatedProducts);
+    }
+  };
+
+  const handleFetchProducts = async () => {
+    setIsFetching(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock data
+      const mockProducts: FetchedProduct[] = [
+        {
+          id: '1',
+          name: 'Modern LED Chandelier',
+          price: '$299.99',
+          description: 'Elegant modern LED chandelier with crystal accents',
+          category: 'Chandelier',
+          image: 'https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=800&auto=format&fit=crop&q=60'
+        },
+        {
+          id: '2',
+          name: 'Smart LED Panel',
+          price: '$199.99',
+          description: 'Ultra-thin smart LED panel with adjustable brightness',
+          category: 'Panel Light',
+          image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=800&auto=format&fit=crop&q=60'
+        },
+        {
+          id: '3',
+          name: 'Crystal Pendant Light',
+          price: '$149.99',
+          description: 'Beautiful crystal pendant light for modern interiors',
+          category: 'Ceiling Light',
+          image: 'https://images.unsplash.com/photo-1543198126-c78d457a604e?w=800&auto=format&fit=crop&q=60'
+        }
+      ];
+      
+      setFetchedProducts(mockProducts);
+      setShowFetchNotification(true);
+      setTimeout(() => setShowFetchNotification(false), 3000);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsFetching(false);
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="flex-1 overflow-y-auto">
       <main className="flex-1 px-8 py-6">
         {view === 'stock' ? (
           <Stock 
@@ -173,16 +239,37 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
                       : 'Manage product inventory and listings'}
                   </p>
                 </div>
-                <button
-                  className="flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
-                  }}
-                  onClick={() => setShowAddProductModal(true)}
-                >
-                  <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
-                  {filter === 'sale' ? 'Add Sale' : 'Add Products'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <button
+                      onClick={handleFetchProducts}
+                      disabled={isFetching}
+                      className="px-6 py-2.5 rounded-xl bg-white text-gray-700 font-medium border-2 border-gray-200 hover:border-gray-300 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-gray-200 focus:outline-none flex items-center gap-2"
+                      style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
+                    >
+                      <Icon 
+                        icon={isFetching ? "mdi:loading" : "mdi:refresh"} 
+                        className={`text-xl ${isFetching ? 'animate-spin' : ''}`} 
+                      />
+                      {isFetching ? 'Fetching...' : 'Fetch'}
+                    </button>
+                    {showFetchNotification && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
+                        New!
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
+                    style={{
+                      boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
+                    }}
+                    onClick={() => setShowAddProductModal(true)}
+                  >
+                    <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
+                    {filter === 'sale' ? 'Add Sale' : 'Add Products'}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -307,15 +394,16 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
 
             {/* Modals */}
             {showAddProductModal && (
-              <AddProductModal 
-                onClose={() => setShowAddProductModal(false)} 
-                mode={filter === 'sale' ? 'sale' : 'product'}
+              <AddProductModal
+                onClose={() => setShowAddProductModal(false)}
+                mode="product"
+                fetchedProducts={fetchedProducts}
               />
             )}
 
-            {selectedProduct && (
+            {showManageStockModal && selectedProduct && (
               <ManageStockModal
-                onClose={() => setSelectedProduct(null)}
+                onClose={() => setShowManageStockModal(false)}
                 product={selectedProduct}
                 onUpdateStock={handleUpdateStock}
               />
@@ -326,5 +414,3 @@ function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps
     </div>
   );
 }
-
-export default Products;
