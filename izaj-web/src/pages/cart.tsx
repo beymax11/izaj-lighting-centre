@@ -306,7 +306,7 @@ const Cart: React.FC = () => {
               </div>
               <button 
                 onClick={handleCheckout}
-                className="w-full bg-gradient-to-r from-black to-gray-800 hover:from-orange-500 hover:to-yellow-400 text-white py-4 rounded-xl font-bold text-lg shadow transition-all duration-200 transform hover:scale-[1.02]"
+                className="w-full bg-black hover:bg-orange-500 text-white py-4 rounded-xl font-bold text-lg shadow transition-all duration-200 transform hover:scale-[1.02]"
               >
                 PROCEED TO CHECKOUT
               </button>

@@ -315,7 +315,7 @@ const Header: React.FC<HeaderProps> = ({
                       {/* First Column - Main Categories */}
                       <div>
                         <h3 className="font-bold text-base mb-4 border-b border-gray-200 pb-2" 
-                            style={{ fontFamily: "'Playfair Display', serif" }}>
+                           >
                           LIGHTING FIXTURES
                         </h3>
                         <ul>
@@ -353,7 +353,7 @@ const Header: React.FC<HeaderProps> = ({
                       {/* Second Column - Categories with Images */}
                       <div>
                         <h3 className="font-bold text-base mb-4 border-b border-gray-200 pb-2"
-                            style={{ fontFamily: "'Playfair Display', serif" }}>
+                            >
                           POPULAR CATEGORIES
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
@@ -391,7 +391,7 @@ const Header: React.FC<HeaderProps> = ({
                       {/* Third Column - Complete Categories List */}
                       <div>
                         <h3 className="font-bold text-base mb-4 border-b border-gray-200 pb-2"
-                            style={{ fontFamily: "'Playfair Display', serif" }}>
+                            >
                           ALL CATEGORIES
                         </h3>
                         <ul className="grid grid-cols-2 gap-x-4 gap-y-2">

@@ -18,7 +18,7 @@ const Checkout = () => {
       </div>
 
       <div className="p-4 md:p-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-screen">
           {/* Left - Form */}
           <div className="lg:col-span-7 space-y-6">
             {/* Contact */}
@@ -190,8 +190,8 @@ const Checkout = () => {
           </div>
 
           {/* Right - Summary */}
-          <div className="lg:col-span-5">
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 sticky top-24 hover:shadow-md transition-shadow">
+          <div className="lg:col-span-5 h-fit">
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow sticky top-4">
               <h2 className="text-lg font-semibold text-gray-800 mb-6">Order Summary</h2>
               
               <div className="max-h-64 overflow-auto mb-6 space-y-4">

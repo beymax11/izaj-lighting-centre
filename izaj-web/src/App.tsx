@@ -26,6 +26,11 @@ import TermsOfPurchase from './pages/termsofpurchase';
 import Delivery from './pages/delivery';
 import PrivacyPolicy from './pages/privacypolicy';
 import Return from './pages/return';
+import Help from './pages/help';
+import Term from './pages/term';
+import Warranty from './pages/warranty';
+import Career from './pages/career';
+import Subscribe from './pages/subscribe';
 import CookieConsent from './components/CookieConsent';
 import "./App.css";
 
@@ -171,6 +176,11 @@ const App: React.FC = () => {
             <Route path="/delivery" element={<Delivery />} />
             <Route path="/privacypolicy" element={<PrivacyPolicy />} />
             <Route path="/return" element={<Return />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/term" element={<Term />} />
+            <Route path="/warranty" element={<Warranty />} />
+            <Route path="/career" element={<Career />} />
+            <Route path="/subscribe" element={<Subscribe />} />
             <Route
               path="/cart"
               element={

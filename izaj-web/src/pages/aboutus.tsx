@@ -22,12 +22,12 @@ const AboutUs: React.FC = () => {
      
 
      {/* Main Content  */}
-<main className="flex-grow bg-gray-50 py-16">
-  <article className="relative max-w-7xl mx-auto bg-white rounded-3xl shadow-xl px-8 py-14 md:py-20 md:px-20 prose prose-lg prose-gray text-gray-800">
+<main className="flex-grow py-16">
+  <article className="relative max-w-7xl mx-auto px-8 py-14 md:py-20 md:px-20 prose prose-lg prose-gray text-gray-800 text-center">
     {/* Decorative vertical line for article feel */}
     <div className="hidden md:block absolute left-0 top-10 bottom-10 w-1 bg-gradient-to-b from-orange-400/30 via-gray-200 to-orange-400/30 rounded-full pointer-events-none"></div>
     <header>
-      <h1 className="text-5xl font-extrabold mb-6 tracking-tight text-gray-900 text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
+      <h1 className="text-4xl font-bold mb-6 tracking-tight text-gray-900 text-center">
         ABOUT US
       </h1>
     </header>
@@ -50,7 +50,7 @@ const AboutUs: React.FC = () => {
     {/* New Content: Our Values */}
     <section className="mt-16">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Values</h2>
-      <ul className="list-disc pl-6 space-y-2">
+     
         <li>
           <span className="font-semibold text-black">Quality First:</span> We source only the best materials and partner with trusted manufacturers to ensure every product meets our high standards.
         </li>
@@ -63,13 +63,13 @@ const AboutUs: React.FC = () => {
         <li>
           <span className="font-semibold text-black">Sustainability:</span> We are committed to offering energy-efficient and eco-friendly lighting solutions.
         </li>
-      </ul>
+      
     </section>
 
     {/* New Content: Why Shop With Us */}
     <section className="mt-16">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Why Shop With Us?</h2>
-      <ul className="list-disc pl-6 space-y-2">
+     
         <li>
           <span className="font-semibold text-black">Wide Selection:</span> From timeless classics to modern masterpieces, find lighting for every style and budget.
         </li>
@@ -85,7 +85,7 @@ const AboutUs: React.FC = () => {
         <li>
           <span className="font-semibold text-black">After-Sales Support:</span> We offer warranty and hassle-free returns for your peace of mind.
         </li>
-      </ul>
+      
     </section>
 
     {/* New Content: Meet Our Team */}
@@ -184,28 +184,36 @@ const AboutUs: React.FC = () => {
 </main>
 
 {/* Subscription Section */}
-<section className="bg-black py-16 px-6">
+<section className="bg-black py-20 px-6">
   <div className="max-w-4xl mx-auto text-center">
-    <h2 className="text-3xl font-bold mb-6 text-white leading-snug">
-      Get fabulous discounts and exclusive offers by signing up to our mailing list.
+    <h2 className="text-4xl font-bold mb-4 text-white leading-tight">
+      Join Our Lighting Community
     </h2>
+    <p className="text-gray-300 mb-8 text-lg">
+      Get exclusive access to new collections, special offers, and lighting design tips.
+    </p>
     <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-      <input
-        type="email"
-        placeholder="Your email address"
-        className="px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white bg-white text-gray-800 max-w-md w-full"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+      <div className="relative flex-grow max-w-md">
+        <input
+          type="email"
+          placeholder="Enter your email address"
+          className="px-6 py-4 rounded-full border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-gray-800 w-full placeholder-gray-500"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        {email && !email.includes('@') && (
+          <p className="absolute -bottom-6 left-4 text-red-400 text-sm">Please enter a valid email address</p>
+        )}
+      </div>
       <button
         type="submit"
-        className="bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-800 hover:text-white transition duration-300"
+        className="bg-orange-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-orange-400 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-orange-400 min-w-[180px]"
       >
-        Subscribe
+        Subscribe Now
       </button>
     </form>
-    <p className="text-sm text-gray-400 mt-4 italic">100% free. Unsubscribe any time.</p>
+    <p className="text-sm text-gray-400 mt-8 italic">Join 10,000+ lighting enthusiasts. Unsubscribe anytime.</p>
   </div>
 </section>
 

@@ -318,7 +318,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 <p className="mt-1 text-lg" style={{ fontFamily: "'Poppins', serif" }}>Free Delivery & Installation</p>
                 <div className="flex items-center justify-center mt-4 px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300 w-40">
                     <Link
-                      to="/product-list"
+                      to="/collection"
                       state={user ? { user } : undefined}
                       className="text-center"
                       style={{ fontFamily: "'Poppins', serif" }}
@@ -505,11 +505,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
 
         {/* Inserted Image Section */}
         <div className="w-full">
-          <img
-            src="banner.png"
-            alt="Testimonials"
-            className="w-full object-cover"
-          />
+          <Link to="/product-list" state={user ? { user } : undefined}>
+            <img
+              src="banner.png"
+              alt="Testimonials"
+              className="w-full object-cover"
+            />
+          </Link>
         </div>
 
        

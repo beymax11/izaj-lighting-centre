@@ -210,7 +210,7 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
       >
         {/* Left: Chat list */}
         <div className="w-1/3 min-w-[260px] max-w-[350px] border-r bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col relative">
-          <div className="flex items-center p-4 border-b bg-yellow-400 sticky top-0 z-10 gap-2">
+          <div className="flex items-center p-4 border-b bg-white sticky top-0 z-10 gap-2">
             <span className="text-2xl font-extrabold text-black tracking-tight">IZAJ Assistant</span>
             <span className="ml-2 text-black text-base font-semibold bg-white/30 rounded px-2">{chats.filter(c => !c.archived).length}</span>
           </div>
