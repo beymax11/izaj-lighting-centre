@@ -54,7 +54,7 @@ export default function FavoritesDropdown({ user, onOpenAuthModal }: FavoritesDr
             </h3>
             {user && favorites.length > 0 && (
               <Link 
-                to="/favorites" 
+                to="/my-favorites" 
                 className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors duration-200 flex items-center gap-1"
               >
                 <Icon icon="mdi:arrow-right" className="w-4 h-4" />

@@ -19,7 +19,7 @@ interface AddProductModalProps {
 
 export function AddProductModal({ onClose, mode, fetchedProducts }: AddProductModalProps) {
   const [showFullForm, setShowFullForm] = useState(false);
-  const [, setSelectedProduct] = useState<FetchedProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<FetchedProduct | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -59,33 +59,11 @@ export function AddProductModal({ onClose, mode, fetchedProducts }: AddProductMo
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm z-50">
       <div
-        className={`bg-white ${mode === 'product' && !showFullForm ? 'w-[900px] min-h-[700px] flex flex-col justify-between rounded-3xl' : 'w-[800px] rounded-3xl'} shadow-2xl border border-gray-100/50 overflow-hidden transform transition-all`}
+        className={`bg-white max-w-5xl w-full min-h-[400px] rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden transform transition-all relative flex flex-col justify-between`}
         style={{
           boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
         }}>
-        {/* Header */}
-        {!(mode === 'product' && !showFullForm) && (
-          <div className="flex justify-between items-center p-7 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-yellow-50">
-                <Icon 
-                  icon={mode === 'sale' ? "mdi:tag-plus" : "mdi:package-plus"} 
-                  className="text-2xl text-yellow-500" 
-                />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                {mode === 'sale' ? 'Add New Sale' : 'Add New Product'}
-              </h2>
-            </div>
-            <button 
-              onClick={onClose} 
-              className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <Icon icon="mdi:close" className="text-2xl" />
-            </button>
-          </div>
-        )}
-
+      
         {/* Content */}
         <div className={`p-7 space-y-7 ${mode === 'product' && !showFullForm ? 'flex-1 flex flex-col justify-center' : ''}`}>
           {mode === 'sale' ? (
@@ -157,52 +135,59 @@ export function AddProductModal({ onClose, mode, fetchedProducts }: AddProductMo
               ) : (
                 // Show full form
                 <div className="space-y-5">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <Icon icon="mdi:package-outline" className="text-xl text-yellow-500" />
-                    Product Details
-                  </h3>
-                  <div className="space-y-5">
-                    <input
-                      type="text"
-                      placeholder="Product Name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-                    />
-                    <textarea
-                      placeholder="Product Description"
-                      rows={4}
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all resize-none"
-                    />
-                    <div className="grid grid-cols-2 gap-5">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                        <select 
-                          className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-                          value={formData.category}
-                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        >
-                          <option value="">Select Category</option>
-                          <option value="Chandelier">Chandelier</option>
-                          <option value="Panel Light">Panel Light</option>
-                          <option value="Ceiling Light">Ceiling Light</option>
-                          <option value="Floor Light">Floor Light</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
-                        <input
-                          type="text"
-                          placeholder="Enter price"
-                          value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-                        />
+                  <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                      <Icon icon="mdi:package-outline" className="text-xl text-yellow-500" />
+                      Product Details
+                    </h3>
+                    <button
+                      onClick={onClose}
+                      className="p-2 rounded-full bg-white/80 hover:bg-yellow-100 text-gray-500 hover:text-yellow-600 shadow focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-all ml-4"
+                      aria-label="Close"
+                    >
+                      <Icon icon="mdi:close" className="text-2xl" />
+                    </button>
+                  </div>
+                  {selectedProduct && (
+                    <div className="mb-8">
+                      <div className="rounded-3xl overflow-hidden shadow-xl border border-yellow-100 bg-gradient-to-br from-yellow-50 via-white to-white p-8">
+                        <div className="flex flex-col lg:flex-row gap-8 items-start">
+                          {/* Left: Image */}
+                          <div className="w-full lg:w-2/5 flex-shrink-0 flex justify-center items-start">
+                            <img
+                              src={selectedProduct.image}
+                              alt={selectedProduct.name}
+                              className="w-full max-w-md max-h-[28rem] object-cover rounded-2xl border border-yellow-100 shadow"
+                            />
+                          </div>
+                          {/* Right: Product Info */}
+                          <div className="w-full lg:w-3/5 flex flex-col gap-6">
+                            <div className="flex items-center justify-between mb-2">
+                             
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="bg-white/80 rounded-xl p-5 shadow-sm border border-yellow-100">
+                                <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Product Name</span>
+                                <span className="text-xl font-bold text-yellow-700 block">{selectedProduct.name}</span>
+                              </div>
+                              <div className="bg-white/80 rounded-xl p-5 shadow-sm border border-yellow-100">
+                                <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Price</span>
+                                <span className="text-xl font-bold text-yellow-700 block">{selectedProduct.price}</span>
+                              </div>
+                              <div className="bg-white/80 rounded-xl p-5 shadow-sm border border-yellow-100">
+                                <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Category</span>
+                                <span className="text-lg font-semibold text-gray-800 block">{selectedProduct.category}</span>
+                              </div>
+                              <div className="bg-white/80 rounded-xl p-5 shadow-sm border border-yellow-100 md:col-span-2">
+                                <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Product Details</span>
+                                <span className="text-base text-gray-700 block">{selectedProduct.description}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -210,7 +195,7 @@ export function AddProductModal({ onClose, mode, fetchedProducts }: AddProductMo
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-10 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100 w-full gap-6">
+        <div className="flex justify-between items-center p-2 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100 w-full gap-2">
           <div className="flex gap-3">
             <button className="px-5 py-3 text-base font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 rounded-xl hover:bg-gray-50 transition-colors">
               <Icon icon="mdi:content-save-outline" className="text-xl" />

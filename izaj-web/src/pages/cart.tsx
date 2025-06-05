@@ -127,7 +127,7 @@ const Cart: React.FC = () => {
       <div className="max-w-[94%] mx-auto mt-8 px-5 sm:px-8 ml-6 mr-6">
         {/* Shopping Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-extrabold tracking-wider text-black" style={{ fontFamily: "'Maven Pro', serif" }}>
+          <h1 className="text-3xl font-bold tracking-wider text-black" >
            Cart
           </h1>
           <div className="flex items-center space-x-4">
