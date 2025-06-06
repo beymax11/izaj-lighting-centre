@@ -180,14 +180,14 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
           <>
             {/* Header section */}
             {!showAddProductModal && (
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
                 <div>
                   <div className="flex items-center gap-3">
                     <Icon icon="mdi:package-variant" className="text-3xl text-red-400" />
                     <div className="relative">
                       <button 
                         onClick={() => setShowDropdown(!showDropdown)}
-                        className="flex items-center gap-2 text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors"
+                        className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors"
                       >
                         {filter === 'sale' ? 'Sale' : 'Products'}
                         <Icon icon="mdi:chevron-down" className="text-xl" />
@@ -233,18 +233,18 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                       )}
                     </div>
                   </div>
-                  <p className="text-gray-500 mt-1">
+                  <p className="text-gray-500 mt-1 text-sm sm:text-base">
                     {filter === 'sale' 
                       ? 'Manage product sales and discounts' 
                       : 'Manage product inventory and listings'}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:flex-none">
                     <button
                       onClick={handleFetchProducts}
                       disabled={isFetching}
-                      className="px-6 py-2.5 rounded-xl bg-white text-gray-700 font-medium border-2 border-gray-200 hover:border-gray-300 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-gray-200 focus:outline-none flex items-center gap-2"
+                      className="w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl bg-white text-gray-700 font-medium border-2 border-gray-200 hover:border-gray-300 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-gray-200 focus:outline-none flex items-center justify-center gap-2"
                       style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
                     >
                       <Icon 
@@ -260,7 +260,7 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                     )}
                   </div>
                   <button
-                    className="flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
+                    className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
                     style={{
                       boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
                     }}
@@ -273,12 +273,12 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
               </div>
             )}
 
-            <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl border border-white p-8 mb-8"
+            <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl border border-white p-4 sm:p-8 mb-8"
               style={{
                 boxShadow: '0 4px 32px 0 rgba(252, 211, 77, 0.07)',
               }}>
-              <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-0 mb-8">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <button
                     className={`text-black font-semibold border-b-2 flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${filter === 'all' ? 'border-black bg-yellow-50' : 'border-transparent hover:bg-yellow-50'}`}
                     onClick={() => setFilter('all')}
@@ -299,25 +299,31 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                     Archive
                   </button>
                 </div>
-                <div className="flex items-center gap-3">
-                  <input type="text" placeholder="Search products..." className="px-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-200 bg-white shadow-sm" />
-                  <select className="px-3 py-2 border rounded-lg text-sm">
-                    <option>Category</option>
-                  </select>
-                  <select className="px-3 py-2 border rounded-lg text-sm">
-                    <option>Type</option>
-                  </select>
-                  <button className="px-3 py-2 border rounded-lg text-sm flex items-center gap-1">
-                    <Icon icon="mdi:tune-variant" width={16} />
-                    Advance Filter
-                  </button>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <input 
+                      type="text" 
+                      placeholder="Search products..." 
+                      className="w-full sm:w-[200px] lg:w-[300px] px-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-200 bg-white shadow-sm" 
+                    />
+                    <select className="px-3 py-2 border rounded-lg text-sm">
+                      <option>Category</option>
+                    </select>
+                    <select className="px-3 py-2 border rounded-lg text-sm">
+                      <option>Type</option>
+                    </select>
+                    <button className="px-3 py-2 border rounded-lg text-sm flex items-center justify-center gap-1 w-[150px]">
+                      <Icon icon="mdi:tune-variant" width={16} />
+                      Advance Filter
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {filteredProducts.map((product, idx) => (
                   <div key={idx} 
-                    className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group"
+                    className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group"
                     style={{
                       boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
                     }}>
@@ -326,33 +332,33 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
+                          className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
                         />
                         {product.variant && (
-                          <span className="absolute top-2 right-2 bg-yellow-400 text-black px-3 py-1 rounded-full text-xs font-semibold">
+                          <span className="absolute top-2 right-2 bg-yellow-400 text-black px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
                             {product.variant} variants
                           </span>
                         )}
                       </div>
-                      <h3 className="font-semibold text-xl mb-2 text-gray-800">{product.name}</h3>
+                      <h3 className="font-semibold text-lg sm:text-xl mb-2 text-gray-800">{product.name}</h3>
                       <p className="text-gray-500 text-sm mb-2">{product.category}</p>
                       {product.status === 'Active' && (
-                        <span className="inline-block px-3 py-1 text-sm rounded-full bg-green-100 text-green-700 font-medium">🟢 Active</span>
+                        <span className="inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full bg-green-100 text-green-700 font-medium">🟢 Active</span>
                       )}
                       {product.status === 'Out of Stock' && (
-                        <span className="inline-block px-3 py-1 text-sm rounded-full bg-red-100 text-red-700 font-medium">⭕ Out of Stock</span>
+                        <span className="inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full bg-red-100 text-red-700 font-medium">⭕ Out of Stock</span>
                       )}
                     </div>
                     
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex justify-between items-center border-t border-gray-100 pt-3 sm:pt-4">
                         <div>
-                          <p className="text-sm text-gray-500">Price</p>
-                          <p className="text-2xl font-bold text-gray-800">{product.price}</p>
+                          <p className="text-xs sm:text-sm text-gray-500">Price</p>
+                          <p className="text-xl sm:text-2xl font-bold text-gray-800">{product.price}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-500">Stock</p>
-                          <p className={`text-lg font-semibold ${
+                          <p className="text-xs sm:text-sm text-gray-500">Stock</p>
+                          <p className={`text-base sm:text-lg font-semibold ${
                             product.stock === 0 ? 'text-red-600' : 
                             product.stock < 100 ? 'text-orange-500' : 
                             'text-green-600'
@@ -362,7 +368,7 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                         </div>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-1 sm:space-y-2">
                         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div
                             className={`h-full transition-all duration-300 ${
@@ -380,8 +386,11 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                       </div>
 
                       <button 
-                        onClick={() => setSelectedProduct(product)}
-                        className="w-full py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg"
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowManageStockModal(true);
+                        }}
+                        className="w-full py-2.5 sm:py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg text-sm sm:text-base"
                       >
                         <Icon icon="mdi:plus-box" width={20} />
                         {product.stock === 0 ? 'RESTOCK NOW' : 'MANAGE STOCK'}

@@ -25,8 +25,11 @@ const Header: React.FC<HeaderProps> = ({
   setUser
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLLIElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Check for stored user data on component mount
@@ -62,13 +65,14 @@ const Header: React.FC<HeaderProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Close account dropdown when clicking outside
       if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
         setIsAccountDropdownOpen(false);
       }
-      // Close products dropdown when clicking outside
       if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -87,31 +91,41 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <div className="bg-black text-white text-center py-3 flex items-center justify-center" style={{ height: '30px', zIndex: 100 }}>
-        <p className="text-sm">Monthly Sale is here! &rarr; Enjoy 10% OFF items for the month of May</p>
+        <p className="text-sm px-4">Monthly Sale is here! &rarr; Enjoy 10% OFF items for the month of May</p>
       </div>
 
-      <header className="bg-white px-10 py-3 flex flex-col">
+      <header className="bg-white px-4 md:px-10 py-3 flex flex-col">
         {/* Top Header Row */}
         <div className="flex items-center justify-between w-full">
-          {/* Logo */}
-          <Link to="/" className="flex flex-col items-start flex-shrink-0 ">
-            <div
-              className="text-7xl tracking-wide flex-shrink-0 leading-tight font-regular"
-              style={{
-                color: "#000000",
-                fontFamily: "'Playfair Display', serif",
-                textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-                letterSpacing: "10px",
-              }}
+          {/* Mobile Menu Button and Logo Container */}
+          <div className="flex items-center space-x-4">
+            <button 
+              className="md:hidden text-black"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              IZAJ
-            </div>
-          </Link>
+              <Icon icon="mdi:menu" width="28" height="28" />
+            </button>
+
+            {/* Logo */}
+            <Link to="/" className="flex flex-col items-start flex-shrink-0">
+              <div
+                className="text-4xl md:text-7xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                style={{
+                  color: "#000000",
+                  fontFamily: "'Playfair Display', serif",
+                  textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
+                  letterSpacing: "10px",
+                }}
+              >
+                IZAJ
+              </div>
+            </Link>
+          </div>
 
           {/* Right Section with Search, User, Notification, and Cart Icons */}
-          <div className="flex items-center space-x-6">
-            {/* Centered Search Bar */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1/2">
+          <div className="flex items-center space-x-4 md:space-x-6">
+            {/* Search Bar - Hidden on mobile */}
+            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1/2">
               <input
                 type="text"
                 placeholder="Search"
@@ -124,6 +138,14 @@ const Header: React.FC<HeaderProps> = ({
                 height="25"
               />
             </div>
+
+            {/* Mobile Search Button */}
+            <button 
+              className="md:hidden text-black"
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+            >
+              <Icon icon="ic:outline-search" width="25" height="25" />
+            </button>
 
             {/* Login/Signup Section with Icons */}
             <div className="flex items-center space-x-4">
@@ -154,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({
                       height="28"
                       className="text-black hover:text-orange-500 transition-colors duration-200"
                     />
-                    <div className="flex flex-col ml-2 text-left">
+                    <div className="hidden md:flex flex-col ml-2 text-left">
                       <span
                         className="font-medium text-sm text-gray-500 leading-none"
                         style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
@@ -180,6 +202,7 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                   </button>
 
+                  {/* Account Dropdown - Adjusted for mobile */}
                   {isAccountDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
                       <div className="py-1">
@@ -256,8 +279,204 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Navbar */}
-        <nav className="bg-white py-3">
+        {/* Mobile Search Bar - Only visible when search icon is clicked */}
+        {isMobileSearchOpen && (
+          <div className="md:hidden mt-4 relative">
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full border border-black-500 pl-10 pr-4 py-2 text-sm text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-black rounded-full"
+              autoFocus
+            />
+            <Icon 
+              icon="ic:outline-search" 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+              width="20"
+              height="20"
+            />
+            <button 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black"
+              onClick={() => setIsMobileSearchOpen(false)}
+            >
+              <Icon icon="mdi:close" width="20" height="20" />
+            </button>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            
+            {/* Modal Content */}
+            <div
+              ref={mobileMenuRef}
+              className="md:hidden absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white z-50 shadow-xl"
+            >
+              {/* Top Bar with Close Button */}
+              <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+                <Link to="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div
+                    className="text-3xl tracking-wide leading-tight font-regular"
+                    style={{
+                      color: "#000000",
+                      fontFamily: "'Playfair Display', serif",
+                      textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
+                      letterSpacing: "10px",
+                    }}
+                  >
+                    IZAJ
+                  </div>
+                </Link>
+                <button
+                  className="text-black p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Icon icon="mdi:close" width="28" height="28" />
+                </button>
+              </div>
+              {/* Navigation Menu - Scrollable */}
+              <div className="h-[calc(100vh-64px)] overflow-y-auto">
+                <nav className="px-4 py-6">
+                  <ul className="space-y-1">
+                    <li>
+                      <Link
+                        to="/"
+                        className="flex items-center px-4 py-3 text-lg font-medium text-black hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Icon icon="mdi:home-outline" className="mr-3 text-gray-600" width="24" height="24" />
+                        HOME
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        className="w-full flex items-center justify-between px-4 py-3 text-lg font-medium text-black hover:bg-gray-50 rounded-lg transition-colors duration-200 focus:outline-none"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        aria-expanded={isDropdownOpen}
+                        aria-controls="mobile-products-dropdown"
+                      >
+                        <div className="flex items-center">
+                          <Icon icon="mdi:lightbulb-outline" className="mr-3 text-gray-600" width="24" height="24" />
+                          PRODUCTS
+                        </div>
+                        <Icon
+                          icon="mdi:chevron-down"
+                          className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                          width="24"
+                          height="24"
+                        />
+                      </button>
+                      <div
+                        id="mobile-products-dropdown"
+                        className={`overflow-hidden transition-all duration-300 ${isDropdownOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} bg-gray-50 rounded-lg mt-1 ml-8`}
+                        style={{ borderLeft: isDropdownOpen ? '3px solid #f59e42' : '3px solid transparent' }}
+                      >
+                        <ul className="py-2">
+                          <li>
+                            <Link
+                              to="/product-list"
+                              className="block px-4 py-2 text-base text-gray-700 hover:text-black hover:bg-orange-100 rounded transition-colors duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              All Lighting Fixtures
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              to="/collection"
+                              className="block px-4 py-2 text-base text-gray-700 hover:text-black hover:bg-orange-100 rounded transition-colors duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              New Arrivals
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              to="/sales"
+                              className="block px-4 py-2 text-base text-gray-700 hover:text-black hover:bg-orange-100 rounded transition-colors duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              Special Offers
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+                    <li>
+                      <Link
+                        to="/collection"
+                        className="flex items-center px-4 py-3 text-lg font-medium text-black hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Icon icon="mdi:star-outline" className="mr-3 text-gray-600" width="24" height="24" />
+                        NEW
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/sales"
+                        className="flex items-center px-4 py-3 text-lg font-medium text-black hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Icon icon="mdi:tag-outline" className="mr-3 text-gray-600" width="24" height="24" />
+                        SALES
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/aboutus"
+                        className="flex items-center px-4 py-3 text-lg font-medium text-black hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Icon icon="mdi:information-outline" className="mr-3 text-gray-600" width="24" height="24" />
+                        ABOUT US
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+                {/* Bottom Section */}
+                <div className="px-4 py-6 border-t border-gray-200">
+                  {user ? (
+                    <div className="space-y-2">
+                      <div className="px-4 py-2 text-sm text-gray-600">
+                        Hello, {user.name}
+                      </div>
+                      <button
+                        onClick={() => {
+                          handleLogoutClick();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center px-4 py-3 text-lg font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                      >
+                        <Icon icon="mdi:logout" className="mr-3" width="24" height="24" />
+                        Logout
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setIsModalOpen?.(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center px-4 py-3 text-lg font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                    >
+                      <Icon icon="mdi:login" className="mr-2" width="24" height="24" />
+                      Login / Sign Up
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Desktop Navbar - Hidden on mobile */}
+        <nav className="hidden md:block bg-white py-3">
           <ul className="flex justify-center space-x-10 text-sm font-medium">
             {/* HOME NAVIGATION - use onClick for SPA navigation */}
             <li>

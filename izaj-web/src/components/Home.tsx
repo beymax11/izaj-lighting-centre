@@ -12,7 +12,10 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ user }) => {
   const [currentDealIndex, setCurrentDealIndex] = useState(0);
-  const heroImages = [
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Hero images for desktop
+  const desktopHeroImages = [
     {
       image: "hero1.jpg",
       heading: "Soft Light, Slow Days",
@@ -20,18 +23,56 @@ const Home: React.FC<HomeProps> = ({ user }) => {
     },
     {
       image: "hero2.jpg",
-      heading: "IZAJ LIGHTING CENTRE",
-      subheading: "Illuminate your home with style.",
+      heading: "Soft Light, Slow Days",
+      subheading: "In a space where texture breathe and sunlight dances, soft lighting enhances the feeling of ease",
     },
     {
       image: "hero3.jpg",
-      heading: "IZAJ LIGHTING CENTRE",
-      subheading: "Discover what's new and trending.",
+      heading: "Soft Light, Slow Days",
+      subheading: "In a space where texture breathe and sunlight dances, soft lighting enhances the feeling of ease",
     },
   ];
+
+  // Hero images for mobile
+  const mobileHeroImages = [
+    {
+      image: "chadelier.jpg",
+      heading: "Soft Light, Slow Days",
+      subheading: "In a space where texture breathe and sunlight dances, soft lighting enhances the feeling of ease",
+    },
+    {
+      image: "ceiling.jpg",
+      heading: "Soft Light, Slow Days",
+      subheading: "In a space where texture breathe and sunlight dances, soft lighting enhances the feeling of ease",
+    },
+    {
+      image: "cluster.jpg",
+      heading: "Soft Light, Slow Days",
+      subheading: "In a space where texture breathe and sunlight dances, soft lighting enhances the feeling of ease",
+    },
+  ];
+
+  // Use the appropriate hero images based on screen size
+  const heroImages = isMobile ? mobileHeroImages : desktopHeroImages;
   
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   
+  // Check for mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px is typical tablet breakpoint
+    };
+
+    // Check initially
+    checkMobile();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentHeroIndex((prevIndex) =>
@@ -40,7 +81,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
     }, 5000); // 5 seconds
   
     return () => clearInterval(interval);
-  }, []);
+  }, [heroImages.length]); // Add heroImages.length as dependency
   
   // Sample deals data
   const deals = [
@@ -115,25 +156,25 @@ const Home: React.FC<HomeProps> = ({ user }) => {
       {/* Main Content */}
       <main className="p-0 mx-0 w-full">
         {/* Hero Slideshow */}
-        <div className="relative w-full h-[500px] overflow-hidden z-0 mt-[-1px]">
+        <div className="relative w-full h-[400px] overflow-hidden z-0">
           {/* Hero Image */}
           <img 
             src={`/public/${heroImages[currentHeroIndex].image}`}
             alt="Hero Slide"
-            className="w-full h-full object-cover transition-opacity duration-1000"
+            className="w-full h-full object-cover object-center transition-all duration-1000"
           />
 
           {/* Overlay Text */}
-          <div className="absolute bottom-0 left-0 w-full bg-black/70 text-white p-8">
-            <div className="max-w-4xl">
+          <div className="absolute inset-0 w-full bg-gradient-to-t from-black via-black/70 to-transparent text-white p-4 sm:p-6 md:p-8 flex items-end">
+            <div className="max-w-4xl mx-auto">
               <h1 
-                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4" 
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 drop-shadow-lg" 
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 {heroImages[currentHeroIndex].heading}
               </h1>
               <p 
-                className="text-xl md:text-2xl lg:text-3xl" 
+                className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl drop-shadow-lg" 
                 style={{ fontFamily: "'Poppins', serif" }}
               >
                 {heroImages[currentHeroIndex].subheading}

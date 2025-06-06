@@ -40,29 +40,26 @@ const Profile: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f7f8fa]">
-   
-      <header className="px-8 py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+      <header className="px-4 sm:px-8 py-4 sm:py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
-          <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800">
-            <Icon icon="mdi:account-circle" className="text-yellow-400 w-8 h-8" />
+          <h2 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
+            <Icon icon="mdi:account-circle" className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
             Profile Settings
           </h2>
-         
         </div>
       </header>
 
-      {/* Main Content - removed pt-8, mt-xx, and all overflow/scrolling. Added extra margin-bottom for space from header. */}
-      <main className="flex-1 px-8 pb-10 bg-[#f7f8fa] w-full">
-        <div className="max-w-7xl mx-auto flex flex-row gap-8" style={{marginTop: "36px"}}>
+      <main className="flex-1 px-4 sm:px-8 pb-6 sm:pb-10 bg-[#f7f8fa] w-full">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-8" style={{marginTop: "24px"}}>
           {/* Profile Card */}
-          <div className="w-[375px] min-w-[320px] max-w-[430px] bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center p-8">
+          <div className="w-full lg:w-[375px] lg:min-w-[320px] lg:max-w-[430px] bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center p-6 sm:p-8">
             <button
               type="button"
               className="focus:outline-none transform hover:scale-105 transition-transform duration-200"
               onClick={() => fileInputRef.current?.click()}
               title="Change profile picture"
             >
-              <div className="w-32 h-32 rounded-full bg-gray-100 border-4 border-yellow-200 shadow-lg flex items-center justify-center overflow-hidden mb-4 relative group">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gray-100 border-4 border-yellow-200 shadow-lg flex items-center justify-center overflow-hidden mb-4 relative group">
                 <img
                   src={profile.avatar}
                   alt="Profile"
@@ -72,7 +69,7 @@ const Profile: React.FC = () => {
                   }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200">
-                  <Icon icon="mdi:camera" className="text-white w-8 h-8" />
+                  <Icon icon="mdi:camera" className="text-white w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
               </div>
             </button>
@@ -84,7 +81,7 @@ const Profile: React.FC = () => {
               onChange={handleAvatarChange}
             />
             <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-800 mt-2">{profile.name}</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mt-2">{profile.name}</h3>
               <span className="text-sm text-gray-500 bg-gray-100 px-3 py-0.5 rounded-full mt-1 inline-block">
                 {profile.role}
               </span>
@@ -94,10 +91,11 @@ const Profile: React.FC = () => {
               </div>
             </div>
           </div>
+
           {/* Profile Form */}
-          <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-100 p-12 flex flex-col justify-center">
-            <form onSubmit={handleSave} className="space-y-8 max-w-2xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 lg:p-12 flex flex-col justify-center">
+            <form onSubmit={handleSave} className="space-y-6 sm:space-y-8 max-w-2xl mx-auto w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                 <div className="space-y-1">
                   <label className="block text-gray-700 font-medium">Full Name</label>
                   <input
@@ -106,7 +104,7 @@ const Profile: React.FC = () => {
                     disabled={!editMode}
                     value={profile.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-base sm:text-lg"
                     placeholder="Enter your name"
                   />
                 </div>
@@ -118,7 +116,7 @@ const Profile: React.FC = () => {
                     disabled={!editMode}
                     value={profile.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-base sm:text-lg"
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -130,7 +128,7 @@ const Profile: React.FC = () => {
                     disabled={!editMode}
                     value={profile.address || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-base sm:text-lg"
                     placeholder="Enter your address"
                   />
                 </div>
@@ -141,7 +139,7 @@ const Profile: React.FC = () => {
                     name="role"
                     disabled
                     value={profile.role}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-base sm:text-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -151,7 +149,7 @@ const Profile: React.FC = () => {
                     name="email"
                     disabled
                     value={profile.email}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-base sm:text-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -162,18 +160,18 @@ const Profile: React.FC = () => {
                     disabled={!editMode}
                     value={profile.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition disabled:bg-gray-50 text-gray-700 text-base sm:text-lg"
                     placeholder={editMode ? "Enter new password" : "********"}
                   />
                 </div>
               </div>
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-6 justify-end">
+              <div className="flex flex-col sm:flex-row gap-3 pt-6 justify-end">
                 {!editMode ? (
                   <button
                     type="button"
                     onClick={() => setEditMode(true)}
-                    className="px-8 py-3 rounded-xl bg-yellow-400 text-white font-semibold hover:bg-yellow-500 transition shadow-md hover:shadow-lg text-lg"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 rounded-xl bg-yellow-400 text-white font-semibold hover:bg-yellow-500 transition shadow-md hover:shadow-lg text-base sm:text-lg"
                   >
                     Edit Profile
                   </button>
@@ -181,14 +179,14 @@ const Profile: React.FC = () => {
                   <>
                     <button
                       type="submit"
-                      className="px-8 py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow-md hover:shadow-lg text-lg"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow-md hover:shadow-lg text-base sm:text-lg"
                     >
                       Save Changes
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditMode(false)}
-                      className="px-8 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition shadow-md hover:shadow-lg text-lg"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition shadow-md hover:shadow-lg text-base sm:text-lg"
                     >
                       Cancel
                     </button>

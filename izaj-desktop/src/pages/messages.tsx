@@ -75,9 +75,25 @@ function Messages() {
 	const [newMessageText, setNewMessageText] = useState('');
 	const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
 	const [isTyping, setIsTyping] = useState(false);
+	const [isMobileView, setIsMobileView] = useState(false);
+	const [showMessageList, setShowMessageList] = useState(true);
 
 	// Ref for auto-scrolling conversation
 	const conversationEndRef = useRef<HTMLDivElement | null>(null);
+
+	// Add window resize listener
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth < 1024);
+			if (window.innerWidth >= 1024) {
+				setShowMessageList(true);
+			}
+		};
+
+		handleResize(); // Initial check
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
 
 	const filteredMessages = messageListData.filter(message => {
 		const matchesSearch = message.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,24 +173,23 @@ function Messages() {
 	return (
 		<div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f7f8fa]">
 			{/* Section Header */}
-			<header className="px-8 py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+			<header className="px-4 sm:px-8 py-4 sm:py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
 				<div className="max-w-7xl mx-auto">
-					<h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800">
-						<Icon icon="mdi:message-outline" className="text-purple-400 w-8 h-8" />
+					<h2 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
+						<Icon icon="mdi:message-outline" className="text-purple-400 w-6 h-6 sm:w-8 sm:h-8" />
 						Messages
 					</h2>
 				</div>
 			</header>
 
-			{/* Main content should take all remaining space and be scrollable only in the conversation */}
-			<main className="flex-1 px-8 py-8 bg-[#f7f8fa] overflow-hidden">
-				{/* Update the height here to a smaller value, e.g. h-[470px] */}
-				<div className="max-w-7xl mx-auto flex flex-row gap-8 h-[650px]">
+			{/* Main content */}
+			<main className="flex-1 px-4 sm:px-8 py-4 sm:py-8 bg-[#f7f8fa] overflow-hidden">
+				<div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-4 sm:gap-8 h-[calc(100vh-40px)] sm:h-[650px]">
 					{/* Left Column - Messages List */}
-					<div className="w-[375px] min-w-[320px] max-w-[430px] bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col p-5">
+					<div className={`w-full lg:w-[375px] lg:min-w-[320px] lg:max-w-[430px] bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col p-4 sm:p-5 ${isMobileView && selectedMessage ? 'hidden' : showMessageList ? 'flex' : 'hidden'}`}>
 						{/* Search and Filter */}
-						<div className="mb-5">
-							<div className="relative flex gap-2">
+						<div className="mb-4 sm:mb-5">
+							<div className="relative flex flex-col sm:flex-row gap-2">
 								<div className="relative flex-1">
 									<Icon icon="mdi:magnify" className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 									<input
@@ -187,7 +202,7 @@ function Messages() {
 								</div>
 								<div className="relative">
 									<select
-										className="appearance-none bg-white border border-gray-200 rounded-lg py-2 pl-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-purple-200 focus:ring-2 focus:ring-purple-100"
+										className="w-full sm:w-auto appearance-none bg-white border border-gray-200 rounded-lg py-2 pl-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-purple-200 focus:ring-2 focus:ring-purple-100"
 										value={selectedFilter}
 										onChange={(e) => setSelectedFilter(e.target.value)}
 									>
@@ -278,16 +293,26 @@ function Messages() {
 					</div>
 
 					{/* Right Column - Conversation View */}
-					<div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-100 p-0 flex flex-col h-full overflow-hidden">
+					<div className={`flex-1 bg-white rounded-2xl shadow-lg border border-gray-100 p-0 flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] lg:h-full overflow-hidden ${isMobileView && !selectedMessage ? 'hidden' : 'flex'}`}>
 						{selectedMessage ? (
 							<div className="flex flex-col h-full">
 								{/* Conversation Header */}
-								<div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-[#faf8ff] flex-shrink-0">
+								<div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-100 bg-[#faf8ff] flex-shrink-0">
 									<div className="flex items-center gap-3">
+										{isMobileView && (
+											<button
+												onClick={() => {
+													setSelectedMessage(null);
+												}}
+												className="p-2 hover:bg-purple-50 rounded-lg transition"
+											>
+												<Icon icon="mdi:arrow-left" className="w-6 h-6 text-gray-600" />
+											</button>
+										)}
 										<img 
 											src={messageListData.find(m => m.id === selectedMessage)?.avatar} 
 											alt="Avatar" 
-											className="w-10 h-10 rounded-full border border-purple-100"
+											className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-purple-100"
 										/>
 										<div>
 											<h3 className="font-semibold text-gray-900">
@@ -301,7 +326,7 @@ function Messages() {
 								</div>
 
 								{/* Messages */}
-								<div className="flex-1 py-6 px-6 space-y-2 custom-scrollbar bg-[#f9f9fc] overflow-y-auto">
+								<div className="flex-1 py-4 sm:py-6 px-4 sm:px-6 space-y-2 custom-scrollbar bg-[#f9f9fc] overflow-y-auto">
 									{messageListData.find(m => m.id === selectedMessage)?.conversation.map((msg, idx, arr) => (
 										<div key={idx} className="flex flex-col items-center">
 											<div className={`w-full flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}>
@@ -335,7 +360,7 @@ function Messages() {
 								</div>
 
 								{/* Quick Reply Templates */}
-								<div className="px-6 pt-2 pb-1 border-t bg-white flex gap-2 overflow-x-auto flex-shrink-0">
+								<div className="px-4 sm:px-6 pt-2 pb-1 border-t bg-white flex gap-2 overflow-x-auto flex-shrink-0">
 									{[
 										"Thank you for your order!",
 										"Your order is being processed",
@@ -354,7 +379,7 @@ function Messages() {
 
 								{/* Message Input */}
 								<form
-									className="flex gap-2 px-6 pb-6 pt-3 bg-white flex-shrink-0"
+									className="flex gap-2 px-4 sm:px-6 pb-3 pt-2 bg-white flex-shrink-0"
 									onSubmit={e => {
 										e.preventDefault();
 										handleSendMessage();
@@ -365,7 +390,7 @@ function Messages() {
 										className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
 										title="Attach file"
 									>
-										<Icon icon="mdi:paperclip" className="w-6 h-6" />
+										<Icon icon="mdi:paperclip" className="w-5 h-5 sm:w-6 sm:h-6" />
 									</button>
 									<input
 										type="text"
@@ -380,7 +405,7 @@ function Messages() {
 									/>
 									<button
 										type="submit"
-										className="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm transition font-medium"
+										className="px-4 sm:px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm transition font-medium"
 									>
 										Send
 									</button>
@@ -388,10 +413,10 @@ function Messages() {
 							</div>
 						) : (
 							<div className="h-full flex items-center justify-center text-gray-400">
-								<div className="text-center">
-									<Icon icon="mdi:message-outline" className="w-16 h-16 mx-auto mb-4" />
-									<p className="text-lg font-semibold text-gray-500">Select a conversation to view</p>
-									<p className="text-sm mt-2 text-gray-400">Choose from your customer support conversations</p>
+								<div className="text-center px-4">
+									<Icon icon="mdi:message-outline" className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" />
+									<p className="text-base sm:text-lg font-semibold text-gray-500">Select a conversation to view</p>
+									<p className="text-xs sm:text-sm mt-2 text-gray-400">Choose from your customer support conversations</p>
 								</div>
 							</div>
 						)}
@@ -409,6 +434,11 @@ function Messages() {
 				}
 				.custom-scrollbar:hover::-webkit-scrollbar-thumb {
 					background: #cfcdf2;
+				}
+				@media (max-width: 1024px) {
+					.custom-scrollbar::-webkit-scrollbar {
+						width: 4px;
+					}
 				}
 			`}</style>
 		</div>

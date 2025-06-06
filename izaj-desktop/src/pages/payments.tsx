@@ -185,75 +185,118 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      <main className="flex-1 px-8 py-8 bg-white">
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 bg-white">
         {/* Section Header */}
-        <div className="max-w-7xl mx-auto mb-8">
-          <h2 className="flex items-center gap-3 text-3xl font-bold text-gray-800 mb-2">
-            <Icon icon="mdi:credit-card-outline" className="text-pink-400 w-8 h-8" />
+        <div className="max-w-7xl mx-auto mb-6 sm:mb-8">
+          <h2 className="flex items-center gap-2 sm:gap-3 text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+            <Icon icon="mdi:credit-card-outline" className="text-pink-400 w-6 h-6 sm:w-8 sm:h-8" />
             Payments
           </h2>
-          <p className="text-gray-500 text-md">Monitor and manage payment transactions</p>
+          <p className="text-sm sm:text-md text-gray-500">Monitor and manage payment transactions</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
-            <Icon icon="mdi:clock-outline" className="w-10 h-10 text-yellow-400 mb-3" />
-            <span className="text-2xl font-bold text-gray-800">{stats.pending}</span>
-            <span className="text-gray-500 text-sm">Pending</span>
+        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-10">
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+            <Icon icon="mdi:clock-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-400 mb-2 sm:mb-3" />
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats.pending}</span>
+            <span className="text-xs sm:text-sm text-gray-500">Pending</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-green-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
-            <Icon icon="mdi:check-circle-outline" className="w-10 h-10 text-green-400 mb-3" />
-            <span className="text-2xl font-bold text-gray-800">{stats.successful}</span>
-            <span className="text-gray-500 text-sm">Successful</span>
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-green-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+            <Icon icon="mdi:check-circle-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-green-400 mb-2 sm:mb-3" />
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats.successful}</span>
+            <span className="text-xs sm:text-sm text-gray-500">Successful</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-red-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
-            <Icon icon="mdi:close-circle-outline" className="w-10 h-10 text-red-400 mb-3" />
-            <span className="text-2xl font-bold text-gray-800">{stats.canceled}</span>
-            <span className="text-gray-500 text-sm">Canceled</span>
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-red-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+            <Icon icon="mdi:close-circle-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-red-400 mb-2 sm:mb-3" />
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats.canceled}</span>
+            <span className="text-xs sm:text-sm text-gray-500">Canceled</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
-            <Icon icon="mdi:cash-refund" className="w-10 h-10 text-blue-400 mb-3" />
-            <span className="text-2xl font-bold text-gray-800">{stats.refund}</span>
-            <span className="text-gray-500 text-sm">Refunds</span>
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+            <Icon icon="mdi:cash-refund" className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400 mb-2 sm:mb-3" />
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats.refund}</span>
+            <span className="text-xs sm:text-sm text-gray-500">Refunds</span>
           </div>
         </div>
 
         {/* Filter Bar */}
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <div className="flex items-center space-x-4 text-sm">
-            {['Pending', 'Successful', 'Canceled', 'Refund'].map((label, idx) => (
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
+            <div className="flex gap-2 sm:gap-4">
               <button
-                key={idx}
-                onClick={() => handleFilterToggle(label)}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-lg border border-gray-200 bg-white shadow-sm transition ${
-                  selectedFilters.includes(label) 
+                onClick={() => handleFilterToggle('Pending')}
+                className={`flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 bg-white shadow-sm transition ${
+                  selectedFilters.includes('Pending') 
                     ? 'text-yellow-600 border-yellow-200 bg-yellow-50' 
                     : 'text-gray-700 hover:text-black'
                 }`}
               >
                 <Icon 
-                  icon={selectedFilters.includes(label) ? "mdi:checkbox-marked-circle" : "mdi:checkbox-blank-circle-outline"} 
+                  icon={selectedFilters.includes('Pending') ? "mdi:checkbox-marked-circle" : "mdi:checkbox-blank-circle-outline"} 
                   className="w-4 h-4" 
                 />
-                <span>{label}</span>
+                <span>Pending</span>
               </button>
-            ))}
+              <button
+                onClick={() => handleFilterToggle('Successful')}
+                className={`flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 bg-white shadow-sm transition ${
+                  selectedFilters.includes('Successful') 
+                    ? 'text-yellow-600 border-yellow-200 bg-yellow-50' 
+                    : 'text-gray-700 hover:text-black'
+                }`}
+              >
+                <Icon 
+                  icon={selectedFilters.includes('Successful') ? "mdi:checkbox-marked-circle" : "mdi:checkbox-blank-circle-outline"} 
+                  className="w-4 h-4" 
+                />
+                <span>Successful</span>
+              </button>
+            </div>
+            <div className="flex gap-2 sm:gap-4">
+              <button
+                onClick={() => handleFilterToggle('Canceled')}
+                className={`flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 bg-white shadow-sm transition ${
+                  selectedFilters.includes('Canceled') 
+                    ? 'text-yellow-600 border-yellow-200 bg-yellow-50' 
+                    : 'text-gray-700 hover:text-black'
+                }`}
+              >
+                <Icon 
+                  icon={selectedFilters.includes('Canceled') ? "mdi:checkbox-marked-circle" : "mdi:checkbox-blank-circle-outline"} 
+                  className="w-4 h-4" 
+                />
+                <span>Canceled</span>
+              </button>
+              <button
+                onClick={() => handleFilterToggle('Refund')}
+                className={`flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 bg-white shadow-sm transition ${
+                  selectedFilters.includes('Refund') 
+                    ? 'text-yellow-600 border-yellow-200 bg-yellow-50' 
+                    : 'text-gray-700 hover:text-black'
+                }`}
+              >
+                <Icon 
+                  icon={selectedFilters.includes('Refund') ? "mdi:checkbox-marked-circle" : "mdi:checkbox-blank-circle-outline"} 
+                  className="w-4 h-4" 
+                />
+                <span>Refund</span>
+              </button>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none w-full sm:w-auto">
               <Icon icon="mdi:magnify" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={handleSearch}
-                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-yellow-100 focus:border-yellow-200 bg-white"
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-yellow-100 focus:border-yellow-200 bg-white"
               />
             </div>
             <button 
               onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-              className="px-4 py-2 border border-yellow-200 rounded-lg text-sm bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition"
+              className="w-full sm:w-auto px-4 py-2 border border-yellow-200 rounded-lg text-sm bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition whitespace-nowrap"
             >
               Advance Filter
             </button>
@@ -264,7 +307,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
         {showAdvancedFilter && (
           <div className="max-w-7xl mx-auto bg-white p-4 rounded-lg shadow-md mb-6 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4">Advanced Filters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
                 <input type="date" className="w-full p-2 border rounded-lg" />
@@ -292,7 +335,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
 
         {/* Payments Table */}
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 mb-8">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-gray-50">
             <span className="font-semibold text-gray-700 text-lg">Payments Table</span>
             <button 
               onClick={handleExport}
@@ -311,7 +354,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
             <table className="min-w-full text-sm text-left">
               <thead className="bg-gray-100 text-gray-700 font-semibold">
                 <tr>
-                  <th className="px-4 py-3">
+                  <th className="px-2 sm:px-4 py-3">
                     <input 
                       type="checkbox" 
                       checked={selectedRows.size === mockData.length}
@@ -319,13 +362,13 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                       className="accent-yellow-400"
                     />
                   </th>
-                  <th className="px-4 py-3">User ID</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Phone Number</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Product ID</th>
-                  <th className="px-4 py-3">Payment</th>
+                  <th className="px-2 sm:px-4 py-3">User ID</th>
+                  <th className="px-2 sm:px-4 py-3 hidden sm:table-cell">Name</th>
+                  <th className="px-2 sm:px-4 py-3 hidden md:table-cell">Email</th>
+                  <th className="px-2 sm:px-4 py-3 hidden lg:table-cell">Phone Number</th>
+                  <th className="px-2 sm:px-4 py-3">Date</th>
+                  <th className="px-2 sm:px-4 py-3 hidden md:table-cell">Product ID</th>
+                  <th className="px-2 sm:px-4 py-3">Payment</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -335,7 +378,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                     className="hover:bg-yellow-50 transition cursor-pointer" 
                     onClick={() => handleRowClick(user)}
                   >
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 sm:px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <input 
                         type="checkbox" 
                         checked={selectedRows.has(user.id)}
@@ -343,13 +386,13 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                         className="accent-yellow-400"
                       />
                     </td>
-                    <td className="px-4 py-3 font-mono text-yellow-700">{user.id}</td>
-                    <td className="px-4 py-3">{user.name}</td>
-                    <td className="px-4 py-3">{user.email}</td>
-                    <td className="px-4 py-3">{user.phone}</td>
-                    <td className="px-4 py-3 text-gray-500">{user.date}</td>
-                    <td className="px-4 py-3">ID: {user.productId}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 sm:px-4 py-3 font-mono text-yellow-700">{user.id}</td>
+                    <td className="px-2 sm:px-4 py-3 hidden sm:table-cell">{user.name}</td>
+                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{user.email}</td>
+                    <td className="px-2 sm:px-4 py-3 hidden lg:table-cell">{user.phone}</td>
+                    <td className="px-2 sm:px-4 py-3 text-gray-500">{user.date}</td>
+                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">ID: {user.productId}</td>
+                    <td className="px-2 sm:px-4 py-3">
                       <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
                         user.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
                         user.status === 'Successful' ? 'bg-green-100 text-green-700' :
@@ -369,7 +412,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
         {/* Payment Details Modal */}
         {selectedPayment && (
           <div
-            className="fixed z-50 inset-0 flex items-center justify-center p-6"
+            className="fixed z-50 inset-0 flex items-center justify-center p-2 sm:p-6"
             style={{
               backdropFilter: 'blur(8px)',
               WebkitBackdropFilter: 'blur(8px)',
@@ -381,7 +424,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
               className="relative bg-gradient-to-br from-yellow-50 via-white to-blue-50 rounded-3xl shadow-2xl border border-yellow-100 flex flex-col"
               style={{
                 maxWidth: '800px',
-                width: '90vw',
+                width: '100%',
                 maxHeight: '90vh',
                 overflow: 'visible',
               }}
@@ -400,7 +443,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
 
               {/* Close button */}
               <button
-                className="absolute top-6 right-6 text-gray-400 hover:text-yellow-500 text-2xl z-50 bg-white/70 rounded-full p-1.5 shadow-lg focus:outline-none border border-yellow-100 transition hover:scale-110 hover:rotate-90"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-yellow-500 text-2xl z-50 bg-white/70 rounded-full p-1.5 shadow-lg focus:outline-none border border-yellow-100 transition hover:scale-110 hover:rotate-90"
                 onClick={closeModal}
                 aria-label="Close modal"
                 type="button"
@@ -408,26 +451,26 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                 <Icon icon="mdi:close" className="w-6 h-6" />
               </button>
 
-              <div className="p-10 pb-2 relative z-10 flex-1 w-full overflow-y-auto">
-                <h3 id="modal-title" className="text-3xl font-extrabold mb-5 text-gray-800 flex items-center gap-2">
-                  <Icon icon="mdi:credit-card" className="text-yellow-400 text-2xl" />
+              <div className="p-4 sm:p-10 pb-2 relative z-10 flex-1 w-full overflow-y-auto">
+                <h3 id="modal-title" className="text-2xl sm:text-3xl font-extrabold mb-5 text-gray-800 flex items-center gap-2">
+                  <Icon icon="mdi:credit-card" className="text-yellow-400 text-xl sm:text-2xl" />
                   Payment Details
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-800">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 text-gray-800">
                   {/* LEFT: Customer & Payment Details */}
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
                       <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Customer Information</span>
                       <div className="bg-white/90 border border-gray-100 rounded-xl p-4 shadow-sm">
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
-                            <Icon icon="mdi:account-circle" className="w-10 h-10 text-blue-400" />
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                            <Icon icon="mdi:account-circle" className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400" />
                           </div>
                           <div>
-                            <div className="font-semibold text-lg">{selectedPayment.name}</div>
-                            <div className="text-sm text-gray-500">{selectedPayment.email}</div>
-                            <div className="text-sm text-gray-500">{selectedPayment.phone}</div>
+                            <div className="font-semibold text-base sm:text-lg">{selectedPayment.name}</div>
+                            <div className="text-xs sm:text-sm text-gray-500">{selectedPayment.email}</div>
+                            <div className="text-xs sm:text-sm text-gray-500">{selectedPayment.phone}</div>
                           </div>
                         </div>
                       </div>
@@ -438,15 +481,15 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                       <div className="bg-white/90 border border-gray-100 rounded-xl p-4 shadow-sm">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Amount</span>
-                            <span className="font-semibold text-lg">₱{selectedPayment.amount.toLocaleString()}</span>
+                            <span className="text-gray-500 text-sm sm:text-base">Amount</span>
+                            <span className="font-semibold text-base sm:text-lg">₱{selectedPayment.amount.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Payment Method</span>
-                            <span className="font-medium">{selectedPayment.method}</span>
+                            <span className="text-gray-500 text-sm sm:text-base">Payment Method</span>
+                            <span className="font-medium text-sm sm:text-base">{selectedPayment.method}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Status</span>
+                            <span className="text-gray-500 text-sm sm:text-base">Status</span>
                             <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
                               selectedPayment.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
                               selectedPayment.status === 'Successful' ? 'bg-green-100 text-green-700' :
@@ -465,16 +508,16 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                       <div className="bg-white/90 border border-gray-100 rounded-xl p-4 shadow-sm">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Transaction ID</span>
-                            <span className="font-mono text-blue-700">{selectedPayment.id}</span>
+                            <span className="text-gray-500 text-sm sm:text-base">Transaction ID</span>
+                            <span className="font-mono text-blue-700 text-sm sm:text-base">{selectedPayment.id}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Product ID</span>
-                            <span className="font-mono text-blue-700">{selectedPayment.productId}</span>
+                            <span className="text-gray-500 text-sm sm:text-base">Product ID</span>
+                            <span className="font-mono text-blue-700 text-sm sm:text-base">{selectedPayment.productId}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Date</span>
-                            <span className="font-medium">{selectedPayment.date}</span>
+                            <span className="text-gray-500 text-sm sm:text-base">Date</span>
+                            <span className="font-medium text-sm sm:text-base">{selectedPayment.date}</span>
                           </div>
                         </div>
                       </div>
@@ -482,7 +525,7 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                   </div>
 
                   {/* RIGHT: Additional Details */}
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
                       <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Payment Timeline</span>
                       <div className="bg-white/90 border border-gray-100 rounded-xl p-4 shadow-sm">
@@ -510,20 +553,20 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                       <div className="bg-white/90 border border-gray-100 rounded-xl p-4 shadow-sm">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <div className="text-sm text-gray-500">Transaction Type</div>
-                            <div className="text-lg font-bold text-gray-800">Regular</div>
+                            <div className="text-xs sm:text-sm text-gray-500">Transaction Type</div>
+                            <div className="text-base sm:text-lg font-bold text-gray-800">Regular</div>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-500">Payment Channel</div>
-                            <div className="text-lg font-bold text-gray-800">Online</div>
+                            <div className="text-xs sm:text-sm text-gray-500">Payment Channel</div>
+                            <div className="text-base sm:text-lg font-bold text-gray-800">Online</div>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-500">Processing Time</div>
-                            <div className="text-lg font-bold text-gray-800">2h</div>
+                            <div className="text-xs sm:text-sm text-gray-500">Processing Time</div>
+                            <div className="text-base sm:text-lg font-bold text-gray-800">2h</div>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-500">Verification</div>
-                            <div className="text-lg font-bold text-gray-800">Verified</div>
+                            <div className="text-xs sm:text-sm text-gray-500">Verification</div>
+                            <div className="text-base sm:text-lg font-bold text-gray-800">Verified</div>
                           </div>
                         </div>
                       </div>
@@ -534,23 +577,23 @@ function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) =>
                       <div className="flex flex-wrap gap-2">
                         {selectedPayment.status === 'Pending' && (
                           <>
-                            <button className="px-4 py-2 bg-green-50 text-green-600 rounded-lg text-sm font-medium hover:bg-green-100 transition flex items-center gap-1">
+                            <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-50 text-green-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-100 transition flex items-center gap-1">
                               <Icon icon="mdi:check-circle" className="w-4 h-4" />
                               Approve Payment
                             </button>
-                            <button className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition flex items-center gap-1">
+                            <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-50 text-red-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-100 transition flex items-center gap-1">
                               <Icon icon="mdi:close-circle" className="w-4 h-4" />
                               Reject Payment
                             </button>
                           </>
                         )}
                         {selectedPayment.status === 'Successful' && (
-                          <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition flex items-center gap-1">
+                          <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-50 text-blue-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-100 transition flex items-center gap-1">
                             <Icon icon="mdi:download" className="w-4 h-4" />
                             Download Receipt
                           </button>
                         )}
-                        <button className="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-100 transition flex items-center gap-1">
+                        <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-50 text-gray-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-100 transition flex items-center gap-1">
                           <Icon icon="mdi:printer" className="w-4 h-4" />
                           Print Details
                         </button>

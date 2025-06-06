@@ -50,8 +50,8 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
   return (
     <>
       <style>{slideLeftKeyframes}</style>
-      <div className="flex justify-between items-center mb-4 px-8 mt-16 mx-20">
-        <h2 className="text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+      <div className="flex justify-between items-center mb-4 px-4 sm:px-6 md:px-8 mt-8 md:mt-16 mx-4 sm:mx-8 md:mx-20">
+        <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
           Lighting Category
         </h2>
         <div className="flex items-center">
@@ -67,9 +67,9 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
       </div>
 
       <div
-        className="relative group mx-20"
+        className="relative group mx-4 sm:mx-8 md:mx-20"
         style={{
-          minHeight: "220px",
+          minHeight: "180px",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
@@ -85,7 +85,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
         </style>
 
         <div
-          className="flex justify-center space-x-6 transition-all duration-700 ease-in-out absolute w-full"
+          className="flex flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out absolute w-full"
           style={{
             opacity: currentPage === 0 ? 1 : 0,
             transform: `translateX(${currentPage === 0 ? "0" : "-100%"})`,
@@ -95,11 +95,11 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
           {firstPageItems.map((item, idx) => (
             <div
               key={item.id}
-              className="flex-shrink-0 w-48 flex flex-col items-center relative"
+              className="flex-shrink-0 w-32 sm:w-40 md:w-48 flex flex-col items-center relative"
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full overflow-hidden bg-white duration-300">
                 <img
                   src={item.image}
                   alt={item.name}
@@ -108,7 +108,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
               </div>
               <div className="relative">
                 <h3
-                  className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
+                  className="text-sm sm:text-base md:text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
                   style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
                 >
                   <span
@@ -118,13 +118,13 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
                   >
                     {item.name}
                     <span
-                      className={`ml-2 transition-opacity duration-500 ${
+                      className={`ml-1 sm:ml-2 transition-opacity duration-500 ${
                         hoveredIndex === idx ? "opacity-100" : "opacity-0"
                       }`}
                     >
                       <Icon
                         icon="cil:arrow-right"
-                        className="h-5 w-5 text-black"
+                        className="h-4 w-4 sm:h-5 sm:w-5 text-black"
                         width="20"
                         height="20"
                       />
@@ -137,7 +137,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
         </div>
 
         <div
-          className="flex justify-center space-x-6 transition-all duration-700 ease-in-out absolute w-full"
+          className="flex flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out absolute w-full"
           style={{
             opacity: currentPage === 1 ? 1 : 0,
             transform: `translateX(${currentPage === 1 ? "0" : "100%"})`,
@@ -147,11 +147,11 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
           {secondPageItems.map((item, idx) => (
             <div
               key={item.id}
-              className="flex-shrink-0 w-48 flex flex-col items-center relative"
+              className="flex-shrink-0 w-32 sm:w-40 md:w-48 flex flex-col items-center relative"
               onMouseEnter={() => setHoveredIndex(idx + 6)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <div className="w-48 h-48 rounded-full overflow-hidden bg-white duration-300">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full overflow-hidden bg-white duration-300">
                 <img
                   src={item.image}
                   alt={item.name}
@@ -160,7 +160,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
               </div>
               <div className="relative">
                 <h3
-                  className="text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
+                  className="text-sm sm:text-base md:text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
                   style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
                 >
                   <span
@@ -170,13 +170,13 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
                   >
                     {item.name}
                     <span
-                      className={`ml-2 transition-opacity duration-500 ${
+                      className={`ml-1 sm:ml-2 transition-opacity duration-500 ${
                         hoveredIndex === idx + 6 ? "opacity-100" : "opacity-0"
                       }`}
                     >
                       <Icon
                         icon="cil:arrow-right"
-                        className="h-5 w-5 text-black"
+                        className="h-4 w-4 sm:h-5 sm:w-5 text-black"
                         width="20"
                         height="20"
                       />
@@ -191,19 +191,19 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
         {currentPage === 1 && (
           <button
             onClick={handleNextClick}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-0 group-hover:opacity-100"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100"
             style={{ zIndex: 10 }}
           >
-            <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
+            <Icon icon="mdi:chevron-left" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
           </button>
         )}
 
         <button
           onClick={handleNextClick}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-0 group-hover:opacity-100"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100"
           style={{ zIndex: 10 }}
         >
-          <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
+          <Icon icon="mdi:chevron-right" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
         </button>
       </div>
     </>
