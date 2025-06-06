@@ -207,5 +207,5 @@ function Stock({ onViewChange }: StockProps) {
     </main>
   );
 }
-
 export default Stock;
+

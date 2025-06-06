@@ -126,10 +126,10 @@ function App() {
       />
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ?'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE'  || currentPage === 'SETTINGS' ? '' : 'mt-4'} scrollbar-none`}>
+      <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ? 'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE' || currentPage === 'SETTINGS' ? '' : 'mt-2 sm:mt-4'} scrollbar-none`}>
         {/* Dashboard Main Content */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto scrollbar-none">
+          <div className="h-full overflow-y-auto scrollbar-none px-2 sm:px-4 md:px-6">
             {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && !isOverlayOpen && !showAddProductModal && !isFeedbackModalOpen && (
               <Header
                 sidebarCollapsed={sidebarCollapsed}
@@ -142,7 +142,9 @@ function App() {
                 markAllAsRead={markAllAsRead}
               />
             )}
-            {renderContent()}
+            <div className="w-full max-w-[2000px] mx-auto">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>

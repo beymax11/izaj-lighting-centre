@@ -199,7 +199,7 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                           <button
                             onClick={() => handleViewChange('products')}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                              view === 'products'
+                              view === 'products' && filter === 'all'
                                 ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
                                 : 'text-gray-700 hover:bg-gray-50'
                             }`}
@@ -221,7 +221,7 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
                           <button
                             onClick={() => handleViewChange('sale')}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                              view === 'sale'
+                              filter === 'sale'
                                 ? 'bg-yellow-50 text-black font-medium border-l-4 border-yellow-400'
                                 : 'text-gray-700 hover:bg-gray-50'
                             }`}
@@ -396,7 +396,7 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
             {showAddProductModal && (
               <AddProductModal
                 onClose={() => setShowAddProductModal(false)}
-                mode="product"
+                mode={filter === 'sale' ? 'sale' : 'product'}
                 fetchedProducts={fetchedProducts}
               />
             )}

@@ -42,13 +42,10 @@ export function FetchedProductSlide({ fetchedProducts, currentIndex, handlePrev,
           <div className="absolute top-8 left-8 bg-white/80 px-6 py-3 shadow text-lg font-semibold text-yellow-700 border border-yellow-100">
             {product.category}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/70 to-transparent">
-            <h3 className="text-3xl font-bold text-white drop-shadow mb-3">{product.name}</h3>
-            <p className="text-2xl text-yellow-200 font-semibold drop-shadow">{product.price}</p>
-          </div>
         </div>
         <div className="p-12 space-y-6">
-          <p className="text-gray-700 text-lg line-clamp-3 mb-4">{product.description}</p>
+          <h3 className="text-3xl font-bold text-gray-800 mb-3">{product.name}</h3>
+          <p className="text-2xl text-yellow-600 font-semibold">{product.price}</p>
         </div>
       </div>
       {/* Right Slide Button (offset from edge) */}
