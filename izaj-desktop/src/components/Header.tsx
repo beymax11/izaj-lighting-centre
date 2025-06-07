@@ -1,6 +1,8 @@
 import { Icon } from '@iconify/react';
+import { Session } from '@supabase/supabase-js';
 
 interface HeaderProps {
+  session: Session | null;
   sidebarCollapsed: boolean;
   setMobileMenuOpen: (open: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;

@@ -1,5 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useRef, useState } from 'react';
+import { Session } from '@supabase/supabase-js';
+
 
 // Dummy data for messages
 const messageListData = [
@@ -70,9 +72,13 @@ const messageListData = [
 
 interface MessagesProps {
 	handleNavigation?: (page: string) => void;
+	session: Session | null;
 }
 
-function Messages({ handleNavigation }: MessagesProps) {
+function Messages({ handleNavigation, session }: MessagesProps) {
+
+	console.log('Messages Session:',  session?.user.id);
+
 	const [selectedFilter, setSelectedFilter] = useState('all');
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedMessage, setSelectedMessage] = useState<number | null>(null);

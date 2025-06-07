@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
+import { Session } from '@supabase/supabase-js';
+
 
 interface Stat {
   label: string;
@@ -40,6 +42,11 @@ interface Order {
   estimatedDeliveryDate: string;
 }
 
+interface OrdersProps {
+  setIsOverlayOpen: (isOpen: boolean) => void;
+  session: Session | null;
+}
+
 const sampleOrders: Order[] = [
   {
     orderNumber: 'ORD-1001',
@@ -73,7 +80,10 @@ const sampleOrders: Order[] = [
   },
 ];
 
-function Orders({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) => void }) {
+function Orders({ setIsOverlayOpen, session }: OrdersProps) {
+
+  console.log('Orders session:',  session?.user.id);
+
   const stats: Stat[] = [
     { label: 'Pending', count: 222, bgColor: 'bg-yellow-50', borderColor: 'border-yellow-100', textColor: 'text-yellow-400' },
     { label: 'Shipping', count: 100, bgColor: 'bg-blue-50', borderColor: 'border-blue-100', textColor: 'text-blue-400' },

@@ -1,12 +1,16 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
 import { ViewType } from '../types';
+import { Session } from '@supabase/supabase-js';
 
 interface StockProps {
   onViewChange: (view: ViewType) => void;
+  session: Session | null;
 }
 
-function Stock({ onViewChange }: StockProps) {
+function Stock({ onViewChange, session }: StockProps) {
+  console.log("Stock Session",  session?.user.id);
+  
   const [showDropdown, setShowDropdown] = useState(false);
   const [currentView] = useState<'stock' | 'restock'>('stock');
 

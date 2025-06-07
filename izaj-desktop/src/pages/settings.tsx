@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
+import { Session } from "@supabase/supabase-js";
 
 interface AdminUser {
   id: string;
@@ -192,9 +193,13 @@ interface SettingsState {
 
 interface SettingsProps {
   handleNavigation?: (page: string) => void;
+  session: Session | null;
 }
 
-const Settings: React.FC<SettingsProps> = ({ handleNavigation }) => {
+const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
+
+  console.log("Settings Session",  session?.user.id);
+  
   const [isMobileView, setIsMobileView] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SettingsState>({

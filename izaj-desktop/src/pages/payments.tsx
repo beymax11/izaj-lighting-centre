@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
+import { Session } from '@supabase/supabase-js';
 
 interface Payment {
   id: string;
@@ -14,7 +15,16 @@ interface Payment {
   amount: number;
 }
 
-function Payments({ setIsOverlayOpen }: { setIsOverlayOpen: (isOpen: boolean) => void }) {
+interface PaymentProps {  
+  setIsOverlayOpen: (isOpen: boolean) => void;
+  session: Session | null;
+}
+
+
+function Payments({ setIsOverlayOpen, session }: PaymentProps) {
+
+  console.log('Payments Session:',  session?.user.id);
+  
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());

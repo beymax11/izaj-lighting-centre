@@ -1,8 +1,16 @@
 // Products.tsx
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
+import { Session } from '@supabase/supabase-js';
 
-function Reports() {
+interface ReportsProps {
+  session: Session | null; 
+}
+
+function Reports({session}: ReportsProps) {
+
+  console.log("Reports Session",  session?.user.id);
+
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (

@@ -1,5 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
+import { Session } from '@supabase/supabase-js';
+
 
 interface Feedback {
   id: string;
@@ -14,7 +16,15 @@ interface Feedback {
   replies?: { date: string; text: string }[];
 }
 
-function Feedbacks({ setIsFeedbackModalOpen }: { setIsFeedbackModalOpen: (isOpen: boolean) => void }) {
+interface FeedBacksProps {
+  setIsFeedbackModalOpen: (isOpen: boolean) => void;
+  session: Session | null;
+}
+
+function Feedbacks({ setIsFeedbackModalOpen, session}: FeedBacksProps) {
+
+  console.log('Feedback Session:',  session?.user.id);
+
   const [activeFilter, setActiveFilter] = useState('All Feedbacks');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFeedbacks, setSelectedFeedbacks] = useState<string[]>([]);
