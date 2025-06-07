@@ -33,7 +33,6 @@ const Sidebar = ({
   {
 
     const handleLogout = async () => {
-    // Call your backend logout endpoint
     await fetch(`http://localhost:3001/api/admin/logout`, {
       method: 'POST',
       headers: {
@@ -154,7 +153,7 @@ const Sidebar = ({
               onClick={() => handleNavigation('PROFILE')}
             >
               <img
-                src="/profile.webp"
+                src="/profile.jpg"
                 alt="Profile"
                 className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-gray-300 border-2 border-yellow-200"
               />

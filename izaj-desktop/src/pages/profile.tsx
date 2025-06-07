@@ -7,24 +7,40 @@ interface ProfileProps {
   session: Session | null;
 }
 
+interface ProfileData {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: string;
+  address: string;
+  avatar: string;
+}
+
 const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
 
   console.log("Profile session:",  session?.user.id);
 
   const [isMobileView, setIsMobileView] = useState(false);
-  const [profile, setProfile] = useState({
-    name: "Daniel Padilla",
-    email: "danielpadilla@izaj.com",
+
+  const [profile, setProfile] = useState<ProfileData>({
+    name: "",
+    email: "",
     password: "",
-    phone: "0917-123-4567",
-    role: "Administrator",
-    address: "San Pablo",
-    avatar: "/profile.webp",
+    phone: "",
+    role: "",
+    address: "",
+    avatar: "/profile.jpg",
   });
+
   const [editMode, setEditMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [originalProfile, setOriginalProfile] = useState<ProfileData | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  // Add window resize listener
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 1024);
@@ -37,6 +53,8 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
+    if (error) setError(null);
+    if (success) setSuccess(null);
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,11 +71,179 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setEditMode(false);
-    alert("Profile updated!");
+  const handleSave = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Prevent save if not in edit mode
+  if (!editMode) return;
+
+  // Basic validation
+  if (!profile.name.trim()) {
+    setError("Name is required.");
+    return;
+  }
+
+  // Check if any changes were made
+  if (
+    originalProfile &&
+    profile.name === originalProfile.name &&
+    profile.phone === originalProfile.phone &&
+    profile.address === originalProfile.address &&
+    profile.password.trim() === ""
+  ) {
+    setError("No changes made to save.");
+    return;
+  }
+
+  // Proceed with update
+  await updateUserProfile(profile);
   };
+
+  const handleCancel = () => {
+    setEditMode(false);
+    setError(null);
+    setSuccess(null);
+    setProfile(prev => ({ ...prev, password: "" }));
+
+    if (session?.user?.id) {
+      fetchUserProfile(session.user.id);
+    }
+  };
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("Fetching profile for user:", userId);
+
+      const response = await fetch(`http://localhost:3001/api/profile/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch profile');
+      }
+
+      console.log("Profile data received:", data.profile);
+
+      setProfile({
+        name: data.profile.name || "",
+        email: data.profile.email || "",
+        password: "",
+        phone: data.profile.phone || "",
+        role: data.profile.role || "",
+        address: data.profile.address || "",
+        avatar: data.profile.avatar || "/profile.jpg",
+      });
+
+      setOriginalProfile({
+        name: data.profile.name || "",
+        email: data.profile.email || "",
+        password: "",
+        phone: data.profile.phone || "",
+        role: data.profile.role || "",
+        address: data.profile.address || "",
+        avatar: data.profile.avatar || "/profile.jpg",
+      });
+
+    } catch (err: any) {
+      console.error("Error fetching profile:", err);
+      
+      // Set user-friendly error messages
+      if (err.message.includes('not found') || err.message.includes('404')) {
+        setError('Profile not found. Please contact support.');
+      } else if (err.message.includes('401') || err.message.includes('Authorization')) {
+        setError('Please log in again to view your profile.');
+      } else if (err.message.includes('Network')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError('Unable to load profile. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchUserProfile(session.user.id);
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
+
+  const updateUserProfile = async (profileData: ProfileData) => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+
+      const response = await fetch(`http://localhost:3001/api/profile/${session?.user?.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({
+          name: profileData.name,
+          phone: profileData.phone,
+          address: profileData.address,
+          password: profileData.password || undefined,
+        }),
+      });
+      
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update profile');
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update profile');
+      }
+
+      setSuccess('Profile updated successfully!');
+      setEditMode(false);
+      
+      setProfile(prev => ({ ...prev, password: "" }));
+      
+      setTimeout(() => setSuccess(null), 3000);
+
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      setError(err.message || 'Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+    if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-full bg-[#f7f8fa]">
+        <div className="text-center">
+          <Icon icon="mdi:loading" className="animate-spin text-yellow-400 w-8 h-8 mx-auto mb-2" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+    
+
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f7f8fa]">
@@ -197,12 +383,12 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
                 </div>
               </div>
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-6 justify-end">
+              <div className="flex gap-3 pt-6 justify-end">
                 {!editMode ? (
                   <button
                     type="button"
                     onClick={() => setEditMode(true)}
-                    className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 rounded-xl bg-yellow-400 text-white font-semibold hover:bg-yellow-500 transition shadow-md hover:shadow-lg text-base sm:text-lg"
+                    className="px-8 py-3 rounded-xl bg-yellow-400 text-white font-semibold hover:bg-yellow-500 transition shadow-md hover:shadow-lg text-lg"
                   >
                     Edit Profile
                   </button>
@@ -210,14 +396,17 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
                   <>
                     <button
                       type="submit"
-                      className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow-md hover:shadow-lg text-base sm:text-lg"
+                      disabled={saving}
+                      className="px-8 py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow-md hover:shadow-lg text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      Save Changes
+                      {saving && <Icon icon="mdi:loading" className="animate-spin w-4 h-4" />}
+                      {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditMode(false)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition shadow-md hover:shadow-lg text-base sm:text-lg"
+                      onClick={handleCancel}
+                      disabled={saving}
+                      className="px-8 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition shadow-md hover:shadow-lg text-lg disabled:opacity-50"
                     >
                       Cancel
                     </button>

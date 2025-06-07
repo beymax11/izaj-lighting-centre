@@ -144,7 +144,7 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
       phone: updatedUser.contact || '',
       role: updatedUser.role || 'Admin',
       address: updatedUser.address || '',
-      avatar: '/profile.webp',
+      avatar: '/profile.jpg', // default avatar
       userId: updatedUser.user_id
     };
 
@@ -218,7 +218,7 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
       phone: adminUser.contact || '',
       role: adminUser.role || '',
       address: adminUser.address || '',
-      avatar: '/profile.webp', // default avatar
+      avatar: '/profile.jpg', // default avatar
       userId: adminUser.user_id
     };
 
@@ -276,7 +276,7 @@ app.get('/api/profile', authenticate, async (req, res) => {
       phone: adminUser.contact || '',
       role: adminUser.role || '',
       address: adminUser.address || '',
-      avatar: '/profile.webp',
+      avatar: '/profile.jpg', // default avatar
       userId: adminUser.user_id
     };
 
