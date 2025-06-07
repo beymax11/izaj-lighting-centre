@@ -5,6 +5,7 @@ import { AddProductModal } from '../components/AddProductModal';
 import { ManageStockModal } from '../components/ManageStockModal';
 import Stock from './Stock';
 import { ViewType } from '../types';
+import { Session } from '@supabase/supabase-js';
 
 interface Product {
   name: string;
@@ -28,9 +29,13 @@ interface FetchedProduct {
 interface ProductsProps {
   showAddProductModal: boolean;
   setShowAddProductModal: (show: boolean) => void;
+  session: Session | null; 
 }
 
-export function Products({ showAddProductModal, setShowAddProductModal }: ProductsProps) {
+export function Products({ showAddProductModal, setShowAddProductModal, session }: ProductsProps) {
+
+  console.log('Products session:',  session?.user.id);
+
   const [showManageStockModal, setShowManageStockModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFetching, setIsFetching] = useState(false);
@@ -173,7 +178,7 @@ export function Products({ showAddProductModal, setShowAddProductModal }: Produc
     <div className="flex-1 overflow-y-auto">
       <main className="flex-1 px-8 py-6">
         {view === 'stock' ? (
-          <Stock 
+          <Stock session={session}
             onViewChange={handleViewChange}
           />
         ) : (

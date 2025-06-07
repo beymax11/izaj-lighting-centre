@@ -1,8 +1,16 @@
 import { Icon } from '@iconify/react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useState } from 'react';
+import { Session } from '@supabase/supabase-js';
 
-const Dashboard = () => {
+interface DashboardProps {
+  session: Session | null;
+}
+
+const Dashboard = ({session}: DashboardProps ) => {
+
+  console.log('Dashboard session:', session?.user.id);
+  
   const [salesExpanded, setSalesExpanded] = useState(false);
   const [cardOrder, setCardOrder] = useState(['customer', 'order', 'earning']);
 
@@ -34,7 +42,13 @@ const Dashboard = () => {
 
           {/* Top Row - Stats Cards */}
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="stats-cards" direction="horizontal">
+            <Droppable 
+            droppableId="stats-cards" 
+            direction="horizontal" 
+            isDropDisabled={false} 
+            isCombineEnabled={false}
+            ignoreContainerClipping={false}  
+            >
               {(provided) => (
                 <div
                   className="grid grid-cols-1 lg:grid-cols-3 gap-8"

@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
+import { Session } from '@supabase/supabase-js';
 
 interface Product {
   name: string;
@@ -12,6 +13,7 @@ interface Product {
 }
 
 interface ManageStockModalProps {
+  session: Session | null;
   onClose: () => void;
   product: Product;
   onUpdateStock: (newStock: number) => void;

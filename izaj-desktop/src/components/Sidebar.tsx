@@ -1,6 +1,8 @@
 import { Icon } from '@iconify/react';
+import { Session } from '@supabase/supabase-js';
 
 interface SidebarProps {
+  session: Session | null;
   sidebarCollapsed: boolean;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
@@ -26,7 +28,23 @@ const Sidebar = ({
   currentPage,
   handleNavigation,
   setIsLoggedIn,
-}: SidebarProps) => {
+  session
+}: SidebarProps) => 
+  {
+
+    const handleLogout = async () => {
+    // Call your backend logout endpoint
+    await fetch(`http://localhost:3001/api/admin/logout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session?.access_token || ''}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(session?.user?.email, 'logged out successfully');
+    setIsLoggedIn(false);
+  };
+
   return (
     <>
       <div
@@ -158,11 +176,14 @@ const Sidebar = ({
                 <span className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-600 hover:text-gray-800">Settings</span>
               )}
             </button>
+
+            {/* Logout Button */}
+            
             <button
               className={`flex items-center w-full mt-1.5 sm:mt-2 transition ${
                 sidebarCollapsed ? 'justify-center px-1.5 sm:px-2 py-1.5 sm:py-2 md:py-3' : 'gap-1.5 sm:gap-2 md:gap-3 justify-start'
               }`}
-              onClick={() => setIsLoggedIn(false)}
+              onClick={handleLogout}
             >
               <Icon
                 icon="mdi:logout"
@@ -172,6 +193,7 @@ const Sidebar = ({
                 <span className="text-[10px] sm:text-xs md:text-sm font-medium text-red-600 hover:text-red-800">Log Out</span>
               )}
             </button>
+          
           </div>
         </div>
       </aside>

@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
+import { Session } from "@supabase/supabase-js"
 
 interface ProfileProps {
   handleNavigation?: (page: string) => void;
+  session: Session | null;
 }
 
-const Profile: React.FC<ProfileProps> = ({ handleNavigation }) => {
+const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
+
+  console.log("Profile session:",  session?.user.id);
+
   const [isMobileView, setIsMobileView] = useState(false);
   const [profile, setProfile] = useState({
     name: "Daniel Padilla",

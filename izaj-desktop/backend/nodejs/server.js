@@ -294,6 +294,37 @@ app.get('/api/profile', authenticate, async (req, res) => {
   }
 });
 
+// Logout Route
+app.post('/api/admin/logout', authenticate, async (req, res) => {
+  try {
+    const result = await sessionHandler.logoutAdmin();
+    if (result.error) {
+      console.error("Logout Error:", result.error);
+      return res.status(500).json({ 
+        error: 'Logout failed',
+        details: result.error
+      });
+    }
+    res.json({ message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('Internal error during logout:', err);
+    res.status(500).json({ 
+      error: 'Request timed out or something went wrong',
+      details: err.message 
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
@@ -307,6 +338,7 @@ app.use((error, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useState, useRef } from 'react';
 import { FetchedProductSlide } from './FetchedProductSlide';
+import { Session } from '@supabase/supabase-js';
 
 interface FetchedProduct {
   id: string;
@@ -12,12 +13,13 @@ interface FetchedProduct {
 }
 
 interface AddProductModalProps {
+  session: Session | null;
   onClose: () => void;
   mode: 'product' | 'sale';
   fetchedProducts: FetchedProduct[];
 }
 
-export function AddProductModal({ onClose, mode, fetchedProducts }: AddProductModalProps) {
+export function AddProductModal({ onClose, mode, fetchedProducts, session }: AddProductModalProps) {
   const [showFullForm, setShowFullForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<FetchedProduct | null>(null);
   const [formData, setFormData] = useState({
@@ -147,6 +149,7 @@ export function AddProductModal({ onClose, mode, fetchedProducts }: AddProductMo
               {!showFullForm ? (
                 fetchedProducts.length > 0 ? (
                   <FetchedProductSlide
+                    session={session}
                     fetchedProducts={fetchedProducts}
                     currentIndex={currentIndex}
                     handlePrev={handlePrev}

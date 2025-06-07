@@ -11,8 +11,12 @@ import Settings from './pages/settings';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
+import { Session } from '@supabase/supabase-js';
 
 function App() {
+
+  const [session, setSession] = useState<Session | null>(null);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState('DASHBOARD');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -48,7 +52,11 @@ function App() {
     }
   ]);
 
-  // Add click outside handler
+    const handleLoginSuccess = (sessionData: Session) => {
+    setSession(sessionData);
+    setIsLoggedIn(true);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -85,38 +93,38 @@ function App() {
   const renderContent = () => {
     switch (currentPage) {
       case 'MESSAGES':
-        return <Messages handleNavigation={handleNavigation} />;
+        return <Messages  session={session} handleNavigation={handleNavigation} />;
       case 'PRODUCTS':
-        return <Products 
+        return <Products  session={session}
           showAddProductModal={showAddProductModal} 
           setShowAddProductModal={setShowAddProductModal} 
         />;
       case 'ORDERS':
-        return <Orders setIsOverlayOpen={setIsOverlayOpen} />;
+        return <Orders  session={session} setIsOverlayOpen={setIsOverlayOpen} />;
       case 'FEEDBACKS':
-        return <Feedbacks setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
+        return <Feedbacks  session={session} setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
       case 'PAYMENTS':
-        return <Payments setIsOverlayOpen={setIsOverlayOpen} />;
+        return <Payments  session={session} setIsOverlayOpen={setIsOverlayOpen} />;
       case 'REPORTS':
-        return <Reports />;
+        return <Reports  session={session} />;
       case 'PROFILE':
-        return <Profile handleNavigation={handleNavigation} />;
+        return <Profile  session={session} handleNavigation={handleNavigation} />;
       case 'SETTINGS':
-        return <Settings handleNavigation={handleNavigation} />;
+        return <Settings  session={session} handleNavigation={handleNavigation} />;
       case 'DASHBOARD':
       default:
-        return <Dashboard />;
+        return <Dashboard session={session}/>;
     }
   };
 
-  // Show only the login form, no sidebar or header
   if (!isLoggedIn) {
-    return <Login onLogin={() => setIsLoggedIn(true)} />;
+    return <Login onLogin={handleLoginSuccess} />;
   }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white">
       <Sidebar
+        session={session}
         sidebarCollapsed={sidebarCollapsed}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -132,6 +140,7 @@ function App() {
           <div className="h-full overflow-y-auto scrollbar-none px-2 sm:px-4 md:px-6">
             {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && !isOverlayOpen && !showAddProductModal && !isFeedbackModalOpen && (
               <Header
+                session={session}
                 sidebarCollapsed={sidebarCollapsed}
                 setMobileMenuOpen={setMobileMenuOpen}
                 setSidebarCollapsed={setSidebarCollapsed}

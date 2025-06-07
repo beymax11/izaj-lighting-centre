@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { Session } from '@supabase/supabase-js';
 
 interface FetchedProduct {
   id: string;
@@ -10,6 +11,7 @@ interface FetchedProduct {
 }
 
 interface FetchedProductSlideProps {
+  session: Session | null;
   fetchedProducts: FetchedProduct[];
   currentIndex: number;
   handlePrev: () => void;
@@ -17,7 +19,7 @@ interface FetchedProductSlideProps {
   handleAdd: (product: FetchedProduct) => void;
 }
 
-export function FetchedProductSlide({ fetchedProducts, currentIndex, handlePrev, handleNext }: FetchedProductSlideProps) {
+export function FetchedProductSlide({ fetchedProducts, currentIndex, handlePrev, handleNext}: FetchedProductSlideProps) {
   if (!fetchedProducts.length) return null;
   const product = fetchedProducts[currentIndex];
   return (

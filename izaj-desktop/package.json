@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@iconify/react": "^6.0.0",
+    "@supabase/supabase-js": "^2.50.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/react-beautiful-dnd": "^13.1.8",
     "express": "^5.1.0",
