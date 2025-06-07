@@ -96,8 +96,8 @@ const Footer: React.FC = () => {
             <Slider {...sliderSettings}>
               {/* Free Delivery & Installation */}
               <div className="px-2">
-                <div className="flex items-start">
-                  <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
+                <div className="flex flex-col items-center text-center">
+                  <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="text-black mb-3" />
                   <div>
                     <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2 text-black">Free delivery & installation</h3>
                     <p className="text-sm md:text-base text-gray-600">For orders P10,000.00 and above within Metro Manila.</p>
@@ -107,8 +107,8 @@ const Footer: React.FC = () => {
           
               {/* Phone Contact */}
               <div className="px-2">
-                <div className="flex items-start">
-                  <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
+                <div className="flex flex-col items-center text-center">
+                  <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mb-3" />
                   <div>
                     <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2 text-black">Phone Contact</h3>
                     <p className="text-sm md:text-base text-gray-600">Monday to Sunday 9:00am - 5:00pm</p>
@@ -118,8 +118,8 @@ const Footer: React.FC = () => {
           
               {/* Top-notch support */}
               <div className="px-2">
-                <div className="flex items-start">
-                  <Icon icon="mdi:headset" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
+                <div className="flex flex-col items-center text-center">
+                  <Icon icon="mdi:headset" width="28" height="28" className="text-black mb-3" />
                   <div>
                     <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2 text-black">Top-notch support</h3>
                     <p className="text-sm md:text-base text-gray-600">Any question? Our team is just one click away!</p>
@@ -129,8 +129,8 @@ const Footer: React.FC = () => {
           
               {/* Secure payments */}
               <div className="px-2">
-                <div className="flex items-start">
-                  <Icon icon="mdi:lock-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
+                <div className="flex flex-col items-center text-center">
+                  <Icon icon="mdi:lock-outline" width="28" height="28" className="text-black mb-3" />
                   <div>
                     <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2 text-black">Secure payments</h3>
                     <p className="text-sm md:text-base text-gray-600">Your payment information is processed securely</p>

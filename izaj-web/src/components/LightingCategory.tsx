@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 
@@ -29,11 +29,69 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const firstPageItems = allItems.slice(0, 6);
-  const secondPageItems = allItems.slice(6, 12);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [totalPages, setTotalPages] = useState(Math.ceil(allItems.length / 6));
+  const [slideDirection, setSlideDirection] = useState<'forward' | 'backward'>('forward');
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) { // sm breakpoint
+        setItemsPerPage(3);
+        setTotalPages(Math.ceil(allItems.length / 3));
+      } else {
+        setItemsPerPage(6);
+        setTotalPages(Math.ceil(allItems.length / 6));
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const getCurrentPageItems = () => {
+    const start = currentPage * itemsPerPage;
+    return allItems.slice(start, start + itemsPerPage);
+  };
 
   const handleNextClick = () => {
-    setCurrentPage((prev) => (prev === 0 ? 1 : 0));
+    setSlideDirection('forward');
+    setCurrentPage((prev) => (prev + 1) % totalPages);
+  };
+
+  const handlePrevClick = () => {
+    setSlideDirection('backward');
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && currentPage < totalPages - 1) {
+      handleNextClick();
+    }
+    if (isRightSwipe && currentPage > 0) {
+      handlePrevClick();
+    }
   };
 
   // Add this style block for the animation
@@ -47,9 +105,27 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
     }
   `;
 
+  const slideAnimationKeyframes = `
+    @keyframes slideInForward {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideInBackward {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .slide-in-forward {
+      animation: slideInForward 0.5s ease-out forwards;
+    }
+    .slide-in-backward {
+      animation: slideInBackward 0.5s ease-out forwards;
+    }
+  `;
+
   return (
     <>
       <style>{slideLeftKeyframes}</style>
+      <style>{slideAnimationKeyframes}</style>
       <div className="flex justify-between items-center mb-4 px-4 sm:px-6 md:px-8 mt-8 md:mt-16 mx-4 sm:mx-8 md:mx-20">
         <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
           Lighting Category
@@ -67,12 +143,16 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
       </div>
 
       <div
+        ref={containerRef}
         className="relative group mx-4 sm:mx-8 md:mx-20"
         style={{
           minHeight: "180px",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         <style>
           {`
@@ -81,18 +161,28 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
               height: 0;
               display: none;
             }
+            @media (max-width: 639px) {
+              .slide-in-forward {
+                animation: slideInForward 0.3s ease-out forwards;
+              }
+              .slide-in-backward {
+                animation: slideInBackward 0.3s ease-out forwards;
+              }
+            }
           `}
         </style>
 
         <div
-          className="flex flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out absolute w-full"
+          className={`flex flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out ${
+            slideDirection === 'forward' ? 'slide-in-forward' : 'slide-in-backward'
+          }`}
           style={{
-            opacity: currentPage === 0 ? 1 : 0,
-            transform: `translateX(${currentPage === 0 ? "0" : "-100%"})`,
-            pointerEvents: currentPage === 0 ? "auto" : "none",
+            position: 'relative',
+            width: '100%',
+            touchAction: 'pan-y pinch-zoom'
           }}
         >
-          {firstPageItems.map((item, idx) => (
+          {getCurrentPageItems().map((item, idx) => (
             <div
               key={item.id}
               className="flex-shrink-0 w-32 sm:w-40 md:w-48 flex flex-col items-center relative"
@@ -136,75 +226,25 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
           ))}
         </div>
 
-        <div
-          className="flex flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out absolute w-full"
-          style={{
-            opacity: currentPage === 1 ? 1 : 0,
-            transform: `translateX(${currentPage === 1 ? "0" : "100%"})`,
-            pointerEvents: currentPage === 1 ? "auto" : "none",
-          }}
-        >
-          {secondPageItems.map((item, idx) => (
-            <div
-              key={item.id}
-              className="flex-shrink-0 w-32 sm:w-40 md:w-48 flex flex-col items-center relative"
-              onMouseEnter={() => setHoveredIndex(idx + 6)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full overflow-hidden bg-white duration-300">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="relative">
-                <h3
-                  className="text-sm sm:text-base md:text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
-                  style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
-                >
-                  <span
-                    className={`inline-flex items-center transition-transform duration-500 ${
-                      hoveredIndex === idx + 6 ? "slide-left-anim" : ""
-                    }`}
-                  >
-                    {item.name}
-                    <span
-                      className={`ml-1 sm:ml-2 transition-opacity duration-500 ${
-                        hoveredIndex === idx + 6 ? "opacity-100" : "opacity-0"
-                      }`}
-                    >
-                      <Icon
-                        icon="cil:arrow-right"
-                        className="h-4 w-4 sm:h-5 sm:w-5 text-black"
-                        width="20"
-                        height="20"
-                      />
-                    </span>
-                  </span>
-                </h3>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {currentPage === 1 && (
+        {currentPage > 0 && (
           <button
-            onClick={handleNextClick}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100"
+            onClick={handlePrevClick}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100 hidden sm:block"
             style={{ zIndex: 10 }}
           >
             <Icon icon="mdi:chevron-left" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
           </button>
         )}
 
-        <button
-          onClick={handleNextClick}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100"
-          style={{ zIndex: 10 }}
-        >
-          <Icon icon="mdi:chevron-right" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
-        </button>
+        {currentPage < totalPages - 1 && (
+          <button
+            onClick={handleNextClick}
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100 hidden sm:block"
+            style={{ zIndex: 10 }}
+          >
+            <Icon icon="mdi:chevron-right" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
+          </button>
+        )}
       </div>
     </>
   );
