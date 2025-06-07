@@ -85,7 +85,7 @@ function App() {
   const renderContent = () => {
     switch (currentPage) {
       case 'MESSAGES':
-        return <Messages />;
+        return <Messages handleNavigation={handleNavigation} />;
       case 'PRODUCTS':
         return <Products 
           showAddProductModal={showAddProductModal} 
@@ -100,9 +100,9 @@ function App() {
       case 'REPORTS':
         return <Reports />;
       case 'PROFILE':
-        return <Profile />;
+        return <Profile handleNavigation={handleNavigation} />;
       case 'SETTINGS':
-        return <Settings />;
+        return <Settings handleNavigation={handleNavigation} />;
       case 'DASHBOARD':
       default:
         return <Dashboard />;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 
 interface AdminUser {
@@ -190,7 +190,12 @@ interface SettingsState {
   };
 }
 
-const Settings: React.FC = () => {
+interface SettingsProps {
+  handleNavigation?: (page: string) => void;
+}
+
+const Settings: React.FC<SettingsProps> = ({ handleNavigation }) => {
+  const [isMobileView, setIsMobileView] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SettingsState>({
     general: {
@@ -275,6 +280,17 @@ const Settings: React.FC = () => {
     },
   });
 
+  // Add window resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 1024);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const tabs = [
     { id: 'general', label: 'General', icon: 'mdi:cog' },
     { id: 'userManagement', label: 'User Management', icon: 'mdi:account-group' },
@@ -301,10 +317,20 @@ const Settings: React.FC = () => {
       {/* Main Header */}
       <header className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
-          <h2 className="flex items-center gap-2 sm:gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
-            <Icon icon="mdi:cog" className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
-            Settings
-          </h2>
+          <div className="flex items-center gap-3">
+            {isMobileView && (
+              <button
+                onClick={() => handleNavigation?.('DASHBOARD')}
+                className="p-2 hover:bg-yellow-50 rounded-lg transition"
+              >
+                <Icon icon="mdi:arrow-left" className="w-6 h-6 text-gray-600" />
+              </button>
+            )}
+            <h2 className="flex items-center gap-2 sm:gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
+              <Icon icon="mdi:cog" className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
+              Settings
+            </h2>
+          </div>
         </div>
       </header>
 

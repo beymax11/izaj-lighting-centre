@@ -109,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* Logo */}
             <Link to="/" className="flex flex-col items-start flex-shrink-0">
               <div
-                className="text-4xl md:text-7xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                className="text-3xl md:text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
                 style={{
                   color: "#000000",
                   fontFamily: "'Playfair Display', serif",

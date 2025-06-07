@@ -68,7 +68,11 @@ const messageListData = [
 	},
 ];
 
-function Messages() {
+interface MessagesProps {
+	handleNavigation?: (page: string) => void;
+}
+
+function Messages({ handleNavigation }: MessagesProps) {
 	const [selectedFilter, setSelectedFilter] = useState('all');
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
@@ -175,10 +179,20 @@ function Messages() {
 			{/* Section Header */}
 			<header className="px-4 sm:px-8 py-4 sm:py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
 				<div className="max-w-7xl mx-auto">
-					<h2 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
-						<Icon icon="mdi:message-outline" className="text-purple-400 w-6 h-6 sm:w-8 sm:h-8" />
-						Messages
-					</h2>
+					<div className="flex items-center gap-3">
+						{isMobileView && (
+							<button
+								onClick={() => handleNavigation?.('DASHBOARD')}
+								className="p-2 hover:bg-purple-50 rounded-lg transition"
+							>
+								<Icon icon="mdi:arrow-left" className="w-6 h-6 text-gray-600" />
+							</button>
+						)}
+						<h2 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
+							<Icon icon="mdi:message-outline" className="text-purple-400 w-6 h-6 sm:w-8 sm:h-8" />
+							Messages
+						</h2>
+					</div>
 				</div>
 			</header>
 

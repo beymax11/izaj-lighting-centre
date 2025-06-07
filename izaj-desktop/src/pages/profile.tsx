@@ -1,7 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 
-const Profile: React.FC = () => {
+interface ProfileProps {
+  handleNavigation?: (page: string) => void;
+}
+
+const Profile: React.FC<ProfileProps> = ({ handleNavigation }) => {
+  const [isMobileView, setIsMobileView] = useState(false);
   const [profile, setProfile] = useState({
     name: "Daniel Padilla",
     email: "danielpadilla@izaj.com",
@@ -13,6 +18,17 @@ const Profile: React.FC = () => {
   });
   const [editMode, setEditMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Add window resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 1024);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -42,10 +58,20 @@ const Profile: React.FC = () => {
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f7f8fa]">
       <header className="px-4 sm:px-8 py-4 sm:py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
-          <h2 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
-            <Icon icon="mdi:account-circle" className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
-            Profile Settings
-          </h2>
+          <div className="flex items-center gap-3">
+            {isMobileView && (
+              <button
+                onClick={() => handleNavigation?.('DASHBOARD')}
+                className="p-2 hover:bg-yellow-50 rounded-lg transition"
+              >
+                <Icon icon="mdi:arrow-left" className="w-6 h-6 text-gray-600" />
+              </button>
+            )}
+            <h2 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-800">
+              <Icon icon="mdi:account-circle" className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
+              Profile Settings
+            </h2>
+          </div>
         </div>
       </header>
 
