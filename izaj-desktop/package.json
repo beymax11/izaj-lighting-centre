@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-   "dev": "concurrently \"tauri dev\" \"node ./backend/nodejs/server.js\"",
+    "dev": "concurrently \"tauri dev\" \"node ./backend/nodejs/server.js\"",
     "vite": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
