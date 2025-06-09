@@ -95,8 +95,8 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       <header className="bg-white px-4 md:px-10 py-3 flex flex-col">
-        {/* Top Header Row */}
-        <div className="flex items-center justify-between w-full">
+           {/* Top Header Row */}
+           <div className="flex items-center justify-between w-full">
           {/* Mobile Menu Button and Logo Container */}
           <div className="flex items-center space-x-4">
             <button 
@@ -107,14 +107,19 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex flex-col items-start flex-shrink-0">
+            <Link to="/" className="flex flex-col items-start flex-shrink-0 w-full">
               <div
                 className="text-3xl md:text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
                 style={{
                   color: "#000000",
                   fontFamily: "'Playfair Display', serif",
                   textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-                  letterSpacing: "10px",
+                  letterSpacing: "4px",
+                  whiteSpace: "nowrap",
+                  width: "100%",
+                  display: "inline-block",
+                  transform: "scale(0.95)",
+                  transformOrigin: "left"
                 }}
               >
                 IZAJ

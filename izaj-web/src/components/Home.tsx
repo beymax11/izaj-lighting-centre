@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Icon } from '@iconify/react';
 import LightingCategory from './LightingCategory';
 
 interface HomeProps {
@@ -11,8 +10,17 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ user }) => {
-  const [currentDealIndex, setCurrentDealIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [isHoveringProducts, setIsHoveringProducts] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+
+  // New state variables for Fresh Drops
+  const [freshDropsPage, setFreshDropsPage] = useState(0);
+  const [freshDropsSlideDirection, setFreshDropsSlideDirection] = useState<'left' | 'right'>('right');
+  const [isHoveringFreshDrops, setIsHoveringFreshDrops] = useState(false);
 
   // Hero images for desktop
   const desktopHeroImages = [
@@ -55,18 +63,15 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   // Use the appropriate hero images based on screen size
   const heroImages = isMobile ? mobileHeroImages : desktopHeroImages;
   
-  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   
-  // Check for mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768); // 768px is typical tablet breakpoint
+      setIsMobile(window.innerWidth < 768); 
     };
 
-    // Check initially
     checkMobile();
 
-    // Add event listener for window resize
+   
     window.addEventListener('resize', checkMobile);
 
     // Cleanup
@@ -82,74 +87,130 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   
     return () => clearInterval(interval);
   }, [heroImages.length]); // Add heroImages.length as dependency
-  
-  // Sample deals data
-  const deals = [
+
+  const handleColorSelect = (productId: number, color: string) => {
+    setSelectedColors(prev => ({
+      ...prev,
+      [productId]: color
+    }));
+  };
+
+  // Sample product data
+  const allProducts = [
     {
       id: 1,
-      image: "ceiling.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Abednego | Chandelier/Large",
+      price: "₱32,995",
+      image: "/public/abed.webp",
+      size: "φ110*H15cm",
+      colors: ["black", "gold", "silver"]
     },
     {
       id: 2,
-      image: "chadelier.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Aberdeen | Modern LED Chandelier",
+      price: "₱25,464",
+      image: "/public/aber.webp",
+      colors: ["black", "gold"]
     },
     {
       id: 3,
-      image: "cluster.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Acadia | Table Lamp",
+      price: "₱12,234",
+      image: "/public/acad.webp",
+      colors: ["black"]
     },
     {
       id: 4,
-      image: "pendant.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Ademar | Modern Chandelier",
+      price: "₱11,237",
+      image: "/public/mar.webp",
+      colors: ["black"]
     },
     {
       id: 5,
-      image: "floor.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Aeris | Modern Pendant Light",
+      price: "₱9,435",
+      image: "/public/aeris.webp",
+      colors: ["black"]
     },
     {
       id: 6,
-      image: "floor.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Aina | Modern LED Chandelier",
+      price: "₱29,995",
+      image: "/public/aina.webp",
+      colors: ["black"]
     },
     {
       id: 7,
-      image: "floor.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Alabama | Table Lamp",
+      price: "₱27,995",
+      image: "/public/alab.webp",
+      colors: ["black"]
     },
     {
       id: 8,
-      image: "floor.jpg",
-      title: "Aberdeen | Modern LED Chandelier",
-      oldPrice: "₱16,995",
-      newPrice: "₱15,995",
-      discount: "10% off"
+      name: "Alphius | Surface Mounted Downlight",
+      price: "₱25,995",
+      image: "/public/alph.webp",
+      colors: ["black"]
     },
+    {
+      id: 9,
+      name: "Altair | Modern LED Chandelier",
+      price: "₱23,995",
+      image: "/public/alta.jpg",
+      colors: ["black"]
+    },
+    {
+      id: 10,
+      name: "Amalfi | Boho Rattan Soliya Pendant Lamp",
+      price: "₱21,995",
+      image: "/public/ama.webp",
+      colors: ["black"]
+    }
   ];
+
+  const productsPerPage = 5;
+  const totalPages = Math.ceil(allProducts.length / productsPerPage);
+  const currentProducts = allProducts.slice(
+    currentPage * productsPerPage,
+    (currentPage + 1) * productsPerPage
+  );
+
+  // Fresh Drops products
+  const freshDropsProducts = allProducts.slice(
+    freshDropsPage * productsPerPage,
+    (freshDropsPage + 1) * productsPerPage
+  );
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setSlideDirection('right');
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setSlideDirection('left');
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Fresh Drops navigation handlers
+  const handleFreshDropsPrevPage = () => {
+    if (freshDropsPage > 0) {
+      setFreshDropsSlideDirection('right');
+      setFreshDropsPage(freshDropsPage - 1);
+    }
+  };
+
+  const handleFreshDropsNextPage = () => {
+    if (freshDropsPage < totalPages - 1) {
+      setFreshDropsSlideDirection('left');
+      setFreshDropsPage(freshDropsPage + 1);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white text-white font-sans">
@@ -186,151 +247,131 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         <LightingCategory user={user} />
 
         {/* About Us Section - Plain Version */}
-        <div className="mt-16 mb-16 px-4">
-          <h2 className="text-3xl font-bold text-black mb-8 text-center"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extra-bold" }}>About IZAJ</h2>
-          <p className="text-lg text-black leading-relaxed mb-6 text-center max-w-4xl mx-auto"style={{ fontFamily: "'Poppins', sans-serif", }}>
+        <div className="mt-8 sm:mt-12 md:mt-16 mb-8 sm:mb-12 md:mb-16 px-4 sm:px-6 md:px-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-4 sm:mb-6 md:mb-8 text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extra-bold" }}>
+            About IZAJ
+          </h2>
+          <p className="text-sm sm:text-base md:text-lg text-black leading-relaxed mb-4 sm:mb-6 text-center max-w-[90%] sm:max-w-[80%] md:max-w-3xl mx-auto px-2 sm:px-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
             Izaj Lighting Centre is a premier provider of high-quality chandeliers and lighting solutions in the Philippines. With a commitment to enhancing interiors through exceptional illumination, we offer a curated selection of lighting fixtures that blend functionality with aesthetic appeal.
           </p>
           
-          <div className="max-w-4xl mx-auto flex justify-center">
-            <Link to="/aboutus" className="text-large font-bold text-white bg-black py-2 px-5 rounded-md text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
-                About Us
+          <div className="max-w-[90%] sm:max-w-[80%] md:max-w-3xl mx-auto flex justify-center mt-6 sm:mt-8">
+            <Link 
+              to="/aboutus" 
+              className="text-sm sm:text-base md:text-lg font-bold text-white bg-black py-2 px-4 sm:px-5 md:px-6 rounded-md text-center hover:bg-gray-800 transition-colors duration-300 w-[150px] sm:w-[180px] md:w-[200px]" 
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            >
+              About Us
             </Link>
           </div>
         </div>
 
-        {/* Monthly Deals Section */}
-        <div className="mt-16 px-16 mx-16">
-          {/* Title */}
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
-              Monthly Deals
+        {/* Monthly Deals */}
+        <section className="container mx-auto px-14 sm:px-18 md:px-22 lg:px-28 py-8 max-w-[90%] relative">
+          <div className="flex justify-between items-baseline mb-6">
+            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+              Monthly Deals 
             </h2>
+            <div className="flex-grow"></div>
             <Link
-            to="/sales"
-            state={user ? { user } : undefined}
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+              to="/sales"
+              state={user ? { user } : undefined}
+              className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            >
+              View all
+            </Link>
+          </div>
+
+          <div 
+            className="relative px-12"
+            onMouseEnter={() => setIsHoveringProducts(true)}
+            onMouseLeave={() => setIsHoveringProducts(false)}
           >
-            View all
-          </Link>
-          </div>
-          
-          <div className="relative group" style={{
-            height: "500px",
-            overflow: "hidden",
-            marginTop: "-0.5rem" // Added negative margin to bring items closer
-          }}>
-            {/* First Page with 4 items */}
-            <div
-              className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
-              style={{
-                opacity: currentDealIndex === 0 ? 1 : 0,
-                transform: `translateX(${currentDealIndex === 0 ? "0" : "-100%"})`,
-                pointerEvents: currentDealIndex === 0 ? "auto" : "none",
-              }}
-            >
-              {deals.slice(0, 4).map((deal) => (
-                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
-                  <div className="relative overflow-hidden flex-grow">
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
-                    />
-                  </div>
-                  <div className="flex flex-col flex-grow justify-between mt-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
-                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
-                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
-                      <p className="text-black text-sm font-medium mt-1 flex items-center gap-1">
-                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
-                        In Stock
-                      </p>
-                    </div>
-                    <Link to="/item-description" className="mt-3">
-                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
-                        CHOOSE OPTIONS
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Second Page with next 4 items */}
-            <div
-              className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
-              style={{
-                opacity: currentDealIndex === 1 ? 1 : 0,
-                transform: `translateX(${currentDealIndex === 1 ? "0" : "100%"})`,
-                pointerEvents: currentDealIndex === 1 ? "auto" : "none",
-              }}
-            >
-              {deals.slice(4, 8).map((deal) => (
-                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
-                  <div className="relative overflow-hidden flex-grow">
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
-                    />
-                  </div>
-                  <div className="flex flex-col flex-grow justify-between mt-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
-                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
-                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
-                      <p className="text-gray-500 text-sm font-medium mt-1 flex items-center gap-1">
-                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
-                        In Stock
-                      </p>
-                    </div>
-                    <Link to="/item-description" className="mt-3">
-                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
-                        CHOOSE OPTIONS
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Navigation Buttons */}
-            {currentDealIndex === 1 && (
-              <button
-                onClick={() => setCurrentDealIndex(0)}
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
-                style={{ zIndex: 10 }}
+            {currentPage > 0 && (
+              <button 
+                onClick={handlePrevPage}
+                className={`absolute -left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
+                  isHoveringProducts ? 'opacity-90' : 'opacity-0'
+                }`}
               >
-                <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            {currentPage < totalPages - 1 && (
+              <button 
+                onClick={handleNextPage}
+                className={`absolute -right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
+                  isHoveringProducts ? 'opacity-90' : 'opacity-0'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             )}
 
-            {currentDealIndex === 0 && (
-              <button
-                onClick={() => setCurrentDealIndex(1)}
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
-                style={{ zIndex: 10 }}
+            <div className="relative overflow-hidden">
+              <div 
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 justify-center transition-transform duration-500 ease-in-out"
+                style={{
+                  transform: `translateX(${slideDirection === 'left' ? '-100%' : '100%'})`,
+                  animation: `${slideDirection === 'left' ? 'slideInLeft' : 'slideInRight'} 0.5s forwards`
+                }}
               >
-                <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
-              </button>
-            )}
+                {currentProducts.map((product) => (
+                  <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-full">
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 flex items-center">
+                      Monthly Deals 
+                    </div>
+                    <div className="relative flex-grow">
+                      <img src={product.image} alt={product.name} className="w-full h-64 object-cover" />
+                    </div>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+                      <p className="text-gray-600 text-xs mb-2">{product.size}</p>
+                      <div className="flex items-center space-x-2 mb-2">
+                        {product.colors?.map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => handleColorSelect(product.id, color)}
+                            className={`w-4 h-4 border border-gray-300 transition-all duration-200 ${
+                              selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
+                            }`}
+                            style={{ backgroundColor: color }}
+                            title={color.charAt(0).toUpperCase() + color.slice(1)}
+                          />
+                        ))}
+                      </div>
+                      <p className="font-bold text-gray-800 mt-auto">{product.price}</p>
+                      <p className="text-green-600 text-xs mt-1">● In stock</p>
+                      <button className="mt-4 w-full bg-black text-white py-2 hover:bg-gray-800 transition-colors duration-300 text-sm">
+                        Choose options
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* New Collection Banner */}
-        <div className="w-full h-screen bg-cover bg-center relative mt-4"
+         
+        </section>
+
+         {/* New Collection Banner */}
+         <div className="w-full min-h-screen bg-cover bg-center relative mt-4"
           style={{
             backgroundImage: "url('/bradakan-uzlUBEYwufo-unsplash.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-between">
+          <div className="absolute top-0 left-0 w-full h-full flex flex-col md:flex-row">
             {/* Left content - Image area */}
-            <div className="w-3/5 h-4/5">
+            <div className="w-full md:w-3/5 h-1/2 md:h-full">
               <img 
                 src="/collection.jpg"
                 alt="Chandelier"
@@ -339,14 +380,14 @@ const Home: React.FC<HomeProps> = ({ user }) => {
             </div>
 
             {/* Right content - Text and Button */}
-            <div className="w-1/2 h-4/5 flex flex-col justify-between px-12 text-white bg-black">
+            <div className="w-full md:w-2/5 h-1/2 md:h-full flex flex-col justify-between px-4 md:px-12 text-white bg-black">
               {/* IZAJ text at the top */}
               <div className="mt-2">
                 <h1 
-                  className="text-6xl" 
+                  className="text-4xl md:text-6xl" 
                   style={{ 
-                fontFamily: "'Playfair Display', serif", 
-                letterSpacing: "0.3em" 
+                    fontFamily: "'Playfair Display', serif", 
+                    letterSpacing: "0.3em" 
                   }}
                 >
                   IZAJ
@@ -355,8 +396,8 @@ const Home: React.FC<HomeProps> = ({ user }) => {
 
               {/* New Collection text and button at the top */}
               <div className="text-left mt-2 mb-6">
-                <p className="text-5xl font-semibold" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "0.2em" }}>NEW COLLECTION</p>
-                <p className="mt-1 text-lg" style={{ fontFamily: "'Poppins', serif" }}>Free Delivery & Installation</p>
+                <p className="text-3xl md:text-5xl font-semibold" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "0.2em" }}>NEW COLLECTION</p>
+                <p className="mt-1 text-base md:text-lg" style={{ fontFamily: "'Poppins', serif" }}>Free Delivery & Installation</p>
                 <div className="flex items-center justify-center mt-4 px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300 w-40">
                     <Link
                       to="/collection"
@@ -372,15 +413,16 @@ const Home: React.FC<HomeProps> = ({ user }) => {
           </div>
         </div>
 
-        {/* Fresh Drops Section */}
-        <div className="mt-8 px-16 mx-16">
-          {/* Title */}
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-black text-left" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+
+        {/* Fresh Drops */}
+        <section className="container mx-auto px-14 sm:px-18 md:px-22 lg:px-28 py-8 max-w-[90%] relative">
+          <div className="flex justify-between items-baseline mb-6">
+            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
               Fresh Drops
             </h2>
+            <div className="flex-grow"></div>
             <Link
-              to="/collection"
+              to="/sales"
               state={user ? { user } : undefined}
               className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
@@ -388,116 +430,88 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               View all
             </Link>
           </div>
-          
-          <div className="relative group" style={{
-            height: "500px",
-            overflow: "hidden",
-            marginTop: "-0.5rem"
-          }}>
-            {/* First Page with 4 items */}
-            <div
-              className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
-              style={{
-                opacity: currentDealIndex === 0 ? 1 : 0,
-                transform: `translateX(${currentDealIndex === 0 ? "0" : "-100%"})`,
-                pointerEvents: currentDealIndex === 0 ? "auto" : "none",
-              }}
-            >
-              {deals.slice(0, 4).map((deal) => (
-                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
-                  <div className="relative overflow-hidden flex-grow">
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
-                    />
-                  </div>
-                  <div className="flex flex-col flex-grow justify-between mt-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
-                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
-                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
-                      <p className="text-black text-sm font-medium mt-1 flex items-center gap-1">
-                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
-                        In Stock
-                      </p>
-                    </div>
-                    <Link to="/item-description" className="mt-3">
-                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
-                        CHOOSE OPTIONS
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* Second Page with next 4 items */}
-            <div
-              className="grid grid-cols-4 gap-6 transition-all duration-700 ease-in-out absolute w-full"
-              style={{
-                opacity: currentDealIndex === 1 ? 1 : 0,
-                transform: `translateX(${currentDealIndex === 1 ? "0" : "100%"})`,
-                pointerEvents: currentDealIndex === 1 ? "auto" : "none",
-              }}
-            >
-              {deals.slice(4, 8).map((deal) => (
-                <div key={deal.id} className="p-4 hover:shadow-xl transition-shadow duration-300 h-[450px] flex flex-col">
-                  <div className="relative overflow-hidden flex-grow">
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-full h-64 object-cover transform transition-transform duration-300 hover:scale-110"
-                    />
-                  </div>
-                  <div className="flex flex-col flex-grow justify-between mt-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-black">{deal.title}</h3>
-                      <p className="text-gray-500 text-sm line-through">{deal.oldPrice}</p>
-                      <p className="text-black font-semibold">{deal.newPrice} <span className="text-red-500">{deal.discount}</span></p>
-                      <p className="text-black text-sm font-medium mt-1 flex items-center gap-1">
-                        <Icon icon="mdi:check-circle" className="h-4 w-4" />
-                        In Stock
-                      </p>
-                    </div>
-                    <Link to="/item-description" className="mt-3">
-                      <button className="w-full py-2 bg-black text-white font-semibold rounded-lg">
-                        CHOOSE OPTIONS
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
+          <div 
+            className="relative px-12"
+            onMouseEnter={() => setIsHoveringFreshDrops(true)}
+            onMouseLeave={() => setIsHoveringFreshDrops(false)}
+          >
             {/* Navigation Buttons */}
-            {currentDealIndex === 1 && (
-              <button
-                onClick={() => setCurrentDealIndex(0)}
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
-                style={{ zIndex: 10 }}
+            {freshDropsPage > 0 && (
+              <button 
+                onClick={handleFreshDropsPrevPage}
+                className={`absolute -left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
+                  isHoveringFreshDrops ? 'opacity-90' : 'opacity-0'
+                }`}
               >
-                <Icon icon="mdi:chevron-left" className="h-6 w-6 text-gray-600" width="24" height="24" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            {freshDropsPage < totalPages - 1 && (
+              <button 
+                onClick={handleFreshDropsNextPage}
+                className={`absolute -right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
+                  isHoveringFreshDrops ? 'opacity-90' : 'opacity-0'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             )}
 
-            {currentDealIndex === 0 && (
-              <button
-                onClick={() => setCurrentDealIndex(1)}
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110"
-                style={{ zIndex: 10 }}
+            <div className="relative overflow-hidden">
+              <div 
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 justify-center transition-transform duration-500 ease-in-out"
+                style={{
+                  transform: `translateX(${freshDropsSlideDirection === 'left' ? '-100%' : '100%'})`,
+                  animation: `${freshDropsSlideDirection === 'left' ? 'slideInLeft' : 'slideInRight'} 0.5s forwards`
+                }}
               >
-                <Icon icon="mdi:chevron-right" className="h-6 w-6 text-gray-600" width="24" height="24" />
-              </button>
-            )}
+                {freshDropsProducts.map((product) => (
+                  <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-full">
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 flex items-center">
+                      Fresh Drops
+                    </div>
+                    <div className="relative flex-grow">
+                      <img src={product.image} alt={product.name} className="w-full h-64 object-cover" />
+                    </div>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+                      <p className="text-gray-600 text-xs mb-2">{product.size}</p>
+                      <div className="flex items-center space-x-2 mb-2">
+                        {product.colors?.map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => handleColorSelect(product.id, color)}
+                            className={`w-4 h-4 border border-gray-300 ${
+                              selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
+                            }`}
+                            style={{ backgroundColor: color }}
+                            title={color.charAt(0).toUpperCase() + color.slice(1)}
+                          />
+                        ))}
+                      </div>
+                      <p className="font-bold text-gray-800 mt-auto">{product.price}</p>
+                      <p className="text-green-600 text-xs mt-1">● In stock</p>
+                      <button className="mt-4 w-full bg-black text-white py-2 text-sm">
+                        Choose options
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Featured Products Section */}
         <div className="mt-16 px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {/* Top Picks Card */}
-            <div className="relative w-full h-64 rounded-lg overflow-hidden">
+            <div className="relative w-full h-64 overflow-hidden">
               <img
                 src="featured.jpg"
                 alt="Top Picks"
@@ -506,14 +520,14 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               <div className="absolute bottom-0 left-0 w-full p-6">
                 <h3 className="text-2xl font-extrabold text-white" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extrabold" }}>TOP PICKS</h3>
                 <p className="mt-2 text-sm text-white" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>SHOP DESIGNER FAVORITES</p>
-                <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
+                <button className="mt-4 px-6 py-2 bg-white text-black font-semibold  hover:bg-black hover:text-white transition-all duration-300" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
                   SHOP NOW
                 </button>
               </div>
             </div>
 
             {/* What's Hot Card */}
-            <div className="relative w-full h-64 rounded-lg overflow-hidden">
+            <div className="relative w-full h-64  overflow-hidden">
               <img
                 src="featured.jpg"
                 alt="What's Hot"
@@ -522,7 +536,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               <div className="absolute bottom-0 left-0 w-full p-6">
                 <h3 className="text-2xl font-extrabold text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extrabold" }}>WHAT'S HOT?</h3>
                 <p className="mt-2 text-sm text-white"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "400" }}>GET THE LATEST DESIGN FOR YOUR HOME AND PROJECTS!</p>
-                <button className="mt-4 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-all duration-300"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
+                <button className="mt-4 px-6 py-2 bg-white text-black font-semibold  hover:bg-black hover:text-white transition-all duration-300"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "900" }}>
                   SHOP NOW
                 </button>
               </div>
@@ -531,16 +545,22 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         </div>
         
         {/* FREE DESIGN CONSULTATION*/}
-        <div className="mt-16 mb-16 px-4">
-          <h2 className="text-3xl font-bold text-black mb-8 text-center"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extra-bold" }}>FREE DESIGN CONSULTATION</h2>
-          <p className="text-lg text-black leading-relaxed mb-6 text-center max-w-4xl mx-auto"style={{ fontFamily: "'Poppins', sans-serif", }}>
-          We'd love to hear from you! Whether you have questions about our products, need assistance with your order, or want to provide feedback, please reach out to us through any of the following      
-          channels.
+        <div className="mt-8 md:mt-16 mb-8 md:mb-16 px-4 md:px-8">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-4 md:mb-8 text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extra-bold" }}>
+            FREE DESIGN CONSULTATION
+          </h2>
+          <p className="text-base md:text-lg lg:text-xl text-black leading-relaxed mb-4 md:mb-6 text-center max-w-[90%] md:max-w-[80%] lg:max-w-4xl mx-auto px-2 md:px-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            We'd love to hear from you! Whether you have questions about our products, need assistance with your order, or want to provide feedback, please reach out to us through any of the following channels.
           </p>
           
-          <div className="max-w-4xl mx-auto flex justify-center">
-            <Link to="/contactus" className="text-large font-bold text-white bg-black py-2 px-5 rounded-md text-center"style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>Contact Us</Link>
-                
+          <div className="max-w-[90%] md:max-w-[80%] lg:max-w-4xl mx-auto flex justify-center">
+            <Link 
+              to="/contactus" 
+              className="text-sm md:text-base lg:text-lg font-bold text-white bg-black py-2 px-4 md:px-5 lg:px-6 rounded-md text-center hover:bg-gray-800 transition-colors duration-300 w-[150px] md:w-[180px] lg:w-[200px]" 
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            >
+              Contact Us
+            </Link>
           </div>
         </div>
 
@@ -557,6 +577,27 @@ const Home: React.FC<HomeProps> = ({ user }) => {
 
        
       </main>
+
+      <style>
+        {`
+          @keyframes slideInLeft {
+            from {
+              transform: translateX(100%);
+            }
+            to {
+              transform: translateX(0);
+            }
+          }
+          @keyframes slideInRight {
+            from {
+              transform: translateX(-100%);
+            }
+            to {
+              transform: translateX(0);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
