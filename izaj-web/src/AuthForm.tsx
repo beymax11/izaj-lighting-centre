@@ -125,32 +125,35 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
     setErrors({});
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const response = await axios.post(`http://localhost:3001${endpoint}`, formData);
+      const { user, token } = response.data;
 
-      // Get username from email (everything before @)
-      const username = formData.email.split('@')[0];
-
-      // Create mock user data in the format expected by Header
-      const mockUser = {
-        name: isLogin ? username : `${formData.firstName} ${formData.lastName}`,
-        email: formData.email
+      // Format user data to include full name and phone number
+      const formattedUser = {
+        name: isLogin ? `${user.firstName} ${user.lastName}` : `${formData.firstName} ${formData.lastName}`,
+        email: user.email,
+        phone: isLogin ? user.phoneNumber : formData.phoneNumber
       };
 
-      const mockToken = 'mock-jwt-token-' + Math.random().toString(36).substring(7);
+      console.log('Formatted user data for storage:', formattedUser);
 
       // Store token based on remember me preference
       if (rememberMe) {
-        localStorage.setItem('authToken', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
+        console.log('Storing user data in localStorage');
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(formattedUser));
       } else {
-        sessionStorage.setItem('authToken', mockToken);
-        sessionStorage.setItem('user', JSON.stringify(mockUser));
+        console.log('Storing user data in sessionStorage');
+        sessionStorage.setItem('authToken', token);
+        sessionStorage.setItem('user', JSON.stringify(formattedUser));
       }
+      
+      console.log('Stored user data:', formattedUser);
       
       // Call success callback if provided
       if (onAuthSuccess) {
-        onAuthSuccess(mockUser);
+        onAuthSuccess(formattedUser);
       }
       
       // Close the modal
@@ -160,7 +163,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
 
     } catch (error: any) {
       setErrors({
-        general: "An error occurred. Please try again."
+        general: error.response?.data?.error || "An error occurred. Please try again."
       });
     } finally {
       setIsLoading(false);

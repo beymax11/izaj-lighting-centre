@@ -1,24 +1,55 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import ChatNow from '../ChatNow';
 
 
 const ItemDescription: React.FC = () => {
-  const [mainImage, setMainImage] = useState("aber.webp");
+  const { id } = useParams<{ id: string }>();
+  const [mainImage, setMainImage] = useState("");
   const [zoomStyle, setZoomStyle] = useState({});
   const imgRef = useRef<HTMLDivElement>(null);
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
   const [isCareOpen, setIsCareOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [product, setProduct] = useState<any>(null);
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
   
-  const thumbnails = [
-    "aber.webp",
-    "aber2.webp",
-    "aber3.webp",
-    "aber4.webp"
-  ];
+  useEffect(() => {
+    // Get product data from the allProducts array in Home.tsx
+    const allProducts = [
+      {
+        id: 1,
+        name: "Abednego | Chandelier/Large",
+        price: "₱32,995",
+        image: "/public/abed.webp",
+        size: "φ110*H15cm",
+        colors: ["black", "gold", "silver"]
+      },
+      {
+        id: 2,
+        name: "Aberdeen | Modern LED Chandelier",
+        price: "₱25,464",
+        image: "/public/aber.webp",
+        colors: ["black", "gold"]
+      }
+    ];
+
+    const foundProduct = allProducts.find(p => p.id === Number(id));
+    if (foundProduct) {
+      setProduct(foundProduct);
+      setMainImage(foundProduct.image);
+      // Set thumbnails based on the product image
+      const baseImage = foundProduct.image.replace('.webp', '');
+      setThumbnails([
+        foundProduct.image,
+        `${baseImage}2.webp`,
+        `${baseImage}3.webp`,
+        `${baseImage}4.webp`
+      ]);
+    }
+  }, [id]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imgRef.current) return;
@@ -38,8 +69,10 @@ const ItemDescription: React.FC = () => {
     setZoomStyle({});
   };
 
+  if (!product) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
-   {/* Product Info Section */}
   return (
     <div className="bg-white min-h-screen">
       <div className="container mx-auto px-4 py-8 md:py-12">
@@ -58,6 +91,10 @@ const ItemDescription: React.FC = () => {
                     }`}
                     onClick={() => setMainImage(thumbnail)}
                     alt={`Thumbnail ${index + 1}`}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
                   />
                 ))}
               </div>
@@ -109,9 +146,9 @@ const ItemDescription: React.FC = () => {
                 <div className="mt-4 p-4 ">
                   <h3 className="font-bold text-black text-lg mb-2">PRODUCT DESCRIPTION</h3>
                   <ul className="list-disc pl-5 space-y-1 text-sm text-black">
-                    <li>Color: Black, Black + Gold</li>
+                    <li>Color: {product.colors?.[0] || 'Black'}, {product.colors?.[1] || 'Black'} + Gold</li>
                     <li>Material: Iron art + Aluminum</li>
-                    <li>Width: 120cm</li>
+                    <li>Width: {product.size || '120cm'}</li>
                   </ul>
                 </div>
                 {/* Payment & Security Section */}
@@ -142,7 +179,7 @@ const ItemDescription: React.FC = () => {
             </button>
 
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">
-              Aberdeen | Modern LED Chandelier
+              {product.name}
             </h2>
 
             {/* Monthly Deals & Ratings */}
@@ -160,18 +197,28 @@ const ItemDescription: React.FC = () => {
 
             {/* Color Options */}
             <div className="mb-6">
-              <p className="font-semibold mb-2 text-black">Color: Black</p>
+              <p className="font-semibold mb-2 text-black">Color: {product.colors?.[0] || 'Black'}</p>
               <div className="flex gap-2">
-                <img src="floor.jpg" className="w-12 h-12 object-cover border border-gray-200 rounded cursor-pointer hover:ring-2 hover:ring-black" />
-                <img src="floor.jpg" className="w-12 h-12 object-cover border border-gray-200 rounded cursor-pointer hover:ring-2 hover:ring-black" />
+                {product.colors?.map((color: string, index: number) => (
+                  <div
+                    key={index}
+                    className="w-12 h-12 border border-gray-200 rounded cursor-pointer hover:ring-2 hover:ring-black"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
               </div>
             </div>
 
             {/* Price */}
-            <p className="text-2xl font-bold mb-4 text-black">₱16,995</p>
+            <p className="text-2xl font-bold mb-4 text-black">{product.price}</p>
 
             {/* Stock */}
             <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-green-600">In Stock</span></p>
+
+            {/* Size */}
+            {product.size && (
+              <p className="mb-6 text-gray-600">Size: <span className="font-semibold">{product.size}</span></p>
+            )}
 
             {/* Quantity & Branch Availability */}
             <div className="flex flex-col gap-4 mb-8">

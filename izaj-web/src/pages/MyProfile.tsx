@@ -1,17 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 
 const MyProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState<string>('profile.webp');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '091234567890',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: ''
   });
   const [errors, setErrors] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     phone: '',
   });
+
+  // Load user data on component mount
+  useEffect(() => {
+    console.log('Loading user data from storage...');
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    console.log('Stored user data:', storedUser);
+    
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        console.log('Parsed user data:', userData);
+        
+        // Split the full name into first name and last name
+        const nameParts = (userData.name || '').split(' ');
+        console.log('Name parts:', nameParts);
+        
+        const newFormData = {
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          email: userData.email || '',
+          phone: userData.phone || ''
+        };
+        console.log('Setting form data:', newFormData);
+        
+        setFormData(newFormData);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
+    } else {
+      console.log('No user data found in storage');
+    }
+  }, []);
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^[0-9]{11}$/;
@@ -32,7 +69,8 @@ const MyProfile: React.FC = () => {
 
     // Validate form
     const newErrors = {
-      name: formData.name.trim() === '' ? 'Name is required' : '',
+      firstName: formData.firstName.trim() === '' ? 'First name is required' : '',
+      lastName: formData.lastName.trim() === '' ? 'Last name is required' : '',
       phone: !validatePhone(formData.phone) ? 'Please enter a valid 11-digit phone number' : '',
     };
 
@@ -43,10 +81,52 @@ const MyProfile: React.FC = () => {
       return;
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    // Show success message here
+    try {
+      // Update user data in storage
+      const formattedUser = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone
+      };
+
+      // Update in the same storage where it was originally saved
+      const storage = localStorage.getItem('user') ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(formattedUser));
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsLoading(false);
+      // Show success message here
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (1MB = 1048576 bytes)
+      if (file.size > 1048576) {
+        alert('File size should be less than 1MB');
+        return;
+      }
+
+      // Check file type
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        alert('Only JPEG and PNG files are allowed');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          setProfileImage(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -61,7 +141,9 @@ const MyProfile: React.FC = () => {
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-indigo-100 shadow-sm transition-transform duration-300 hover:scale-105">
                   <img src="profile.webp" alt="User" className="w-full h-full object-cover" />
                 </div>
-                <div className="font-medium text-lg mb-6 text-center text-gray-800">Daniela Padilla</div>
+                <div className="font-medium text-lg mb-6 text-center text-gray-800">
+                  {`${formData.firstName} ${formData.lastName}`.trim() || 'User'}
+                </div>
             
                 <ul className="w-full space-y-1">
                   {/* My Account - Active Item */}
@@ -94,7 +176,7 @@ const MyProfile: React.FC = () => {
             
             {/* Right Column - Profile Content */}
             <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-8 text-gray-800">MY ACCOUNT</h2>
+            
 
               <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
                 {/* Profile Header */}
@@ -108,18 +190,32 @@ const MyProfile: React.FC = () => {
                   <div className="flex flex-col md:flex-row gap-8">
                     {/* Left Column - Form Fields */}
                     <div className="flex-1">
-                      {/* Name Field */}
+                      {/* First Name Field */}
                       <div className="mb-5">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Name:</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name:</label>
                         <input 
                           type="text" 
-                          name="name"
-                          value={formData.name}
+                          name="firstName"
+                          value={formData.firstName}
                           onChange={handleInputChange}
-                          className={`w-full p-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
-                          placeholder="Enter your name"
+                          className={`w-full p-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
+                          placeholder="Enter your first name"
                         />
-                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                        {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+                      </div>
+
+                      {/* Last Name Field */}
+                      <div className="mb-5">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name:</label>
+                        <input 
+                          type="text" 
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className={`w-full p-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
+                          placeholder="Enter your last name"
+                        />
+                        {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
                       </div>
 
                       {/* Email Field (disabled) */}
@@ -127,7 +223,7 @@ const MyProfile: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Email:</label>
                         <input 
                           type="email" 
-                          value="danielpadilla@gmail.com" 
+                          value={formData.email} 
                           disabled
                           className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
                         />
@@ -142,6 +238,7 @@ const MyProfile: React.FC = () => {
                           value={formData.phone}
                           onChange={handleInputChange}
                           className={`w-full p-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
+                          placeholder="Enter your phone number"
                         />
                         {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                       </div>
@@ -166,10 +263,18 @@ const MyProfile: React.FC = () => {
                     {/* Right Column - Image Upload */}
                     <div className="flex flex-col items-center md:items-start">
                       <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-4 shadow-sm transition-transform duration-300 hover:scale-105">
-                        <img src="profile.webp" alt="Profile" className="w-full h-full object-cover"/>
+                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover"/>
                       </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        accept="image/jpeg,image/png"
+                        className="hidden"
+                      />
                       <button 
                         type="button"
+                        onClick={() => fileInputRef.current?.click()}
                         className="text-indigo-600 text-sm font-medium hover:text-indigo-700 mb-2 transition-colors"
                       >
                         Change Photo
@@ -182,7 +287,13 @@ const MyProfile: React.FC = () => {
                   </div>
 
                   {/* Save Button (Separate at bottom) */}
-                  <div className="flex justify-end mt-8">
+                  <div className="flex justify-end gap-4 mt-8">
+                    <button 
+                      type="button"
+                      className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm"
+                    >
+                      Edit
+                    </button>
                     <button 
                       type="submit"
                       disabled={isLoading}

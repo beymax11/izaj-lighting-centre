@@ -348,9 +348,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                       </div>
                       <p className="font-bold text-gray-800 mt-auto">{product.price}</p>
                       <p className="text-green-600 text-xs mt-1">● In stock</p>
-                      <button className="mt-4 w-full bg-black text-white py-2 hover:bg-gray-800 transition-colors duration-300 text-sm">
+                      <Link
+                        to={`/item-description/${product.id}`}
+                        state={user ? { user } : undefined}
+                        className="mt-4 w-full bg-black text-white py-2 hover:bg-gray-800 transition-colors duration-300 text-sm text-center block"
+                      >
                         Choose options
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -496,9 +500,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                       </div>
                       <p className="font-bold text-gray-800 mt-auto">{product.price}</p>
                       <p className="text-green-600 text-xs mt-1">● In stock</p>
-                      <button className="mt-4 w-full bg-black text-white py-2 text-sm">
+                      <Link
+                        to={`/item-description/${product.id}`}
+                        state={user ? { user } : undefined}
+                        className="mt-4 w-full bg-black text-white py-2 hover:bg-gray-800 transition-colors duration-300 text-sm text-center block"
+                      >
                         Choose options
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}

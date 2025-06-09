@@ -169,7 +169,7 @@ const App: React.FC = () => {
             <Route path="/contactus" element={<Contactus />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/item-description" element={<ItemDescription />} />
+            <Route path="/item-description/:id" element={<ItemDescription />} />
             <Route path="/cookiepolicy" element={<CookiePolicy />} />
             <Route path="/termofuse" element={<TermOfUse />} />
             <Route path="/termsofpurchase" element={<TermsOfPurchase />} />

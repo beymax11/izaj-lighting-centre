@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Check for stored user data on component mount
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (storedUser) {
@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({
     }
   }, [setUser]);
 
-  // Enhanced logout handler
+
   const handleLogoutClick = () => {
     // Clear stored data
     localStorage.removeItem('authToken');
@@ -186,7 +186,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="font-medium text-sm text-gray-500 leading-none"
                         style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
                       >
-                        Hello {user.name}
+                        Hello {user?.email ? user.email.split('@')[0] : 'Guest'}
                       </span>
                       <div className="flex items-center text-black">
                         <span
