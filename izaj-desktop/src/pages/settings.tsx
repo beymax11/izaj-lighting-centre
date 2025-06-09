@@ -18,12 +18,6 @@ interface CustomerAccount {
   lastLogin: string;
 }
 
-interface Role {
-  id: string;
-  name: string;
-  permissions: string[];
-}
-
 interface SettingsState {
   general: {
     websiteName: string;
@@ -37,7 +31,6 @@ interface SettingsState {
   userManagement: {
     adminUsers: AdminUser[];
     customerAccounts: CustomerAccount[];
-    roles: Role[];
   };
 }
 
@@ -52,6 +45,12 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   
   const [isMobileView, setIsMobileView] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [isAddAdminModalOpen, setIsAddAdminModalOpen] = useState(false);
+  const [newAdmin, setNewAdmin] = useState({
+    email: '',
+    name: '',
+    role: 'Customer Support'
+  });
   const [settings, setSettings] = useState<SettingsState>({
     general: {
       websiteName: "IZAJ Store",
@@ -65,9 +64,9 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     userManagement: {
       adminUsers: [],
       customerAccounts: [],
-      roles: [],
     }
   });
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
   // Add window resize listener
   useEffect(() => {
@@ -87,7 +86,49 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Settings updated successfully!");
+  };
+
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAddingAdmin(true);
+    
+    try {
+      // Create new admin object
+      const newAdminUser: AdminUser = {
+        id: Date.now().toString(), // Temporary ID generation
+        name: newAdmin.name,
+        email: newAdmin.email,
+        role: newAdmin.role,
+        status: 'active'
+      };
+
+      // Update settings state with new admin
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        userManagement: {
+          ...prevSettings.userManagement,
+          adminUsers: [...prevSettings.userManagement.adminUsers, newAdminUser],
+          // Also add to customer accounts if role is Customer Support
+          customerAccounts: newAdmin.role === 'Customer Support' 
+            ? [...prevSettings.userManagement.customerAccounts, {
+                id: newAdminUser.id,
+                name: newAdminUser.name,
+                email: newAdminUser.email,
+                status: 'active',
+                lastLogin: new Date().toLocaleDateString()
+              }]
+            : prevSettings.userManagement.customerAccounts
+        }
+      }));
+
+      // Reset form and close modal
+      setNewAdmin({ email: '', name: '', role: 'Customer Support' });
+      setIsAddAdminModalOpen(false);
+    } catch (error) {
+      console.error('Error adding admin:', error);
+    } finally {
+      setIsAddingAdmin(false);
+    }
   };
 
   return (
@@ -241,11 +282,135 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                           <Icon icon="mdi:account-tie" className="text-yellow-400" />
                           Admin Users
                         </h3>
-                        <button className="px-3 sm:px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => setIsAddAdminModalOpen(true)}
+                          className="px-3 sm:px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center justify-center gap-2"
+                        >
                           <Icon icon="mdi:plus" className="w-4 h-4 sm:w-5 sm:h-5" />
                           Add Admin
                         </button>
                       </div>
+
+                      {/* Add Admin Modal */}
+                      {isAddAdminModalOpen && (
+                        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
+                          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+                            <div className="flex justify-between items-center mb-8">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-yellow-100 rounded-lg">
+                                  <Icon icon="mdi:account-plus" className="w-6 h-6 text-yellow-600" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900">Add New Admin</h3>
+                              </div>
+                              <button
+                                onClick={() => setIsAddAdminModalOpen(false)}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                              >
+                                <Icon icon="mdi:close" className="w-6 h-6 text-gray-500" />
+                              </button>
+                            </div>
+                            <form 
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddAdmin(e);
+                              }} 
+                              className="space-y-6"
+                            >
+                              <div className="space-y-2">
+                                <label className="block text-sm font-semibold text-gray-700">
+                                  Full Name
+                                </label>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Icon icon="mdi:account" className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={newAdmin.name}
+                                    onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition-colors duration-200"
+                                    placeholder="Enter full name"
+                                    required
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-semibold text-gray-700">
+                                  Email Address
+                                </label>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Icon icon="mdi:email" className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <input
+                                    type="email"
+                                    value={newAdmin.email}
+                                    onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition-colors duration-200"
+                                    placeholder="Enter email address"
+                                    required
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-semibold text-gray-700">
+                                  Role
+                                </label>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Icon icon="mdi:shield-account" className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <select
+                                    value={newAdmin.role}
+                                    onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition-colors duration-200 appearance-none bg-white"
+                                    required
+                                  >
+                                    <option value="Customer Support">Customer Support</option>
+                                    <option value="Admin">Admin</option>
+                                  </select>
+                                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <Icon icon="mdi:chevron-down" className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-end gap-4 pt-6">
+                                <button
+                                  type="button"
+                                  onClick={() => setIsAddAdminModalOpen(false)}
+                                  className="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors duration-200"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleAddAdmin(e);
+                                  }}
+                                  disabled={isAddingAdmin}
+                                  className="px-6 py-3 text-sm font-medium text-white bg-yellow-400 hover:bg-yellow-500 rounded-xl transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isAddingAdmin ? (
+                                    <>
+                                      <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
+                                      Adding...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Icon icon="mdi:check" className="w-5 h-5" />
+                                      Add Admin
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead>
@@ -375,45 +540,6 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                             ))}
                           </tbody>
                         </table>
-                      </div>
-                    </div>
-
-                    {/* Role Management Section */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
-                          <Icon icon="mdi:shield-account" className="text-yellow-400" />
-                          Role Management
-                        </h3>
-                        <button className="px-3 sm:px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center justify-center gap-2">
-                          <Icon icon="mdi:plus" className="w-4 h-4 sm:w-5 sm:h-5" />
-                          Add Role
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        {settings.userManagement.roles.map((role) => (
-                          <div key={role.id} className="border border-gray-200 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-4">
-                              <h4 className="text-base sm:text-lg font-medium text-gray-900">{role.name}</h4>
-                              <div className="flex gap-2">
-                                <button className="text-yellow-600 hover:text-yellow-900">
-                                  <Icon icon="mdi:pencil" className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
-                                <button className="text-red-600 hover:text-red-900">
-                                  <Icon icon="mdi:delete" className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              {role.permissions.map((permission, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                  <Icon icon="mdi:check-circle" className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                                  <span className="text-sm text-gray-600">{permission}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
                       </div>
                     </div>
                   </div>
