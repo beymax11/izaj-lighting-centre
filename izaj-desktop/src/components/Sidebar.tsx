@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { Session } from '@supabase/supabase-js';
 
 interface SidebarProps {
+  avatar: string;
   session: Session | null;
   sidebarCollapsed: boolean;
   mobileMenuOpen: boolean;
@@ -22,6 +23,7 @@ const navigationItems = [
 ];
 
 const Sidebar = ({
+  avatar,
   sidebarCollapsed,
   mobileMenuOpen,
   setMobileMenuOpen,
@@ -153,9 +155,10 @@ const Sidebar = ({
               onClick={() => handleNavigation('PROFILE')}
             >
               <img
-                src="/profile.jpg"
+                src={avatar || "/profile.jpg"}
                 alt="Profile"
                 className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-gray-300 border-2 border-yellow-200"
+                onError={e => { (e.currentTarget as HTMLImageElement).src = "/profile.jpg"; }}
               />
               {!sidebarCollapsed && (
                 <span className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-600 hover:text-gray-800">Profile</span>
@@ -200,4 +203,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

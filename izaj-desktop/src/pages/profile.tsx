@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { Session } from "@supabase/supabase-js"
+import { supabase } from "../../backend/supabase/supabaseClient";
 
 interface ProfileProps {
   handleNavigation?: (page: string) => void;
   session: Session | null;
+  setProfile: (profile: ProfileData) => void;
+  profile: ProfileData | null;
 }
 
-interface ProfileData {
+export interface ProfileData {
   name: string;
   email: string;
   password: string;
@@ -57,33 +60,110 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     if (success) setSuccess(null);
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setProfile((prev) => ({
-          ...prev,
-          avatar: ev.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file || !session?.user?.id) {
+    console.error("File is missing or session ID is missing");
+    setError("Invalid file or session.");
+    return;
+  }
+
+  console.log("Uploading file:", file.name, file.type, file.size);
+  console.log("Session user ID:", session.user.id);
+
+  try {
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+    });
+
+    if (sessionError) {
+      console.error("Session sync error:", sessionError);
+      setError("Authentication error. Please try logging in again.");
+      return;
+    }
+
+    // Verify the session is set correctly
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log("Supabase user after session sync:", user?.id);
+    
+    if (!user || user.id !== session.user.id) {
+      console.error("User ID mismatch or no user found");
+      setError("Authentication mismatch. Please refresh and try again.");
+      return;
+    }
+
+    const filePath = `${session.user.id}/profile.jpg`;
+    console.log("Upload path:", filePath);
+
+    // Now upload with properly synced session
+    const { error: uploadError } = await supabase.storage
+      .from('avatar')
+      .upload(filePath, file, {
+        upsert: true,
+        cacheControl: '3600',
+        contentType: file.type,
+      });
+
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      setError("Upload failed: " + uploadError.message);
+      return;
+    }
+
+    // Get the public URL for the uploaded file
+    const { data: publicUrlData } = supabase.storage
+      .from('avatar')
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicUrlData.publicUrl;
+    console.log("Generated public URL:", publicUrl);
+
+    // Update backend with the public URL
+    const response = await fetch(`http://localhost:3001/api/profile/${session.user.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        ...profile,
+        avatar: publicUrl,
+        password: "",
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      console.error("Backend avatar update failed:", result);
+      setError(result.error || 'Failed to update profile avatar.');
+      return;
+    }
+
+    // Update local state with the public URL
+    setProfile(prev => ({
+      ...prev,
+      avatar: publicUrl,
+    }));
+    
+    setSuccess("Profile photo updated!");
+
+    } catch (error) {
+      console.error("Unexpected error during avatar upload:", error);
+      setError("An unexpected error occurred during upload.");
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  // Prevent save if not in edit mode
   if (!editMode) return;
 
-  // Basic validation
   if (!profile.name.trim()) {
     setError("Name is required.");
     return;
   }
 
-  // Check if any changes were made
   if (
     originalProfile &&
     profile.name === originalProfile.name &&
@@ -95,7 +175,6 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     return;
   }
 
-  // Proceed with update
   await updateUserProfile(profile);
   };
 
@@ -115,8 +194,6 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching profile for user:", userId);
-
       const response = await fetch(`http://localhost:3001/api/profile/${userId}`, {
         method: 'GET',
         headers: {
@@ -135,8 +212,6 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch profile');
       }
-
-      console.log("Profile data received:", data.profile);
 
       setProfile({
         name: data.profile.name || "",
@@ -161,7 +236,6 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     } catch (err: any) {
       console.error("Error fetching profile:", err);
       
-      // Set user-friendly error messages
       if (err.message.includes('not found') || err.message.includes('404')) {
         setError('Profile not found. Please contact support.');
       } else if (err.message.includes('401') || err.message.includes('Authorization')) {
@@ -231,6 +305,40 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     }
   };
 
+    const getAvatarUrl = (avatarPath: string) => {
+      if (!avatarPath || avatarPath === '' || avatarPath === '/profile.jpg') {
+        return '/profile.jpg';
+      }
+
+      if (avatarPath.includes('https://') && avatarPath.indexOf('https://') !== avatarPath.lastIndexOf('https://')) {
+        console.log("Detected malformed duplicate URL, extracting correct path");
+        const match = avatarPath.match(/([0-9a-f-]{36}\/[^\/]+)$/);
+        if (match) {
+          const cleanPath = match[1];
+          console.log("Extracted clean path:", cleanPath);
+          try {
+            const { data } = supabase.storage.from('avatar').getPublicUrl(cleanPath);
+            return data.publicUrl;
+          } catch (error) {
+            console.error("Error generating clean URL:", error);
+            return '/profile.jpg';
+          }
+        }
+      }
+
+      if (avatarPath.startsWith('https://') || avatarPath.startsWith('http://')) {
+        return avatarPath;
+      }
+
+      try {
+        const { data } = supabase.storage.from('avatar').getPublicUrl(avatarPath);
+        return data.publicUrl;
+      } catch (error) {
+        console.error("Error generating avatar URL:", error);
+        return '/profile.jpg';
+      }
+    };
+
     if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center h-full bg-[#f7f8fa]">
@@ -278,11 +386,15 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
             >
               <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gray-100 border-4 border-yellow-200 shadow-lg flex items-center justify-center overflow-hidden mb-4 relative group">
                 <img
-                  src={profile.avatar}
+                  src={getAvatarUrl(profile.avatar)}
                   alt="Profile"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
+                    console.log("Image failed to load, using default");
+                    (e.target as HTMLImageElement).src = "/profile.jpg";
+                  }}
+                  onLoad={() => {
+                    console.log("Avatar image loaded successfully");
                   }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200">

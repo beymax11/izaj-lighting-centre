@@ -24,90 +24,6 @@ interface Role {
   permissions: string[];
 }
 
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  parentId?: string;
-}
-
-interface Attribute {
-  id: string;
-  name: string;
-  type: 'text' | 'number' | 'select' | 'color' | 'size';
-  options?: string[];
-}
-
-interface Variation {
-  id: string;
-  name: string;
-  attributes: {
-    [key: string]: string;
-  };
-  price: number;
-  stock: number;
-}
-
-interface ShippingRate {
-  id: string;
-  name: string;
-  price: number;
-  minOrderValue: number;
-  maxOrderValue: number;
-  estimatedDays: number;
-}
-
-interface ShippingZone {
-  id: string;
-  name: string;
-  countries: string[];
-  states?: string[];
-  cities?: string[];
-}
-
-interface TaxRate {
-  id: string;
-  name: string;
-  rate: number;
-  country: string;
-  state?: string;
-}
-
-interface TaxExemption {
-  id: string;
-  name: string;
-  type: 'customer' | 'product' | 'category';
-  referenceId: string;
-}
-
-interface TaxClass {
-  id: string;
-  name: string;
-  rate: number;
-  description: string;
-}
-
-interface DiscountCode {
-  id: string;
-  code: string;
-  type: 'percentage' | 'fixed';
-  value: number;
-  minOrderValue?: number;
-  maxDiscount?: number;
-  startDate: string;
-  endDate: string;
-  usageLimit?: number;
-  usedCount: number;
-}
-
-interface MenuItem {
-  id: string;
-  label: string;
-  url: string;
-  icon?: string;
-  children?: MenuItem[];
-}
-
 interface SettingsState {
   general: {
     websiteName: string;
@@ -122,72 +38,6 @@ interface SettingsState {
     adminUsers: AdminUser[];
     customerAccounts: CustomerAccount[];
     roles: Role[];
-  };
-  product: {
-    categories: Category[];
-    attributes: Attribute[];
-    inventorySettings: {
-      lowStockAlert: number;
-      autoRestock: boolean;
-    };
-    variations: Variation[];
-  };
-  payment: {
-    paymentMethods: string[];
-    taxRate: number;
-    refundPolicy: string;
-    paymentTerms: string;
-  };
-  shipping: {
-    methods: string[];
-    rates: ShippingRate[];
-    trackingEnabled: boolean;
-    zones: ShippingZone[];
-  };
-  tax: {
-    rates: TaxRate[];
-    exemptions: TaxExemption[];
-    taxClasses: TaxClass[];
-  };
-  order: {
-    statuses: string[];
-    notifications: boolean;
-    historyEnabled: boolean;
-    shippingLabels: boolean;
-  };
-  marketing: {
-    discountCodes: DiscountCode[];
-    emailMarketing: boolean;
-    affiliateProgram: boolean;
-    loyaltyProgram: boolean;
-  };
-  seo: {
-    titleTags: string;
-    metaDescription: string;
-    analyticsEnabled: boolean;
-    performanceTracking: boolean;
-  };
-  security: {
-    sslEnabled: boolean;
-    twoFactorAuth: boolean;
-    privacyPolicy: string;
-    gdprCompliant: boolean;
-    backupSchedule: string;
-  };
-  theme: {
-    customTheme: boolean;
-    homePageLayout: string;
-    menuStructure: MenuItem[];
-  };
-  support: {
-    liveChat: boolean;
-    contactForms: boolean;
-    helpCenter: boolean;
-  };
-  legal: {
-    termsConditions: string;
-    returnPolicy: string;
-    cookiePolicy: string;
   };
 }
 
@@ -216,73 +66,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
       adminUsers: [],
       customerAccounts: [],
       roles: [],
-    },
-    product: {
-      categories: [],
-      attributes: [],
-      inventorySettings: {
-        lowStockAlert: 10,
-        autoRestock: false,
-      },
-      variations: [],
-    },
-    payment: {
-      paymentMethods: ["Cash on Delivery", "Credit Card", "GCash"],
-      taxRate: 12,
-      refundPolicy: "",
-      paymentTerms: "",
-    },
-    shipping: {
-      methods: ["Standard Shipping", "Express Shipping"],
-      rates: [],
-      trackingEnabled: true,
-      zones: [],
-    },
-    tax: {
-      rates: [],
-      exemptions: [],
-      taxClasses: [],
-    },
-    order: {
-      statuses: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
-      notifications: true,
-      historyEnabled: true,
-      shippingLabels: true,
-    },
-    marketing: {
-      discountCodes: [],
-      emailMarketing: false,
-      affiliateProgram: false,
-      loyaltyProgram: false,
-    },
-    seo: {
-      titleTags: "",
-      metaDescription: "",
-      analyticsEnabled: false,
-      performanceTracking: false,
-    },
-    security: {
-      sslEnabled: true,
-      twoFactorAuth: false,
-      privacyPolicy: "",
-      gdprCompliant: false,
-      backupSchedule: "daily",
-    },
-    theme: {
-      customTheme: false,
-      homePageLayout: "default",
-      menuStructure: [],
-    },
-    support: {
-      liveChat: false,
-      contactForms: true,
-      helpCenter: false,
-    },
-    legal: {
-      termsConditions: "",
-      returnPolicy: "",
-      cookiePolicy: "",
-    },
+    }
   });
 
   // Add window resize listener
@@ -299,17 +83,6 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const tabs = [
     { id: 'general', label: 'General', icon: 'mdi:cog' },
     { id: 'userManagement', label: 'User Management', icon: 'mdi:account-group' },
-    { id: 'product', label: 'Product', icon: 'mdi:package-variant' },
-    { id: 'payment', label: 'Payment', icon: 'mdi:credit-card' },
-    { id: 'shipping', label: 'Shipping', icon: 'mdi:truck' },
-    { id: 'tax', label: 'Tax', icon: 'mdi:calculator' },
-    { id: 'order', label: 'Order', icon: 'mdi:clipboard-list' },
-    { id: 'marketing', label: 'Marketing', icon: 'mdi:bullhorn' },
-    { id: 'seo', label: 'SEO', icon: 'mdi:chart-line' },
-    { id: 'security', label: 'Security', icon: 'mdi:shield' },
-    { id: 'theme', label: 'Theme', icon: 'mdi:palette' },
-    { id: 'support', label: 'Support', icon: 'mdi:help-circle' },
-    { id: 'legal', label: 'Legal', icon: 'mdi:gavel' },
   ];
 
   const handleSave = (e: React.FormEvent) => {

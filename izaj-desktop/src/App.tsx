@@ -12,11 +12,11 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import { Session } from '@supabase/supabase-js';
+import { ProfileData } from './pages/profile';
 
 function App() {
 
   const [session, setSession] = useState<Session | null>(null);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState('DASHBOARD');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -51,6 +51,32 @@ function App() {
       type: 'alert'
     }
   ]);
+
+  const [profile, setProfile] = useState<ProfileData>({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    role: "",
+    address: "",
+    avatar: "/profile.jpg",
+  });
+
+  useEffect(() => {
+  if (session?.user?.id) {
+    fetch(`http://localhost:3001/api/profile/${session.user.id}`, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.profile) {
+          setProfile(data.profile);
+        }
+      });
+  }
+  }, [session]);
 
     const handleLoginSuccess = (sessionData: Session) => {
     setSession(sessionData);
@@ -108,7 +134,7 @@ function App() {
       case 'REPORTS':
         return <Reports  session={session} />;
       case 'PROFILE':
-        return <Profile  session={session} handleNavigation={handleNavigation} />;
+        return <Profile session={session} setProfile={setProfile} profile={profile} handleNavigation={handleNavigation} />;
       case 'SETTINGS':
         return <Settings  session={session} handleNavigation={handleNavigation} />;
       case 'DASHBOARD':
@@ -124,6 +150,7 @@ function App() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white">
       <Sidebar
+        avatar={profile.avatar}
         session={session}
         sidebarCollapsed={sidebarCollapsed}
         mobileMenuOpen={mobileMenuOpen}

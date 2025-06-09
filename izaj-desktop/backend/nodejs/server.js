@@ -65,7 +65,7 @@ app.post('/api/admin/login', async (req, res) => {
 app.put('/api/profile/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, phone, address, password } = req.body;
+    const { name, phone, address, password, avatar } = req.body;
 
     // Validate userId parameter
     if (!userId) {
@@ -97,6 +97,7 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
         name,
         contact: phone || null,
         address: address || null,
+        avatar: avatar || null,
         last_login: new Date().toISOString()
       })
       .eq('user_id', userId)
@@ -137,14 +138,21 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
       }
     }
 
-    // Return updated profile data
+        let avatarUrl = '/profile.jpg';
+    if (updatedUser.avatar) {
+      const { data } = supabase.storage
+        .from('avatar')
+        .getPublicUrl(updatedUser.avatar);
+      avatarUrl = data.publicUrl;
+    }
+
     const profileData = {
       name: updatedUser.name || '',
       email: req.user.email || '',
       phone: updatedUser.contact || '',
-      role: updatedUser.role || 'Admin',
+      role: updatedUser.role || '',
       address: updatedUser.address || '',
-      avatar: '/profile.jpg', // default avatar
+      avatar: avatarUrl,
       userId: updatedUser.user_id
     };
 
@@ -212,17 +220,24 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
 
     const userEmail = req.user.email || '';
 
+
+    let avatarUrl ='/profile.jpg';
+    if (adminUser.avatar) {
+      const { data } = supabase.storage
+      .from('avatar')
+      .getPublicUrl(adminUser.avatar);
+      avatarUrl = data.publicUrl;
+    }
+
     const profileData = {
       name: adminUser.name || '',
       email: userEmail,
       phone: adminUser.contact || '',
       role: adminUser.role || '',
       address: adminUser.address || '',
-      avatar: '/profile.jpg', // default avatar
+      avatar: avatarUrl,
       userId: adminUser.user_id
     };
-
-    console.log("Sending profile data:", profileData);
 
     res.status(200).json({
       success: true,
@@ -276,7 +291,7 @@ app.get('/api/profile', authenticate, async (req, res) => {
       phone: adminUser.contact || '',
       role: adminUser.role || '',
       address: adminUser.address || '',
-      avatar: '/profile.jpg', // default avatar
+      avatar: '/profile.jpg',
       userId: adminUser.user_id
     };
 
