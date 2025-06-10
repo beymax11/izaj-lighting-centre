@@ -330,7 +330,236 @@ app.post('/api/admin/logout', authenticate, async (req, res) => {
   }
 });
 
+// ADD NEW  USER (Only for users with role 'Admin')
+app.post('/api/admin/addUsers', authenticate, async (req, res) => {
+  try {
+    const { data: adminUser, error: adminError } = await supabase
+      .from('adminUser')
+      .select('role')
+      .eq('user_id', req.user.id)
+      .single();
 
+    console.log('Authenticated user id:', req.user.id);
+    console.log('adminUser from DB:', adminUser);
+
+    if (adminError || !adminUser || adminUser.role !== 'Admin') {
+      return res.status(403).json({ error: 'Access denied. Only Admins can add users.' });
+    }
+
+    const { email, name, role } = req.body;
+
+      if (!email || !name || !role) {
+      return res.status(400).json({ error: 'Email, name, and role are required' });
+    }
+
+    const allowedRoles = ['Admin', 'Customer Support'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ error: 'Role must be Admin or Customer Support' });
+    }
+
+    const defaultPassword = 'admin1234';
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: defaultPassword,
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    const userId = data.user.id;
+    const { error: dbError } = await supabase
+      .from('adminUser')
+      .insert([{ user_id: userId, name, role }]);
+
+    if (dbError) {
+      return res.status(500).json({ error: dbError.message });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'User created. Confirmation email sent.',
+      user: { id: userId, email, name, role }
+    });
+  } catch (error) {
+    console.error('Error creating admin user:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// GET all admin users (Only for users with role 'Admin') - DEBUG VERSION
+app.get('/api/admin/users', authenticate, async (req, res) => {
+  try {
+    console.log('=== DEBUG: GET /api/admin/users ===');
+    console.log('Authenticated user ID:', req.user.id);
+    console.log('Authenticated user email:', req.user.email);
+
+    // Check if the current user is an Admin
+    const { data: adminUser, error: adminError } = await supabase
+      .from('adminUser')
+      .select('*') // Select all fields for debugging
+      .eq('user_id', req.user.id)
+      .single();
+
+    console.log('Admin user query result:', { adminUser, adminError });
+
+    if (adminError) {
+      console.log('Admin error details:', adminError);
+      return res.status(500).json({ 
+        error: 'Database error while checking admin status',
+        details: adminError.message 
+      });
+    }
+
+    if (!adminUser) {
+      console.log('No admin user found for user_id:', req.user.id);
+      return res.status(404).json({ 
+        error: 'Admin user profile not found. Please contact system administrator.' 
+      });
+    }
+
+    console.log('Current user role:', adminUser.role);
+
+    if (adminUser.role !== 'Admin') {
+      console.log('Access denied. User role is:', adminUser.role, 'but needs to be: Admin');
+      return res.status(403).json({ 
+        error: `Access denied. Your role is '${adminUser.role}' but only 'Admin' users can view all users.` 
+      });
+    }
+
+    console.log('Role check passed. Fetching all admin users...');
+
+    // Get all admin users from adminUser table
+    const { data: users, error } = await supabase
+      .from('adminUser')
+      .select('*');
+
+    console.log('All users query result:', { users, error });
+
+    if (error) {
+      console.log('Error fetching users:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    console.log('Found', users?.length || 0, 'admin users');
+
+    // Try to get emails using different approaches
+    const usersWithEmail = [];
+    
+    for (const user of users || []) {
+      try {
+        console.log(`Getting email for user: ${user.user_id}`);
+        
+        // Method 1: Try admin.getUserById
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
+        
+        if (!authError && authUser?.user?.email) {
+          console.log(`Found email for ${user.user_id}: ${authUser.user.email}`);
+          usersWithEmail.push({
+            ...user,
+            email: authUser.user.email,
+          });
+        } else {
+          console.log(`Could not get email for ${user.user_id}:`, authError?.message || 'No email found');
+          usersWithEmail.push({
+            ...user,
+            email: 'Email not available',
+          });
+        }
+      } catch (emailError) {
+        console.warn(`Exception getting email for user ${user.user_id}:`, emailError);
+        usersWithEmail.push({
+          ...user,
+          email: 'Email error',
+        });
+      }
+    }
+
+    console.log('Final users with emails:', usersWithEmail.length);
+
+    res.status(200).json({ 
+      success: true, 
+      users: usersWithEmail,
+      debug: {
+        currentUserRole: adminUser.role,
+        totalUsers: usersWithEmail.length
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      details: error.message 
+    });
+  }
+});
+
+// EDIT admin/support user status (Only for Admins)
+app.put('/api/admin/users/:id/status', authenticate, async (req, res) => {
+  try {
+    const { data: adminUser, error: adminError } = await supabase
+      .from('adminUser')
+      .select('role')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (adminError || !adminUser || adminUser.role !== 'Admin') {
+      return res.status(403).json({ error: 'Access denied. Only Admins can edit users.' });
+    }
+
+    const { status } = req.body;
+    const { id } = req.params;
+
+    if (typeof status !== 'boolean') {
+      return res.status(400).json({ error: 'Status must be a boolean.' });
+    }
+
+    const { error: updateError } = await supabase
+      .from('adminUser')
+      .update({ status })
+      .eq('user_id', id);
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    res.json({ success: true, message: 'User status updated.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// DELETE admin/support user (Only for Admins)
+app.delete('/api/admin/users/:id', authenticate, async (req, res) => {
+  try {
+    const { data: adminUser, error: adminError } = await supabase
+      .from('adminUser')
+      .select('role')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (adminError || !adminUser || adminUser.role !== 'Admin') {
+      return res.status(403).json({ error: 'Access denied. Only Admins can delete users.' });
+    }
+
+    const { id } = req.params;
+
+    // Remove from adminUser table
+    const { error: deleteError } = await supabase
+      .from('adminUser')
+      .delete()
+      .eq('user_id', id);
+
+    if (deleteError) {
+      return res.status(500).json({ error: deleteError.message });
+    }
+
+    res.json({ success: true, message: 'User deleted.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
 
 
 

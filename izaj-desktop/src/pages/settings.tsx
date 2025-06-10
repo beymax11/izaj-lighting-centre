@@ -51,6 +51,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     name: '',
     role: 'Customer Support'
   });
+  
   const [settings, setSettings] = useState<SettingsState>({
     general: {
       websiteName: "IZAJ Store",
@@ -66,18 +67,58 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
       customerAccounts: [],
     }
   });
+ 
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
-  // Add window resize listener
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    action: 'edit' | 'delete' | null;
+    user: AdminUser | null;
+    newStatus?: boolean;
+  }>({ open: false, action: null, user: null });
+
+  const fetchAdminUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/admin/users', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSettings(prev => ({
+          ...prev,
+          userManagement: {
+            ...prev.userManagement,
+            adminUsers: result.users.map((user: any) => ({
+              id: user.user_id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              status: user.status === true ? 'active' : 'inactive', // use backend value
+            })),
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin users:', error);
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 1024);
     };
 
-    handleResize(); // Initial check
+    handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!session?.access_token) return;
+    fetchAdminUsers();
+  }, [session]);
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'mdi:cog' },
@@ -91,45 +132,100 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddingAdmin(true);
-    
+
     try {
-      // Create new admin object
+      const response = await fetch('http://localhost:3001/api/admin/addUsers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          email: newAdmin.email,
+          name: newAdmin.name,
+          role: newAdmin.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to add user');
+      }
+
       const newAdminUser: AdminUser = {
-        id: Date.now().toString(), // Temporary ID generation
-        name: newAdmin.name,
-        email: newAdmin.email,
-        role: newAdmin.role,
-        status: 'active'
+        id: result.user.id,
+        name: result.user.name,
+        email: result.user.email,
+        role: result.user.role,
+        status: 'active',
       };
 
-      // Update settings state with new admin
       setSettings(prevSettings => ({
         ...prevSettings,
         userManagement: {
           ...prevSettings.userManagement,
           adminUsers: [...prevSettings.userManagement.adminUsers, newAdminUser],
-          // Also add to customer accounts if role is Customer Support
-          customerAccounts: newAdmin.role === 'Customer Support' 
-            ? [...prevSettings.userManagement.customerAccounts, {
-                id: newAdminUser.id,
-                name: newAdminUser.name,
-                email: newAdminUser.email,
-                status: 'active',
-                lastLogin: new Date().toLocaleDateString()
-              }]
-            : prevSettings.userManagement.customerAccounts
         }
       }));
 
-      // Reset form and close modal
       setNewAdmin({ email: '', name: '', role: 'Customer Support' });
       setIsAddAdminModalOpen(false);
     } catch (error) {
+      alert('Error adding admin: ' + (error as Error).message);
       console.error('Error adding admin:', error);
     } finally {
       setIsAddingAdmin(false);
     }
   };
+
+  const handleEditStatus = async (userId: string, newStatus: boolean) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        await fetchAdminUsers();
+      } else {
+        alert(result.error || 'Failed to update status');
+      }
+    } catch (error) {
+      alert('Error updating status');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    try {
+      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSettings(prev => ({
+          ...prev,
+          userManagement: {
+            ...prev.userManagement,
+            adminUsers: prev.userManagement.adminUsers.filter(user => user.id !== userId),
+          }
+        }));
+      } else {
+        alert(result.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      alert('Error deleting user');
+    }
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -157,6 +253,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            
             {/* Tabs Navigation */}
             <div className="border-b border-gray-200 overflow-x-auto">
               <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6" aria-label="Tabs">
@@ -182,6 +279,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
             {/* Tab Content */}
             <div className="p-4 sm:p-6">
               <form onSubmit={handleSave} className="space-y-6 sm:space-y-8">
+                
                 {/* General Settings */}
                 {activeTab === 'general' && (
                   <div className="space-y-4 sm:space-y-6">
@@ -275,6 +373,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                 {/* User Management Settings */}
                 {activeTab === 'userManagement' && (
                   <div className="space-y-6 sm:space-y-8">
+                    
                     {/* Admin Users Section */}
                     <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
@@ -453,11 +552,32 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                                   </span>
                                 </td>
                                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                  <button className="text-yellow-600 hover:text-yellow-900 mr-3">
-                                    <Icon icon="mdi:pencil" className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <button
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        open: true,
+                                        action: 'edit',
+                                        user,
+                                        newStatus: user.status === 'active' ? false : true,
+                                      })
+                                    }
+                                    className="text-yellow-600 hover:text-yellow-900 mr-3"
+                                    title={user.status === 'active' ? 'Deactivate' : 'Activate'}
+                                  >
+                                    <Icon icon="mdi:pencil" />
                                   </button>
-                                  <button className="text-red-600 hover:text-red-900">
-                                    <Icon icon="mdi:delete" className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <button
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        open: true,
+                                        action: 'delete',
+                                        user,
+                                      })
+                                    }
+                                    className="text-red-600 hover:text-red-900"
+                                    title="Delete"
+                                  >
+                                    <Icon icon="mdi:delete" />
                                   </button>
                                 </td>
                               </tr>
@@ -544,21 +664,63 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                     </div>
                   </div>
                 )}
-
-                {/* Save Button */}
-                <div className="flex justify-end pt-4 sm:pt-6 border-t border-gray-200">
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-yellow-400 text-white font-medium rounded-lg hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:ring-offset-2"
-                  >
-                    Save Changes
-                  </button>
-                </div>
               </form>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmModal.open && confirmModal.user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <Icon icon={confirmModal.action === 'delete' ? "mdi:delete" : "mdi:pencil"} className={`w-7 h-7 ${confirmModal.action === 'delete' ? 'text-red-500' : 'text-yellow-500'}`} />
+              <h3 className="text-xl font-bold text-gray-900">
+                {confirmModal.action === 'delete'
+                  ? 'Delete Admin User'
+                  : confirmModal.newStatus
+                    ? 'Activate Account'
+                    : 'Deactivate Account'}
+              </h3>
+            </div>
+            <p className="mb-8 text-gray-700">
+              {confirmModal.action === 'delete'
+                ? `Are you sure you want to delete ${confirmModal.user.name}? This action cannot be undone.`
+                : `Are you sure you want to ${confirmModal.newStatus ? 'activate' : 'deactivate'} the account for ${confirmModal.user.name}?`}
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setConfirmModal({ open: false, action: null, user: null })}
+                className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              {confirmModal.action === 'delete' ? (
+                <button
+                  onClick={async () => {
+                    await handleDeleteUser(confirmModal.user!.id);
+                    setConfirmModal({ open: false, action: null, user: null });
+                  }}
+                  className="px-5 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              ) : (
+                <button
+                  onClick={async () => {
+                    await handleEditStatus(confirmModal.user!.id, confirmModal.newStatus!);
+                    setConfirmModal({ open: false, action: null, user: null });
+                  }}
+                  className="px-5 py-2 rounded-lg bg-yellow-400 text-white hover:bg-yellow-500"
+                >
+                  {confirmModal.newStatus ? 'Activate' : 'Deactivate'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
