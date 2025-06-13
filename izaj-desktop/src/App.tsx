@@ -4,7 +4,6 @@ import Orders from './pages/orders';
 import Reports from './pages/reports';
 import Payments from './pages/payments';
 import Feedbacks from './pages/feedbacks';
-import Login from './pages/login';
 import Messages from './pages/messages';
 import Profile from './pages/profile';
 import Settings from './pages/settings';
@@ -13,6 +12,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import { Session } from '@supabase/supabase-js';
 import { ProfileData } from './pages/profile';
+import PrivateRoute from './route/PrivateRoute';
 
 function App() {
 
@@ -143,48 +143,46 @@ function App() {
     }
   };
 
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLoginSuccess} />;
-  }
-
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white">
-      <Sidebar
-        avatar={profile.avatar}
-        session={session}
-        sidebarCollapsed={sidebarCollapsed}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        currentPage={currentPage}
-        handleNavigation={handleNavigation}
-        setIsLoggedIn={setIsLoggedIn}
-      />
+    <PrivateRoute isLoggedIn={isLoggedIn} onLogin={handleLoginSuccess}>
+      <div className="flex h-screen w-screen overflow-hidden bg-white">
+        <Sidebar
+          avatar={profile.avatar}
+          session={session}
+          sidebarCollapsed={sidebarCollapsed}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          currentPage={currentPage}
+          handleNavigation={handleNavigation}
+          setIsLoggedIn={setIsLoggedIn}
+        />
 
-      {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ? 'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE' || currentPage === 'SETTINGS' ? '' : 'mt-2 sm:mt-4'} scrollbar-none`}>
-        {/* Dashboard Main Content */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto scrollbar-none px-2 sm:px-4 md:px-6">
-            {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && !isOverlayOpen && !showAddProductModal && !isFeedbackModalOpen && (
-              <Header
-                session={session}
-                sidebarCollapsed={sidebarCollapsed}
-                setMobileMenuOpen={setMobileMenuOpen}
-                setSidebarCollapsed={setSidebarCollapsed}
-                notifications={notifications}
-                notificationsOpen={notificationsOpen}
-                toggleNotifications={toggleNotifications}
-                handleNotificationClick={handleNotificationClick}
-                markAllAsRead={markAllAsRead}
-              />
-            )}
-            <div className="w-full max-w-[2000px] mx-auto">
-              {renderContent()}
+        {/* Main Content Area */}
+        <div className={`flex-1 flex flex-col ${currentPage === 'MESSAGES' ? 'h-screen' : 'h-[calc(100vh-5rem)]'} overflow-hidden transition-all duration-300 ${currentPage === 'MESSAGES' || currentPage === 'PROFILE' || currentPage === 'SETTINGS' ? '' : 'mt-2 sm:mt-4'} scrollbar-none`}>
+          {/* Dashboard Main Content */}
+          <div className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto scrollbar-none px-2 sm:px-4 md:px-6">
+              {currentPage !== 'MESSAGES' && currentPage !== 'PROFILE' && currentPage !== 'SETTINGS' && !isOverlayOpen && !showAddProductModal && !isFeedbackModalOpen && (
+                <Header
+                  session={session}
+                  sidebarCollapsed={sidebarCollapsed}
+                  setMobileMenuOpen={setMobileMenuOpen}
+                  setSidebarCollapsed={setSidebarCollapsed}
+                  notifications={notifications}
+                  notificationsOpen={notificationsOpen}
+                  toggleNotifications={toggleNotifications}
+                  handleNotificationClick={handleNotificationClick}
+                  markAllAsRead={markAllAsRead}
+                />
+              )}
+              <div className="w-full max-w-[2000px] mx-auto">
+                {renderContent()}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PrivateRoute>
   );
 }
 

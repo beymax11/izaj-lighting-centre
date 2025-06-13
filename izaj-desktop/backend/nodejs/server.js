@@ -90,14 +90,22 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
 
     console.log("Updating profile for user_id:", userId);
 
-    // Update adminUser table (now using just 'name')
+    // FIXED: Clean avatar path before storing
+    let cleanAvatarPath = null;
+    if (avatar) {
+      // Remove any full URL prefix and keep only the path
+      cleanAvatarPath = avatar.replace(/^https?:\/\/[^/]+\/storage\/v1\/object\/public\/avatars\//, '');
+      console.log("Cleaned avatar path:", cleanAvatarPath);
+    }
+
+    // Update adminUser table
     const { data: updatedUser, error: updateError } = await supabase
       .from('adminUser')
       .update({
         name,
         contact: phone || null,
         address: address || null,
-        avatar: avatar || null,
+        avatar: cleanAvatarPath,
         last_login: new Date().toISOString()
       })
       .eq('user_id', userId)
@@ -138,12 +146,18 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
       }
     }
 
-        let avatarUrl = '/profile.jpg';
+    // FIXED: Generate avatar URL consistently
+    let avatarUrl = '/profile.jpg';
     if (updatedUser.avatar) {
-      const { data } = supabase.storage
-        .from('avatar')
-        .getPublicUrl(updatedUser.avatar);
-      avatarUrl = data.publicUrl;
+      try {
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(updatedUser.avatar);
+        avatarUrl = data.publicUrl;
+        console.log("Generated avatar URL:", avatarUrl);
+      } catch (error) {
+        console.error("Error generating avatar URL:", error);
+      }
     }
 
     const profileData = {
@@ -220,13 +234,18 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
 
     const userEmail = req.user.email || '';
 
-
-    let avatarUrl ='/profile.jpg';
+    // FIXED: Generate avatar URL consistently
+    let avatarUrl = '/profile.jpg';
     if (adminUser.avatar) {
-      const { data } = supabase.storage
-      .from('avatar')
-      .getPublicUrl(adminUser.avatar);
-      avatarUrl = data.publicUrl;
+      try {
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(adminUser.avatar);
+        avatarUrl = data.publicUrl;
+        console.log("Fetched avatar URL:", avatarUrl);
+      } catch (error) {
+        console.error("Error generating avatar URL:", error);
+      }
     }
 
     const profileData = {
@@ -235,9 +254,11 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
       phone: adminUser.contact || '',
       role: adminUser.role || '',
       address: adminUser.address || '',
-      avatar: avatarUrl,
+      avatar: avatarUrl, // FIXED: Return the full URL instead of path
       userId: adminUser.user_id
     };
+
+    console.log("Returning profile data:", profileData);
 
     res.status(200).json({
       success: true,
@@ -252,6 +273,7 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
     });
   }
 });
+
 
 // GET Profile Route (without userId in URL)
 app.get('/api/profile', authenticate, async (req, res) => {
