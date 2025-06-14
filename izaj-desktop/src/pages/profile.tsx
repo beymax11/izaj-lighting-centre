@@ -60,28 +60,27 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     if (success) setSuccess(null);
   };
 
-  // FIXED: Simplified and more reliable avatar URL generation
+  
+  // Updated getAvatarUrl function with cache busting
   const getAvatarUrl = (avatarPath: string): string => {
-    // Return default if no path or default path
     if (!avatarPath || avatarPath === '' || avatarPath === '/profile.jpg') {
       return '/profile.jpg';
     }
 
-    // If it's already a full URL, return as-is
     if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
-      return avatarPath;
+      return `${avatarPath}?t=${Date.now()}`;
     }
 
-    // Generate public URL from Supabase storage
     try {
-      const { data } = supabase.storage.from('avatar').getPublicUrl(avatarPath);
-      return data.publicUrl || '/profile.jpg';
+      const { data } = supabase.storage.from('avatars').getPublicUrl(avatarPath);
+      return `${data.publicUrl}?t=${Date.now()}`;
     } catch (error) {
       console.error("Error generating avatar URL:", error);
       return '/profile.jpg';
     }
   };
 
+  // Updated handleAvatarChange function
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !session?.user?.id) {
@@ -90,11 +89,10 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
       return;
     }
 
-    console.log("Uploading file:", file.name, file.type, file.size);
-    console.log("Session user ID:", session.user.id);
-
     try {
-      // FIXED: Simplified session handling
+      setError(null);
+      setSuccess(null);
+
       const { error: sessionError } = await supabase.auth.setSession({
         access_token: session.access_token,
         refresh_token: session.refresh_token,
@@ -106,9 +104,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
         return;
       }
 
-      // Verify the session is set correctly
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("Supabase user after session sync:", user?.id);
       
       if (!user || user.id !== session.user.id) {
         console.error("User ID mismatch or no user found");
@@ -116,15 +112,29 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
         return;
       }
 
-      const filePath = `${session.user.id}/profile.jpg`;
-      console.log("Upload path:", filePath);
+      const timestamp = Date.now();
+      const filePath = `${session.user.id}/profile_${timestamp}.jpg`;
 
-      // Upload file to Supabase storage
+      try {
+        const { data: files } = await supabase.storage
+          .from('avatars')
+          .list(session.user.id);
+        
+        if (files && files.length > 0) {
+          const oldFiles = files.map(file => `${session.user.id}/${file.name}`);
+          await supabase.storage
+            .from('avatars')
+            .remove(oldFiles);
+        }
+      } catch (cleanupError) {
+        console.warn("Cleanup failed, but continuing with upload:", cleanupError);
+      }
+
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
           upsert: true,
-          cacheControl: '3600',
+          cacheControl: '0',
           contentType: file.type,
         });
 
@@ -134,11 +144,8 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
         return;
       }
 
-      // FIXED: Generate the avatar URL immediately after upload
       const avatarUrl = getAvatarUrl(filePath);
-      console.log("Generated avatar URL:", avatarUrl);
 
-      // Update backend with the file path (not the full URL)
       const response = await fetch(`http://localhost:3001/api/profile/${session.user.id}`, {
         method: 'PUT',
         headers: {
@@ -147,7 +154,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
         },
         body: JSON.stringify({
           ...profile,
-          avatar: filePath, // Save path only in DB
+          avatar: filePath,
           password: "",
         }),
       });
@@ -159,26 +166,30 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
         return;
       }
 
-      // FIXED: Update local state with the generated URL
+      const avatarImages = document.querySelectorAll('img[alt="Profile"]');
+      avatarImages.forEach((img) => {
+        (img as HTMLImageElement).src = avatarUrl;
+      });
+
       setProfile(prev => ({
         ...prev,
         avatar: avatarUrl,
       }));
 
-      // FIXED: Also update original profile to prevent "no changes" error
       setOriginalProfile(prev => prev ? {
         ...prev,
         avatar: avatarUrl,
       } : null);
       
-      setSuccess("Profile photo updated!");
+      setSuccess("Profile photo updated successfully!");
+
+      setTimeout(() => setSuccess(null), 3000);
 
     } catch (error) {
       console.error("Unexpected error during avatar upload:", error);
       setError("An unexpected error occurred during upload.");
     }
   };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -238,10 +249,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
         throw new Error(data.error || 'Failed to fetch profile');
       }
 
-      // FIXED: Use the improved getAvatarUrl function
       const avatarUrl = getAvatarUrl(data.profile.avatar);
-      console.log("Fetched profile avatar path:", data.profile.avatar);
-      console.log("Generated avatar URL:", avatarUrl);
 
       const profileData = {
         name: data.profile.name || "",
@@ -375,12 +383,16 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
                   src={profile.avatar}
                   alt="Profile"
                   className="w-full h-full object-cover"
+                  key={profile.avatar}
                   onError={(e) => {
                     console.log("Image failed to load, using default");
-                    (e.target as HTMLImageElement).src = "/profile.jpg";
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== "/profile.jpg") {
+                      target.src = "/profile.jpg";
+                    }
                   }}
-                  onLoad={() => {
-                    console.log("Avatar image loaded successfully:", profile.avatar);
+                  onLoad={(e) => {
+                    console.log("Avatar image loaded successfully:", (e.target as HTMLImageElement).src);
                   }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200">

@@ -7,6 +7,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const generateAvatarUrl = (avatarPath) => {
+  if (!avatarPath) {
+    return '/profile.jpg';
+  }
+
+  try {
+    const { data } = supabase.storage
+      .from('avatars') // Make sure this matches your upload bucket name
+      .getPublicUrl(avatarPath);
+    
+    // Add cache busting parameter
+    return `${data.publicUrl}?t=${Date.now()}`;
+  } catch (error) {
+    console.error("Error generating avatar URL:", error);
+    return '/profile.jpg';
+  }
+};
+
 // Middleware for authentication
 const authenticate = async (req, res, next) => {
   try {
@@ -147,18 +165,8 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
     }
 
     // FIXED: Generate avatar URL consistently
-    let avatarUrl = '/profile.jpg';
-    if (updatedUser.avatar) {
-      try {
-        const { data } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(updatedUser.avatar);
-        avatarUrl = data.publicUrl;
-        console.log("Generated avatar URL:", avatarUrl);
-      } catch (error) {
-        console.error("Error generating avatar URL:", error);
-      }
-    }
+    let avatarUrl = generateAvatarUrl(updatedUser.avatar);
+    console.log("Generated avatar URL:", avatarUrl);
 
     const profileData = {
       name: updatedUser.name || '',
@@ -192,7 +200,6 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Validate userId parameter
     if (!userId) {
       return res.status(400).json({ 
         error: 'User ID is required' 
@@ -234,19 +241,8 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
 
     const userEmail = req.user.email || '';
 
-    // FIXED: Generate avatar URL consistently
-    let avatarUrl = '/profile.jpg';
-    if (adminUser.avatar) {
-      try {
-        const { data } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(adminUser.avatar);
-        avatarUrl = data.publicUrl;
-        console.log("Fetched avatar URL:", avatarUrl);
-      } catch (error) {
-        console.error("Error generating avatar URL:", error);
-      }
-    }
+    let avatarUrl = generateAvatarUrl(adminUser.avatar);
+    console.log("Fetched avatar URL:", avatarUrl);
 
     const profileData = {
       name: adminUser.name || '',
@@ -254,7 +250,7 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
       phone: adminUser.contact || '',
       role: adminUser.role || '',
       address: adminUser.address || '',
-      avatar: avatarUrl, // FIXED: Return the full URL instead of path
+      avatar: avatarUrl,
       userId: adminUser.user_id
     };
 
@@ -273,7 +269,6 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
     });
   }
 });
-
 
 // GET Profile Route (without userId in URL)
 app.get('/api/profile', authenticate, async (req, res) => {
