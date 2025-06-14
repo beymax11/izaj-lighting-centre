@@ -18,6 +18,15 @@ interface CustomerAccount {
   lastLogin: string;
 }
 
+interface AuditLog {
+  ip_address?: string;
+  id: string;
+  userId: string;
+  userName: string;
+  action: string;
+  timestamp: string;
+}
+
 interface SettingsState {
   general: {
     websiteName: string;
@@ -32,6 +41,7 @@ interface SettingsState {
     adminUsers: AdminUser[];
     customerAccounts: CustomerAccount[];
   };
+  auditLogs: AuditLog[];
 }
 
 interface SettingsProps {
@@ -46,10 +56,15 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [isAddAdminModalOpen, setIsAddAdminModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAction, setFilterAction] = useState('');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+
   const [newAdmin, setNewAdmin] = useState({
     email: '',
     name: '',
-    role: 'Customer Support'
+    role: ''
   });
   
   const [settings, setSettings] = useState<SettingsState>({
@@ -65,7 +80,8 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     userManagement: {
       adminUsers: [],
       customerAccounts: [],
-    }
+    },
+    auditLogs: [],
   });
  
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
@@ -123,6 +139,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const tabs = [
     { id: 'general', label: 'General', icon: 'mdi:cog' },
     { id: 'userManagement', label: 'User Management', icon: 'mdi:account-group' },
+    { id: 'auditLogs', label: 'Audit Logs', icon: 'mdi:history' },
   ];
 
   const handleSave = (e: React.FormEvent) => {
@@ -226,6 +243,86 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     }
   };
 
+  const fetchAuditLogs = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/api/admin/audit-logs', {
+      headers: {
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      setSettings(prev => ({
+        ...prev,
+        auditLogs: result.logs.map((log: any) => ({
+          id: log.id,
+          userId: log.user_id,
+          userName: log.user_name,
+          action: log.action,
+          details: log.details,
+          timestamp: log.timestamp,
+          ip_address: log.ip_address,
+          user_agent: log.user_agent
+        }))
+      }));
+    } else {
+      console.error('Failed to fetch audit logs:', result.error);
+    }
+  } catch (error) {
+    console.error('Failed to fetch audit logs:', error);
+  }
+  };
+
+  useEffect(() => {
+  if (!session?.access_token) return;
+  fetchAdminUsers();
+  if (activeTab === 'auditLogs') {
+    fetchAuditLogs();
+  }
+  }, [session, activeTab]);
+
+  const getActionColor = (action: string) => {
+  switch (action) {
+    case 'LOGIN':
+      return 'bg-green-100 text-green-800';
+    case 'LOGOUT':
+      return 'bg-gray-100 text-gray-800';
+    case 'CREATE_USER':
+      return 'bg-blue-100 text-blue-800';
+    case 'UPDATE_USER':
+    case 'UPDATE_PROFILE':
+    case 'UPDATE_STATUS':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'DELETE_USER':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+  };
+  
+  const getFilteredLogs = () => {
+    return settings.auditLogs.filter(log => {
+      const matchesSearch = 
+        log.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.action.toLowerCase().includes(searchTerm.toLowerCase());
+        
+      const matchesAction = filterAction ? log.action === filterAction : true;
+      
+      const matchesDate = dateRange.from && dateRange.to ? 
+        new Date(log.timestamp) >= new Date(dateRange.from) &&
+        new Date(log.timestamp) <= new Date(dateRange.to) : true;
+
+      return matchesSearch && matchesAction && matchesDate;
+    });
+  };
+  
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterAction('');
+    setDateRange({ from: '', to: '' });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -658,6 +755,173 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                                 </td>
                               </tr>
                             ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              
+                {/* Audit Logs Section */}
+                {activeTab === 'auditLogs' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <Icon icon="mdi:history" className="text-yellow-400" />
+                        System Activity Logs
+                      </h3>
+                      <div className="flex gap-4">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Search logs..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400"
+                          />
+                          <Icon 
+                            icon="mdi:magnify" 
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                          />
+                        </div>
+                        <button 
+                          onClick={() => setIsFilterModalOpen(true)}
+                          className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center gap-2"
+                        >
+                          <Icon icon="mdi:filter" />
+                          Filter
+                          {(filterAction || dateRange.from || dateRange.to) && (
+                            <span className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Filter Modal */}
+                    {isFilterModalOpen && (
+                      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Filter Logs</h3>
+                            <button 
+                              onClick={() => setIsFilterModalOpen(false)}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <Icon icon="mdi:close" className="w-6 h-6" />
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Action Type
+                              </label>
+                              <select
+                                value={filterAction}
+                                onChange={(e) => setFilterAction(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                              >
+                                <option value="">All Actions</option>
+                                <option value="LOGIN">Login</option>
+                                <option value="LOGOUT">Logout</option>
+                                <option value="CREATE_USER">Create User</option>
+                                <option value="UPDATE_USER">Update User</option>
+                                <option value="DELETE_USER">Delete User</option>
+                                <option value="UPDATE_STATUS">Update Status</option>
+                                <option value="UPDATE_PROFILE">Update Profile</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Date Range
+                              </label>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="date"
+                                  value={dateRange.from}
+                                  onChange={(e) => setDateRange(prev => ({
+                                    ...prev,
+                                    from: e.target.value
+                                  }))}
+                                  className="border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                                <input
+                                  type="date"
+                                  value={dateRange.to}
+                                  onChange={(e) => setDateRange(prev => ({
+                                    ...prev,
+                                    to: e.target.value
+                                  }))}
+                                  className="border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                              <button
+                                onClick={clearFilters}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                              >
+                                Clear Filters
+                              </button>
+                              <button
+                                onClick={() => setIsFilterModalOpen(false)}
+                                className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500"
+                              >
+                                Apply Filters
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {getFilteredLogs().length > 0 ? (
+                              getFilteredLogs().map((log) => (
+                                <tr key={log.id} className="hover:bg-gray-50">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {new Date(log.timestamp).toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                      <div className="flex-shrink-0 h-8 w-8">
+                                        <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                                          <Icon icon="mdi:account" className="w-4 h-4 text-yellow-600" />
+                                        </div>
+                                      </div>
+                                      <div className="ml-4">
+                                        <div className="text-sm font-medium text-gray-900">{log.userName}</div>
+                                        <div className="text-sm text-gray-500">{log.userId}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                      ${getActionColor(log.action)}`}>
+                                      {log.action}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                                  No audit logs available
+                                </td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>

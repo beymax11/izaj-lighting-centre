@@ -60,8 +60,6 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     if (success) setSuccess(null);
   };
 
-  
-  // Updated getAvatarUrl function with cache busting
   const getAvatarUrl = (avatarPath: string): string => {
     if (!avatarPath || avatarPath === '' || avatarPath === '/profile.jpg') {
       return '/profile.jpg';
@@ -80,7 +78,6 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
     }
   };
 
-  // Updated handleAvatarChange function
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !session?.user?.id) {
@@ -190,6 +187,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
       setError("An unexpected error occurred during upload.");
     }
   };
+  
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
