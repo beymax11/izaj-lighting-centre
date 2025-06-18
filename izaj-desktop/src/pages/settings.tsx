@@ -18,6 +18,15 @@ interface CustomerAccount {
   lastLogin: string;
 }
 
+interface AuditLog {
+  ip_address?: string;
+  id: string;
+  userId: string;
+  userName: string;
+  action: string;
+  timestamp: string;
+}
+
 interface SettingsState {
   general: {
     websiteName: string;
@@ -32,6 +41,7 @@ interface SettingsState {
     adminUsers: AdminUser[];
     customerAccounts: CustomerAccount[];
   };
+  auditLogs: AuditLog[];
 }
 
 interface SettingsProps {
@@ -46,11 +56,17 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [isAddAdminModalOpen, setIsAddAdminModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAction, setFilterAction] = useState('');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+
   const [newAdmin, setNewAdmin] = useState({
     email: '',
     name: '',
-    role: 'Customer Support'
+    role: ''
   });
+  
   const [settings, setSettings] = useState<SettingsState>({
     general: {
       websiteName: "IZAJ Store",
@@ -64,24 +80,66 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     userManagement: {
       adminUsers: [],
       customerAccounts: [],
-    }
+    },
+    auditLogs: [],
   });
+ 
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
-  // Add window resize listener
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    action: 'edit' | 'delete' | null;
+    user: AdminUser | null;
+    newStatus?: boolean;
+  }>({ open: false, action: null, user: null });
+
+  const fetchAdminUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/admin/users', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSettings(prev => ({
+          ...prev,
+          userManagement: {
+            ...prev.userManagement,
+            adminUsers: result.users.map((user: any) => ({
+              id: user.user_id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              status: user.status === true ? 'active' : 'inactive', // use backend value
+            })),
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin users:', error);
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 1024);
     };
 
-    handleResize(); // Initial check
+    handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    if (!session?.access_token) return;
+    fetchAdminUsers();
+  }, [session]);
+
   const tabs = [
     { id: 'general', label: 'General', icon: 'mdi:cog' },
     { id: 'userManagement', label: 'User Management', icon: 'mdi:account-group' },
+    { id: 'auditLogs', label: 'Audit Logs', icon: 'mdi:history' },
   ];
 
   const handleSave = (e: React.FormEvent) => {
@@ -91,44 +149,179 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddingAdmin(true);
-    
+
     try {
-      // Create new admin object
+      const response = await fetch('http://localhost:3001/api/admin/addUsers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          email: newAdmin.email,
+          name: newAdmin.name,
+          role: newAdmin.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to add user');
+      }
+
       const newAdminUser: AdminUser = {
-        id: Date.now().toString(), // Temporary ID generation
-        name: newAdmin.name,
-        email: newAdmin.email,
-        role: newAdmin.role,
-        status: 'active'
+        id: result.user.id,
+        name: result.user.name,
+        email: result.user.email,
+        role: result.user.role,
+        status: 'active',
       };
 
-      // Update settings state with new admin
       setSettings(prevSettings => ({
         ...prevSettings,
         userManagement: {
           ...prevSettings.userManagement,
           adminUsers: [...prevSettings.userManagement.adminUsers, newAdminUser],
-          // Also add to customer accounts if role is Customer Support
-          customerAccounts: newAdmin.role === 'Customer Support' 
-            ? [...prevSettings.userManagement.customerAccounts, {
-                id: newAdminUser.id,
-                name: newAdminUser.name,
-                email: newAdminUser.email,
-                status: 'active',
-                lastLogin: new Date().toLocaleDateString()
-              }]
-            : prevSettings.userManagement.customerAccounts
         }
       }));
 
-      // Reset form and close modal
       setNewAdmin({ email: '', name: '', role: 'Customer Support' });
       setIsAddAdminModalOpen(false);
     } catch (error) {
+      alert('Error adding admin: ' + (error as Error).message);
       console.error('Error adding admin:', error);
     } finally {
       setIsAddingAdmin(false);
     }
+  };
+
+  const handleEditStatus = async (userId: string, newStatus: boolean) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        await fetchAdminUsers();
+      } else {
+        alert(result.error || 'Failed to update status');
+      }
+    } catch (error) {
+      alert('Error updating status');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    try {
+      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSettings(prev => ({
+          ...prev,
+          userManagement: {
+            ...prev.userManagement,
+            adminUsers: prev.userManagement.adminUsers.filter(user => user.id !== userId),
+          }
+        }));
+      } else {
+        alert(result.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      alert('Error deleting user');
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/api/admin/audit-logs', {
+      headers: {
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      setSettings(prev => ({
+        ...prev,
+        auditLogs: result.logs.map((log: any) => ({
+          id: log.id,
+          userId: log.user_id,
+          userName: log.user_name,
+          action: log.action,
+          details: log.details,
+          timestamp: log.timestamp,
+          ip_address: log.ip_address,
+          user_agent: log.user_agent
+        }))
+      }));
+    } else {
+      console.error('Failed to fetch audit logs:', result.error);
+    }
+  } catch (error) {
+    console.error('Failed to fetch audit logs:', error);
+  }
+  };
+
+  useEffect(() => {
+  if (!session?.access_token) return;
+  fetchAdminUsers();
+  if (activeTab === 'auditLogs') {
+    fetchAuditLogs();
+  }
+  }, [session, activeTab]);
+
+  const getActionColor = (action: string) => {
+  switch (action) {
+    case 'LOGIN':
+      return 'bg-green-100 text-green-800';
+    case 'LOGOUT':
+      return 'bg-gray-100 text-gray-800';
+    case 'CREATE_USER':
+      return 'bg-blue-100 text-blue-800';
+    case 'UPDATE_USER':
+    case 'UPDATE_PROFILE':
+    case 'UPDATE_STATUS':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'DELETE_USER':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+  };
+  
+  const getFilteredLogs = () => {
+    return settings.auditLogs.filter(log => {
+      const matchesSearch = 
+        log.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.action.toLowerCase().includes(searchTerm.toLowerCase());
+        
+      const matchesAction = filterAction ? log.action === filterAction : true;
+      
+      const matchesDate = dateRange.from && dateRange.to ? 
+        new Date(log.timestamp) >= new Date(dateRange.from) &&
+        new Date(log.timestamp) <= new Date(dateRange.to) : true;
+
+      return matchesSearch && matchesAction && matchesDate;
+    });
+  };
+  
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterAction('');
+    setDateRange({ from: '', to: '' });
   };
 
   return (
@@ -157,6 +350,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            
             {/* Tabs Navigation */}
             <div className="border-b border-gray-200 overflow-x-auto">
               <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6" aria-label="Tabs">
@@ -182,6 +376,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
             {/* Tab Content */}
             <div className="p-4 sm:p-6">
               <form onSubmit={handleSave} className="space-y-6 sm:space-y-8">
+                
                 {/* General Settings */}
                 {activeTab === 'general' && (
                   <div className="space-y-4 sm:space-y-6">
@@ -275,6 +470,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                 {/* User Management Settings */}
                 {activeTab === 'userManagement' && (
                   <div className="space-y-6 sm:space-y-8">
+                    
                     {/* Admin Users Section */}
                     <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
@@ -453,11 +649,32 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                                   </span>
                                 </td>
                                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                  <button className="text-yellow-600 hover:text-yellow-900 mr-3">
-                                    <Icon icon="mdi:pencil" className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <button
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        open: true,
+                                        action: 'edit',
+                                        user,
+                                        newStatus: user.status === 'active' ? false : true,
+                                      })
+                                    }
+                                    className="text-yellow-600 hover:text-yellow-900 mr-3"
+                                    title={user.status === 'active' ? 'Deactivate' : 'Activate'}
+                                  >
+                                    <Icon icon="mdi:pencil" />
                                   </button>
-                                  <button className="text-red-600 hover:text-red-900">
-                                    <Icon icon="mdi:delete" className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <button
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        open: true,
+                                        action: 'delete',
+                                        user,
+                                      })
+                                    }
+                                    className="text-red-600 hover:text-red-900"
+                                    title="Delete"
+                                  >
+                                    <Icon icon="mdi:delete" />
                                   </button>
                                 </td>
                               </tr>
@@ -544,21 +761,230 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                     </div>
                   </div>
                 )}
+              
+                {/* Audit Logs Section */}
+                {activeTab === 'auditLogs' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <Icon icon="mdi:history" className="text-yellow-400" />
+                        System Activity Logs
+                      </h3>
+                      <div className="flex gap-4">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Search logs..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400"
+                          />
+                          <Icon 
+                            icon="mdi:magnify" 
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                          />
+                        </div>
+                        <button 
+                          onClick={() => setIsFilterModalOpen(true)}
+                          className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center gap-2"
+                        >
+                          <Icon icon="mdi:filter" />
+                          Filter
+                          {(filterAction || dateRange.from || dateRange.to) && (
+                            <span className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Save Button */}
-                <div className="flex justify-end pt-4 sm:pt-6 border-t border-gray-200">
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-yellow-400 text-white font-medium rounded-lg hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:ring-offset-2"
-                  >
-                    Save Changes
-                  </button>
-                </div>
+                    {/* Filter Modal */}
+                    {isFilterModalOpen && (
+                      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Filter Logs</h3>
+                            <button 
+                              onClick={() => setIsFilterModalOpen(false)}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <Icon icon="mdi:close" className="w-6 h-6" />
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Action Type
+                              </label>
+                              <select
+                                value={filterAction}
+                                onChange={(e) => setFilterAction(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                              >
+                                <option value="">All Actions</option>
+                                <option value="LOGIN">Login</option>
+                                <option value="LOGOUT">Logout</option>
+                                <option value="CREATE_USER">Create User</option>
+                                <option value="UPDATE_USER">Update User</option>
+                                <option value="DELETE_USER">Delete User</option>
+                                <option value="UPDATE_STATUS">Update Status</option>
+                                <option value="UPDATE_PROFILE">Update Profile</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Date Range
+                              </label>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="date"
+                                  value={dateRange.from}
+                                  onChange={(e) => setDateRange(prev => ({
+                                    ...prev,
+                                    from: e.target.value
+                                  }))}
+                                  className="border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                                <input
+                                  type="date"
+                                  value={dateRange.to}
+                                  onChange={(e) => setDateRange(prev => ({
+                                    ...prev,
+                                    to: e.target.value
+                                  }))}
+                                  className="border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                              <button
+                                onClick={clearFilters}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                              >
+                                Clear Filters
+                              </button>
+                              <button
+                                onClick={() => setIsFilterModalOpen(false)}
+                                className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500"
+                              >
+                                Apply Filters
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {getFilteredLogs().length > 0 ? (
+                              getFilteredLogs().map((log) => (
+                                <tr key={log.id} className="hover:bg-gray-50">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {new Date(log.timestamp).toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                      <div className="flex-shrink-0 h-8 w-8">
+                                        <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                                          <Icon icon="mdi:account" className="w-4 h-4 text-yellow-600" />
+                                        </div>
+                                      </div>
+                                      <div className="ml-4">
+                                        <div className="text-sm font-medium text-gray-900">{log.userName}</div>
+                                        <div className="text-sm text-gray-500">{log.userId}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                      ${getActionColor(log.action)}`}>
+                                      {log.action}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                                  No audit logs available
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </form>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmModal.open && confirmModal.user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <Icon icon={confirmModal.action === 'delete' ? "mdi:delete" : "mdi:pencil"} className={`w-7 h-7 ${confirmModal.action === 'delete' ? 'text-red-500' : 'text-yellow-500'}`} />
+              <h3 className="text-xl font-bold text-gray-900">
+                {confirmModal.action === 'delete'
+                  ? 'Delete Admin User'
+                  : confirmModal.newStatus
+                    ? 'Activate Account'
+                    : 'Deactivate Account'}
+              </h3>
+            </div>
+            <p className="mb-8 text-gray-700">
+              {confirmModal.action === 'delete'
+                ? `Are you sure you want to delete ${confirmModal.user.name}? This action cannot be undone.`
+                : `Are you sure you want to ${confirmModal.newStatus ? 'activate' : 'deactivate'} the account for ${confirmModal.user.name}?`}
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setConfirmModal({ open: false, action: null, user: null })}
+                className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              {confirmModal.action === 'delete' ? (
+                <button
+                  onClick={async () => {
+                    await handleDeleteUser(confirmModal.user!.id);
+                    setConfirmModal({ open: false, action: null, user: null });
+                  }}
+                  className="px-5 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              ) : (
+                <button
+                  onClick={async () => {
+                    await handleEditStatus(confirmModal.user!.id, confirmModal.newStatus!);
+                    setConfirmModal({ open: false, action: null, user: null });
+                  }}
+                  className="px-5 py-2 rounded-lg bg-yellow-400 text-white hover:bg-yellow-500"
+                >
+                  {confirmModal.newStatus ? 'Activate' : 'Deactivate'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
