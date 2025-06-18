@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 const MyProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('profile.webp');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
@@ -17,11 +18,14 @@ const MyProfile: React.FC = () => {
     lastName: '',
     phone: '',
   });
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   // Load user data on component mount
   useEffect(() => {
     console.log('Loading user data from storage...');
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    const storedProfileImage = localStorage.getItem('profileImage');
+    
     console.log('Stored user data:', storedUser);
     
     if (storedUser) {
@@ -29,24 +33,25 @@ const MyProfile: React.FC = () => {
         const userData = JSON.parse(storedUser);
         console.log('Parsed user data:', userData);
         
-        // Split the full name into first name and last name
-        const nameParts = (userData.name || '').split(' ');
-        console.log('Name parts:', nameParts);
-        
-        const newFormData = {
-          firstName: nameParts[0] || '',
-          lastName: nameParts.slice(1).join(' ') || '',
+        // Set the form data with the stored values
+        setFormData({
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
           email: userData.email || '',
           phone: userData.phone || ''
-        };
-        console.log('Setting form data:', newFormData);
-        
-        setFormData(newFormData);
+        });
+
+        // Set profile image if exists
+        if (storedProfileImage) {
+          setProfileImage(storedProfileImage);
+        }
       } catch (error) {
         console.error('Error parsing stored user data:', error);
       }
     } else {
       console.log('No user data found in storage');
+      // Redirect to login if no user data found
+      window.location.href = '/';
     }
   }, []);
 
@@ -83,19 +88,26 @@ const MyProfile: React.FC = () => {
 
     try {
       // Update user data in storage
-      const formattedUser = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone
-      };
+      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        const updatedUser = {
+          ...userData,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone
+        };
 
-      // Update in the same storage where it was originally saved
-      const storage = localStorage.getItem('user') ? localStorage : sessionStorage;
-      storage.setItem('user', JSON.stringify(formattedUser));
+        // Update in both storages to ensure data persistence
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      }
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsLoading(false);
+      setIsEditMode(false);
       // Show success message here
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -123,38 +135,113 @@ const MyProfile: React.FC = () => {
         const result = e.target?.result;
         if (typeof result === 'string') {
           setProfileImage(result);
+          // Save the profile image to localStorage
+          localStorage.setItem('profileImage', result);
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleEditClick = () => {
+    setIsEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    // Reset form data to original values
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        phone: userData.phone || ''
+      });
+    }
+    setIsEditMode(false);
+    setErrors({
+      firstName: '',
+      lastName: '',
+      phone: '',
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
+      {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
+      <div className="md:hidden bg-white px-4 pt-4">
+        <div
+          className="w-full flex items-center gap-2 p-0 text-gray-700 font-medium text-base cursor-pointer"
+          onClick={() => setIsAccountModalOpen(true)}
+        >
+          <Icon icon="mdi:account" className="text-gray-600 w-5 h-5" />
+          <span>My Account</span>
+          <Icon icon="mdi:chevron-down" className="text-gray-600 w-5 h-5 ml-1" />
+        </div>
+      </div>
+      {/* My Account Modal for Mobile */}
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black bg-opacity-40" onClick={() => setIsAccountModalOpen(false)}>
+          <div
+            className="w-full bg-white animate-slideUp relative"
+            style={{ minHeight: '220px' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+              onClick={() => setIsAccountModalOpen(false)}
+              aria-label="Close"
+            >
+              <Icon icon="mdi:close" />
+            </button>
+            <div className="font-semibold text-lg mb-4 text-black text-center mt-2">My Account</div>
+            <ul className="space-y-1 px-4 pb-6">
+              <li>
+                <span className="inline-flex items-center text-gray-700 font-medium text-sm">
+                  <Icon icon="mdi:account" className="text-gray-600 mr-2 w-5 h-5" />
+                  My Account
+                </span>
+              </li>
+              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <a href="#profile" className="text-black font-medium text-sm block">Profile</a>
+              </li>
+              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/banks-cards" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
+              </li>
+              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/addresses" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
+              </li>
+              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
+                <Link to="/change-password" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
       {/* Main Content - My Profile Section */}
       <main className="flex-grow bg-gray-50 py-12">
         <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Left Column - User Profile (Narrower) */}
-            <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+            {/* Left Column - User Profile (Narrower) - Hidden on mobile */}
+            <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md hidden md:block">
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-indigo-100 shadow-sm transition-transform duration-300 hover:scale-105">
-                  <img src="profile.webp" alt="User" className="w-full h-full object-cover" />
+                {/* Profile image and name only on desktop */}
+                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm transition-transform duration-300 hover:scale-105">
+                  <img src={profileImage} alt="User" className="w-full h-full object-cover" />
                 </div>
                 <div className="font-medium text-lg mb-6 text-center text-gray-800">
                   {`${formData.firstName} ${formData.lastName}`.trim() || 'User'}
                 </div>
-            
                 <ul className="w-full space-y-1">
                   {/* My Account - Active Item */}
-                  <li className="flex items-center p-3 bg-indigo-50 rounded-lg mb-1 transition-colors duration-300">
-                    <Icon icon="mdi:account" className="text-indigo-600 mr-2 w-5 h-5" />
-                    <span className="text-indigo-700 font-medium text-sm">My Account</span>
+                  <li className="flex items-center p-3 bg-gray-50 rounded-lg mb-1 transition-colors duration-300">
+                    <Icon icon="mdi:account" className="text-gray-600 mr-2 w-5 h-5" />
+                    <span className="text-gray-700 font-medium text-sm">My Account</span>
                   </li>
-                  
                   {/* Submenu Items */}
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <a href="#profile" className="text-indigo-600 font-medium text-sm block">Profile</a> 
+                    <a href="#profile" className="text-gray-600 font-medium text-sm block">Profile</a>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
                     <Link to="/banks-cards" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
@@ -165,25 +252,14 @@ const MyProfile: React.FC = () => {
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
                     <Link to="/change-password" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
                   </li>
-                  
-                  <li className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <Icon icon="mdi:clipboard-list-outline" className="text-gray-500 mr-2 w-5 h-5" />
-                    <Link to="/my-purchase" className="text-gray-700 hover:text-gray-900 text-sm font-medium">My Purchase</Link>
-                  </li>
                 </ul>
               </div>
             </div>
             
             {/* Right Column - Profile Content */}
             <div className="flex-1">
-            
-
               <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
-                {/* Profile Header */}
-                <div className="p-6 border-b border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800">My Profile</h2>
-                  <p className="text-gray-600 text-sm mt-1">Manage and protect your account</p>
-                </div>
+               
 
                 {/* Profile Form */}
                 <form onSubmit={handleSubmit} className="p-6">
@@ -198,7 +274,8 @@ const MyProfile: React.FC = () => {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          className={`w-full p-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
+                          disabled={!isEditMode}
+                          className={`w-full p-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
                           placeholder="Enter your first name"
                         />
                         {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
@@ -212,13 +289,14 @@ const MyProfile: React.FC = () => {
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          className={`w-full p-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
+                          disabled={!isEditMode}
+                          className={`w-full p-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
                           placeholder="Enter your last name"
                         />
                         {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
                       </div>
 
-                      {/* Email Field (disabled) */}
+                      {/* Email Field (always disabled) */}
                       <div className="mb-5">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Email:</label>
                         <input 
@@ -237,7 +315,8 @@ const MyProfile: React.FC = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className={`w-full p-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-gray-900`}
+                          disabled={!isEditMode}
+                          className={`w-full p-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
                           placeholder="Enter your phone number"
                         />
                         {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
@@ -275,7 +354,7 @@ const MyProfile: React.FC = () => {
                       <button 
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-indigo-600 text-sm font-medium hover:text-indigo-700 mb-2 transition-colors"
+                        className="text-gray-600 text-sm font-medium hover:text-gray-700 mb-2 transition-colors"
                       >
                         Change Photo
                       </button>
@@ -286,28 +365,41 @@ const MyProfile: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Save Button (Separate at bottom) */}
+                  {/* Save and Edit Buttons */}
                   <div className="flex justify-end gap-4 mt-8">
-                    <button 
-                      type="button"
-                      className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      type="submit"
-                      disabled={isLoading}
-                      className={`px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Icon icon="mdi:loading" className="animate-spin mr-2" />
-                          Saving...
-                        </>
-                      ) : (
-                        'Save'
-                      )}
-                    </button>
+                    {isEditMode ? (
+                      <>
+                        <button 
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          type="submit"
+                          disabled={isLoading}
+                          className={`px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                        >
+                          {isLoading ? (
+                            <>
+                              <Icon icon="mdi:loading" className="animate-spin mr-2" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save'
+                          )}
+                        </button>
+                      </>
+                    ) : (
+                      <button 
+                        type="button"
+                        onClick={handleEditClick}
+                        className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm"
+                      >
+                        Edit
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>

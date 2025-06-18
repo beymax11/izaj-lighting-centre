@@ -31,6 +31,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [imageError, setImageError] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -129,27 +131,24 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
       const response = await axios.post(`http://localhost:3001${endpoint}`, formData);
       const { user, token } = response.data;
 
-      // Format user data to include full name and phone number
+      // Format user data to include first name and last name
       const formattedUser = {
-        name: isLogin ? `${user.firstName} ${user.lastName}` : `${formData.firstName} ${formData.lastName}`,
+        firstName: isLogin ? user.firstName : formData.firstName,
+        lastName: isLogin ? user.lastName : formData.lastName,
         email: user.email,
         phone: isLogin ? user.phoneNumber : formData.phoneNumber
       };
 
-      console.log('Formatted user data for storage:', formattedUser);
-
-      // Store token based on remember me preference
+      // Store in both localStorage and sessionStorage to ensure persistence
       if (rememberMe) {
-        console.log('Storing user data in localStorage');
         localStorage.setItem('authToken', token);
         localStorage.setItem('user', JSON.stringify(formattedUser));
+        sessionStorage.setItem('user', JSON.stringify(formattedUser));
       } else {
-        console.log('Storing user data in sessionStorage');
         sessionStorage.setItem('authToken', token);
         sessionStorage.setItem('user', JSON.stringify(formattedUser));
+        localStorage.setItem('user', JSON.stringify(formattedUser));
       }
-      
-      console.log('Stored user data:', formattedUser);
       
       // Call success callback if provided
       if (onAuthSuccess) {
@@ -352,15 +351,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
                           <Icon icon="mdi:lock" className="w-4 h-4 text-gray-400" />
                         </div>
                         <input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           name="password"
                           value={formData.password}
                           onChange={handleInputChange}
                           className={`w-full pl-9 pr-9 py-2.5 border ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm`}
                           placeholder="Enter password"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </button>
                         {errors.password && (
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center group">
+                          <div className="absolute inset-y-0 right-8 pr-3 flex items-center group">
                             <Icon icon="mdi:information" className="w-4 h-4 text-red-500" />
                             <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-red-50 text-red-600 text-xs p-2 rounded shadow-lg whitespace-nowrap z-50">
                               {errors.password}
@@ -376,15 +382,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
                           <Icon icon="mdi:lock-check" className="w-4 h-4 text-gray-400" />
                         </div>
                         <input
-                          type="password"
+                          type={showConfirmPassword ? "text" : "password"}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleInputChange}
                           className={`w-full pl-9 pr-9 py-2.5 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm`}
                           placeholder="Confirm password"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </button>
                         {errors.confirmPassword && (
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center group">
+                          <div className="absolute inset-y-0 right-8 pr-3 flex items-center group">
                             <Icon icon="mdi:information" className="w-4 h-4 text-red-500" />
                             <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-red-50 text-red-600 text-xs p-2 rounded shadow-lg whitespace-nowrap z-50">
                               {errors.confirmPassword}
@@ -402,15 +415,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
                         <Icon icon="mdi:lock" className="w-4 h-4 text-gray-400" />
                       </div>
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
                         className={`w-full pl-9 pr-9 py-2.5 border ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm`}
                         placeholder="Enter your password"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                      </button>
                       {errors.password && (
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center group">
+                        <div className="absolute inset-y-0 right-8 pr-3 flex items-center group">
                           <Icon icon="mdi:information" className="w-4 h-4 text-red-500" />
                           <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-red-50 text-red-600 text-xs p-2 rounded shadow-lg whitespace-nowrap z-50">
                             {errors.password}

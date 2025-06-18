@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 
+interface User {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 interface NotificationDropdownProps {
-  user: { name: string; email: string } | null;
+  user: User | null;
   onOpenAuthModal: () => void;
 }
 

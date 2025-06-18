@@ -5,10 +5,11 @@ import Footer from './Footer';
 interface LayoutProps {
   children: React.ReactNode;
   user: {
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
   } | null;
-  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string; } | null>>;
+  setUser: React.Dispatch<React.SetStateAction<{ firstName: string; lastName: string; email: string; } | null>>;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAccountDropdownOpen: boolean;
@@ -27,7 +28,7 @@ const Layout: React.FC<LayoutProps> = ({
   footerRef
 }) => {
   return (
-    <div className="min-h-screen bg-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans">
       <Header
         user={user}
         setUser={setUser}

@@ -2,8 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 
+interface User {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 interface FavoritesDropdownProps {
-  user: { name: string; email: string } | null;
+  user: User | null;
   onOpenAuthModal: () => void;
 }
 
@@ -56,6 +62,7 @@ export default function FavoritesDropdown({ user, onOpenAuthModal }: FavoritesDr
               <Link 
                 to="/my-favorites" 
                 className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors duration-200 flex items-center gap-1"
+                onClick={() => setIsOpen(false)}
               >
                 <Icon icon="mdi:arrow-right" className="w-4 h-4" />
                 View All

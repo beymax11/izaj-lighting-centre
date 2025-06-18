@@ -4,16 +4,19 @@ import { Icon } from '@iconify/react';
 import FavoritesDropdown from '../FavoritesDropdown';
 import NotificationDropdown from '../NotificationDropdown';
 
+interface User {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 interface HeaderProps {
-  user: {
-    name: string;
-    email: string;
-  } | null;
+  user: User | null;
   setIsModalOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAccountDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAccountDropdownOpen: boolean;
   handleLogout: () => void;
-  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string; } | null>>;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -47,11 +50,9 @@ const Header: React.FC<HeaderProps> = ({
 
 
   const handleLogoutClick = () => {
-    // Clear stored data
+    // Clear auth token but keep user data
     localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
     sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('user');
     
     // Call the original logout handler
     handleLogout();
@@ -186,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="font-medium text-sm text-gray-500 leading-none"
                         style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
                       >
-                        Hello {user?.email ? user.email.split('@')[0] : 'Guest'}
+                        Hello, {user?.firstName || 'Guest'}
                       </span>
                       <div className="flex items-center text-black">
                         <span
@@ -213,18 +214,12 @@ const Header: React.FC<HeaderProps> = ({
                       <div className="py-1">
                         <Link
                           to="/my-profile"
-                          className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
+                          className="flex items-center px-4 py-3 text-sm text-black hover:bg-gray-50 hover:text-black transition-colors group"
                         >
-                          <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
+                          <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-black" />
                           My Account
                         </Link>
-                        <Link
-                          to="/my-purchase"
-                          className="flex items-center px-4 py-3 text-sm text-black hover:bg-indigo-50 hover:text-indigo-600 transition-colors group"
-                        >
-                          <Icon icon="mdi:clipboard-list-outline" className="h-5 w-5 mr-3 text-black group-hover:text-indigo-500" />
-                          My Purchases
-                        </Link>
+                       
                         <hr className="border-gray-200 my-1" />
                         <button
                           onClick={handleLogoutClick}
@@ -449,7 +444,7 @@ const Header: React.FC<HeaderProps> = ({
                   {user ? (
                     <div className="space-y-2">
                       <div className="px-4 py-2 text-sm text-gray-600">
-                        Hello, {user.name}
+                        Hello, {user.firstName}
                       </div>
                       <button
                         onClick={() => {

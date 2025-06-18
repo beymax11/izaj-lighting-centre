@@ -1,137 +1,77 @@
 // MyFavorites.tsx
 import React, { useState } from 'react';
-import { Icon } from '@iconify/react';
-
-
-interface FavoriteItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-  isOutOfStock: boolean;
-  rating: number;
-}
 
 const MyFavorites: React.FC = () => {
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([
+  const [favorites, setFavorites] = useState([
     {
       id: 1,
-      name: "Modern Crystal Chandelier",
-      price: 15999,
-      image: "chadelier.jpg",
-      category: "Chandeliers",
-      isOutOfStock: false,
-      rating: 4.5
+      name: "Abednego | Chandelier/Large",
+      price: "₱12,500.00",
+      image: "/abed.webp",
+      category: "Chandelier"
     },
     {
       id: 2,
-      name: "Industrial Pendant Light",
-      price: 8999,
-      image: "pendant.jpg",
-      category: "Pendant Lights",
-      isOutOfStock: false,
-      rating: 4.2
+      name: "Aberdeen | Modern LED Chandelier",
+      price: "₱15,000.00",
+      image: "/aber.webp",
+      category: "LED Lighting"
     },
     {
       id: 3,
-      name: "Contemporary Wall Sconce",
-      price: 4999,
-      image: "cluster.jpg",
-      category: "Wall Lights",
-      isOutOfStock: false,
-      rating: 4.0
+      name: "Aina | Modern Chandelier",
+      price: "₱18,000.00",
+      image: "/aina.webp",
+      category: "Modern Lighting"
     }
   ]);
 
-  const handleRemoveFavorite = (id: number) => {
+  const removeFavorite = (id: number) => {
     setFavorites(favorites.filter(item => item.id !== id));
   };
 
-  const handleAddToCart = (id: number) => {
-    // Add to cart logic here
-    console.log(`Added item ${id} to cart`);
-  };
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex items-center">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Icon
-            key={star}
-            icon={star <= rating ? "mdi:star" : "mdi:star-outline"}
-            className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
-          />
-        ))}
-        <span className="ml-2 text-sm text-gray-500">({rating})</span>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">My Favorites</h1>
-          <p className="text-lg text-gray-600">Save your favorite items for later</p>
-        </div>
-
-        {favorites.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-            <Icon icon="mdi:heart-outline" className="mx-auto h-16 w-16 text-gray-400 animate-pulse" />
-            <h3 className="mt-4 text-xl font-medium text-gray-900">No favorites yet</h3>
-            <p className="mt-2 text-gray-500">Start adding items to your favorites list</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {favorites.map((item) => (
-              <div 
-                key={item.id} 
-                className="bg-white rounded-xl shadow-sm overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl pl-4 pr-4 md:pl-16 md:pr-0 py-6">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">Favorites</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {favorites.map((item) => (
+            <div key={item.id} className="bg-white p-4 md:p-8 flex flex-row md:flex-col items-center md:items-stretch gap-4 md:gap-0 rounded-md shadow-sm relative">
+              <div className="relative flex-shrink-0 w-32 h-32 md:w-full md:h-96">
+                <img src={item.image} alt={item.name} className="w-32 h-32 object-cover rounded-md md:w-full md:h-96 mb-0 md:mb-6" />
+                <button 
+                  onClick={() => removeFavorite(item.id)}
+                  className="hidden md:block absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </button>
+              </div>
+              <button 
+                onClick={() => removeFavorite(item.id)}
+                className="absolute top-2 right-2 md:hidden bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
               >
-                <div className="relative aspect-w-1 aspect-h-1 w-full">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                  {item.isOutOfStock && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                      <span className="text-white font-semibold text-lg">Out of Stock</span>
-                    </div>
-                  )}
-                  <button
-                    onClick={() => handleRemoveFavorite(item.id)}
-                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors duration-200"
-                  >
-                    <Icon icon="mdi:heart" className="w-6 h-6 text-red-500" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </button>
+              <div className="flex flex-col flex-1 justify-between h-full">
+                <div>
+                  <h3 className="font-medium text-gray-800 text-lg md:text-xl">{item.name}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{item.category}</p>
+                  <p className="text-base md:text-lg font-semibold text-gray-900 mt-2">{item.price}</p>
+                </div>
+                <div className="mt-4 md:mt-auto pt-2 md:pt-4">
+                  <button className="bg-black text-white py-2 px-6 md:px-8 rounded-md hover:bg-gray-800 transition-colors w-full md:w-[140px]">
+                    View
                   </button>
                 </div>
-                <div className="p-6">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.category}</p>
-                    {renderStars(item.rating)}
-                    <p className="text-2xl font-bold text-gray-900">₱{item.price.toLocaleString()}</p>
-                  </div>
-                  <div className="mt-6">
-                    <button
-                      onClick={() => handleAddToCart(item.id)}
-                      disabled={item.isOutOfStock}
-                      className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-                        item.isOutOfStock
-                          ? 'bg-gray-300 cursor-not-allowed'
-                          : 'bg-black text-white hover:bg-gray-800 active:transform active:scale-95'
-                      }`}
-                    >
-                      {item.isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                    </button>
-                  </div>
-                </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

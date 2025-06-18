@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 
 interface UserData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 }
 
@@ -39,21 +40,23 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) { // sm breakpoint
-        setItemsPerPage(3);
-        setTotalPages(Math.ceil(allItems.length / 3));
+      setIsMobile(window.innerWidth < 640);
+      if (window.innerWidth < 640) {
+        setItemsPerPage(allItems.length); // Show all on mobile
+        setTotalPages(1);
       } else {
         setItemsPerPage(6);
         setTotalPages(Math.ceil(allItems.length / 6));
       }
     };
-
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [allItems.length]);
 
   const getCurrentPageItems = () => {
     const start = currentPage * itemsPerPage;
@@ -71,26 +74,29 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    if (!isMobile) {
+      setTouchEnd(null);
+      setTouchStart(e.targetTouches[0].clientX);
+    }
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (!isMobile) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    }
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentPage < totalPages - 1) {
-      handleNextClick();
-    }
-    if (isRightSwipe && currentPage > 0) {
-      handlePrevClick();
+    if (!isMobile && touchStart && touchEnd) {
+      const distance = touchStart - touchEnd;
+      const isLeftSwipe = distance > minSwipeDistance;
+      const isRightSwipe = distance < -minSwipeDistance;
+      if (isLeftSwipe && currentPage < totalPages - 1) {
+        handleNextClick();
+      }
+      if (isRightSwipe && currentPage > 0) {
+        handlePrevClick();
+      }
     }
   };
 
@@ -122,10 +128,34 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
     }
   `;
 
+  // Add improved effect styles
+  const improvedEffects = `
+    .category-tile {
+      transition: transform 0.3s;
+      background: transparent;
+      box-shadow: none;
+    }
+    .category-tile:hover, .category-tile:active {
+      transform: scale(1.07) translateY(-4px);
+      z-index: 2;
+      box-shadow: none;
+    }
+    .category-img {
+      transition: transform 0.3s;
+      background: transparent;
+      box-shadow: none;
+    }
+    .category-tile:hover .category-img, .category-tile:active .category-img {
+      transform: scale(1.10);
+      box-shadow: none;
+    }
+  `;
+
   return (
     <>
       <style>{slideLeftKeyframes}</style>
       <style>{slideAnimationKeyframes}</style>
+      <style>{improvedEffects}</style>
       <div className="flex justify-between items-center mb-4 px-4 sm:px-6 md:px-8 mt-8 md:mt-16 mx-4 sm:mx-8 md:mx-20">
         <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
           Lighting Category
@@ -144,7 +174,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
 
       <div
         ref={containerRef}
-        className="relative group mx-4 sm:mx-8 md:mx-20"
+        className={`relative group mx-4 sm:mx-8 md:mx-20 ${isMobile ? 'overflow-x-auto' : ''}`}
         style={{
           minHeight: "180px",
           scrollbarWidth: "none",
@@ -173,43 +203,46 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
         </style>
 
         <div
-          className={`flex flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out ${
-            slideDirection === 'forward' ? 'slide-in-forward' : 'slide-in-backward'
-          }`}
+          className={`flex ${isMobile ? 'flex-nowrap overflow-x-auto pb-2' : 'flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out'} ${!isMobile ? (slideDirection === 'forward' ? 'slide-in-forward' : 'slide-in-backward') : ''}`}
           style={{
             position: 'relative',
             width: '100%',
-            touchAction: 'pan-y pinch-zoom'
+            touchAction: isMobile ? 'pan-x pinch-zoom' : 'pan-y pinch-zoom',
+            WebkitOverflowScrolling: isMobile ? 'touch' : undefined,
+            paddingLeft: isMobile ? '8px' : undefined,
+            paddingRight: isMobile ? '8px' : undefined
           }}
         >
-          {getCurrentPageItems().map((item, idx) => (
+          {(isMobile ? allItems : getCurrentPageItems()).map((item, idx) => (
             <div
               key={item.id}
-              className="flex-shrink-0 w-32 sm:w-40 md:w-48 flex flex-col items-center relative"
+              className={`category-tile flex-shrink-0 ${isMobile ? 'w-[48vw] max-w-[320px]' : 'w-32 sm:w-40 md:w-48'} flex flex-col items-center relative`}
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
+              style={isMobile ? { minWidth: '48vw', maxWidth: 320 } : {}}
+              tabIndex={0}
             >
-              <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full overflow-hidden bg-white duration-300">
+              <div className={`category-img ${isMobile ? 'w-36 h-36' : 'w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48'} rounded-full overflow-hidden duration-300`}>
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="relative">
                 <h3
-                  className="text-sm sm:text-base md:text-lg font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center"
+                  className={`${isMobile ? 'text-base' : 'text-xs sm:text-base md:text-lg'} font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center`}
                   style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
                 >
                   <span
                     className={`inline-flex items-center transition-transform duration-500 ${
-                      hoveredIndex === idx ? "slide-left-anim" : ""
+                      hoveredIndex === idx && !isMobile ? "slide-left-anim" : ""
                     }`}
                   >
                     {item.name}
                     <span
                       className={`ml-1 sm:ml-2 transition-opacity duration-500 ${
-                        hoveredIndex === idx ? "opacity-100" : "opacity-0"
+                        hoveredIndex === idx && !isMobile ? "opacity-100" : "opacity-0"
                       }`}
                     >
                       <Icon
@@ -226,7 +259,8 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
           ))}
         </div>
 
-        {currentPage > 0 && (
+        {/* Pagination arrows only on desktop */}
+        {!isMobile && currentPage > 0 && (
           <button
             onClick={handlePrevClick}
             className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100 hidden sm:block"
@@ -236,7 +270,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user }) => {
           </button>
         )}
 
-        {currentPage < totalPages - 1 && (
+        {!isMobile && currentPage < totalPages - 1 && (
           <button
             onClick={handleNextClick}
             className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100 hidden sm:block"

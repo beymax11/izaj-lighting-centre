@@ -6,7 +6,7 @@ import PrivateRoute from './routes/PrivateRoute';
 import AuthForm from './AuthForm';
 import Cart from './pages/cart';
 import MyFavorites from './pages/MyFavorites';
-import MyPurchase from './pages/MyPurchase';
+
 import MyProfile from './pages/MyProfile';
 import Addresses from './pages/addresses';
 import BanksCards from './pages/banks-cards';
@@ -34,11 +34,6 @@ import Subscribe from './pages/subscribe';
 import CookieConsent from './components/CookieConsent';
 import "./App.css";
 
-interface UserData {
-  name: string;
-  email: string;
-}
-
 interface ChatMessage {
   text: string;
   sender: 'user' | 'support';
@@ -46,7 +41,7 @@ interface ChatMessage {
 }
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<UserData | null>(() => {
+  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string } | null>(() => {
     // Check for stored user data on initial load
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (storedUser) {
@@ -103,7 +98,7 @@ const App: React.FC = () => {
     setIsAccountDropdownOpen(false);
   };
 
-  const handleLogin = (userData: UserData) => {
+  const handleLogin = (userData: { firstName: string; lastName: string; email: string }) => {
     setUser(userData);
     setIsModalOpen(false);
     setIsAccountDropdownOpen(false);
@@ -197,14 +192,7 @@ const App: React.FC = () => {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/my-purchase"
-              element={
-                <PrivateRoute user={user}>
-                  <MyPurchase />
-                </PrivateRoute>
-              }
-            />
+           
             <Route
               path="/my-profile"
               element={

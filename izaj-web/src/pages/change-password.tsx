@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 
-
 const ChangePass: React.FC = () => {
+  const [userData, setUserData] = useState({
+    firstName: '',
+    lastName: '',
+  });
+  const [profileImage, setProfileImage] = useState<string>('profile.webp');
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    const storedProfileImage = localStorage.getItem('profileImage');
+    
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserData({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+        });
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
+    }
 
-
-
- 
+    if (storedProfileImage) {
+      setProfileImage(storedProfileImage);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
@@ -20,15 +40,17 @@ const ChangePass: React.FC = () => {
       {/* Left Column - User Profile */}
       <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6">
         <div className="flex flex-col items-center">
-          <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-indigo-100 shadow-sm">
-            <img src="profile.webp" alt="User" className="w-full h-full object-cover" />
+          <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm">
+            <img src={profileImage} alt="User" className="w-full h-full object-cover" />
           </div>
-          <div className="font-medium text-lg mb-6 text-center text-black">Daniela Padilla</div>
+          <div className="font-medium text-lg mb-6 text-center text-black">
+            {`${userData.firstName} ${userData.lastName}`.trim() || 'User'}
+          </div>
         
             <ul className="w-full space-y-1">
-            <li className="flex items-center p-3 bg-indigo-50 rounded-lg mb-1">
-              <Icon icon="mdi:account" className="text-indigo-600 mr-2 w-5 h-5" />
-              <span className="text-indigo-700 font-medium text-sm">My Account</span>
+            <li className="flex items-center p-3 bg-gray-50 rounded-lg mb-1">
+              <Icon icon="mdi:account" className="text-gray-600 mr-2 w-5 h-5" />
+              <span className="text-gray-700 font-medium text-sm">My Account</span>
             </li>
             <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
               <Link to="/my-profile" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Profile</Link>
@@ -39,13 +61,10 @@ const ChangePass: React.FC = () => {
             <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
               <Link to="/addresses" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
             </li>
-            <li className="pl-10 py-2 bg-indigo-50 rounded-lg mb-2">
-              <a href="#change-password" className="text-indigo-600 font-medium text-sm block">Change Password</a>
+            <li className="pl-10 py-2 bg-gray-50 rounded-lg mb-2">
+              <a href="#change-password" className="text-gray-600 font-medium text-sm block">Change Password</a>
             </li>
-            <li className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
-              <Icon icon="mdi:clipboard-list-outline" className="text-gray-500 mr-2 w-5 h-5" />
-              <Link to="/my-purchase" className="text-gray-700 hover:text-gray-900 text-sm font-medium">My Purchase</Link>
-            </li>
+           
             </ul>
           
         </div>
@@ -53,7 +72,7 @@ const ChangePass: React.FC = () => {
       
       {/* Right Column - Change Password Section */}
       <div className="flex-1">
-      <h2 className="text-3xl font-bold mb-8 text-gray-800">CHANGE PASSWORD</h2>
+     
         
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Header */}
@@ -69,7 +88,7 @@ const ChangePass: React.FC = () => {
                 <label className="block text-sm font-medium mb-2 text-gray-700">Current Password</label>
                 <input 
                   type="password" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-colors"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors"
                   placeholder="Enter current password"
                 />
               </div>
@@ -79,7 +98,7 @@ const ChangePass: React.FC = () => {
                 <label className="block text-sm font-medium mb-2 text-gray-700">New Password</label>
                 <input 
                   type="password" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-colors"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors"
                   placeholder="Enter new password"
                 />
               </div>
@@ -89,14 +108,14 @@ const ChangePass: React.FC = () => {
                 <label className="block text-sm font-medium mb-2 text-gray-700">Confirm Password</label>
                 <input 
                   type="password" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-colors"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors"
                   placeholder="Confirm new password"
                 />
               </div>
 
               {/* Save Button */}
               <div className="pt-6">
-                <button className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <button className="px-8 py-3 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                   Update Password
                 </button>
               </div>

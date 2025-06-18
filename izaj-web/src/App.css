@@ -6,3 +6,9 @@
   66.66% { opacity: 0; }
   100% { opacity: 1; }
 }
+
+/* Sticky fix override */
+html, body {
+  overflow: visible !important;
+  height: auto !important;
+}
