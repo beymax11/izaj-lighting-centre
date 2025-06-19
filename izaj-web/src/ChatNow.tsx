@@ -94,6 +94,12 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
   // Messages for the selected chat
   const conversation = messages.filter(msg => msg.chatId === selectedChatId);
 
+  // Fix: Format message time for both Date and string
+  const formatMsgTimestamp = (ts: Date | string) => {
+    const date = typeof ts === 'string' ? new Date(ts) : ts;
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   // Get chat by ID
   const getChatById = (id: number) => chats.find(c => c.id === id);
 
@@ -201,6 +207,9 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
 
   // Add chat (demo)
 
+  // Fix: Ensure all chat images use public path
+  const getImagePath = (img: string) => img.startsWith('/') ? img : `/${img}`;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col min-h-0 items-center justify-center p-2 bg-black/30 backdrop-blur-sm" onClick={() => onClose && onClose()}>
       <div
@@ -230,7 +239,7 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
                   className={`flex items-center gap-3 px-4 py-3 cursor-pointer group hover:bg-yellow-50 border-b border-gray-100 transition relative ${chat.id === selectedChatId ? 'bg-yellow-100' : ''}`}
                   onClick={() => setSelectedChatId(chat.id)}
                 >
-                  <img src={chat.itemImage} alt={chat.itemName} className="w-11 h-11 rounded-full object-cover border border-gray-200 shadow-sm" />
+                  <img src={getImagePath(chat.itemImage)} alt={chat.itemName} className="w-11 h-11 rounded-full object-cover border border-gray-200 shadow-sm" />
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-base truncate flex items-center gap-1 text-black">
                       {chat.itemName}
@@ -300,7 +309,7 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
             <>
               {/* Header */}
               <div className="flex items-center p-4 border-b gap-3 bg-white sticky top-0 z-10 shadow-sm">
-                <img src={getChatById(selectedChatId)?.itemImage} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                <img src={getImagePath(getChatById(selectedChatId)?.itemImage || '')} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
                 <span className="font-bold text-black text-lg">
                   {getChatById(selectedChatId)?.itemName}
                 </span>
@@ -360,7 +369,7 @@ const ChatNow: React.FC<ChatNowProps> = ({ onClose }) => {
                           {msg.text}
                           <div className="flex justify-end mt-1 gap-1 items-center">
                             <span className="text-[10px] text-gray-400">
-                              {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {formatMsgTimestamp(msg.timestamp)}
                             </span>
                             {msg.sender === 'user' && msg.seen && (
                               <span title="Seen">

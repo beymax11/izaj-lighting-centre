@@ -439,18 +439,16 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                   {allProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="bg-white overflow-hidden flex flex-col h-[420px] w-[48vw] min-w-[48vw] max-w-[320px] rounded-lg"
-                      style={{ flex: '0 0 48vw' }}
+                      className="bg-white overflow-hidden flex flex-col h-[420px] w-[60vw] min-w-[60vw] max-w-[380px]"
+                      style={{ flex: '0 0 60vw' }}
                     >
-                      <div className="relative flex-shrink-0 h-[280px]">
-                        <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-sm z-20 shadow-sm">
-                          SALE
-                        </div>
-                        <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
+                      <div className="relative flex-shrink-0 h-[340px] flex items-center justify-center overflow-hidden">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                        <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">SALE</span>
                       </div>
                       <div className="p-3 flex flex-col flex-1">
                         <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                        <p className="text-gray-600 text-xs mb-2">{product.size}</p>
+                      
                         <div className="flex items-center space-x-2 mb-2">
                           {product.colors?.map((color) => (
                             <button
@@ -459,7 +457,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color }}
+                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -471,6 +469,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                           to={`/item-description/${product.id}`}
                           state={user ? { user } : undefined}
                           className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
+                          style={{ marginTop: '16px' }} // Added marginTop for mobile view
                         >
                           Choose options
                         </Link>
@@ -484,17 +483,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 >
                   {currentProducts.map((product) => (
                     <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[420px]">
-                      <div className="relative flex-grow h-[280px]">
-                        <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-sm z-20 shadow-sm">
-                          SALE
-                        </div>
-                        <div className="w-full h-full bg-white flex items-center justify-center">
-                          <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
-                        </div>
+                      <div className="relative flex-grow h-[340px] flex items-center justify-center overflow-hidden">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                        <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">SALE</span>
                       </div>
                       <div className="p-3 sm:p-4 flex flex-col flex-grow">
                         <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                        <p className="text-gray-600 text-xs mb-2">{product.size}</p>
+                       
                         <div className="flex items-center space-x-2 mb-2">
                           {product.colors?.map((color) => (
                             <button
@@ -503,7 +498,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color }}
+                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -623,18 +618,16 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                   {allProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="bg-white overflow-hidden flex flex-col h-[420px] w-[48vw] min-w-[48vw] max-w-[320px] rounded-lg"
-                      style={{ flex: '0 0 48vw' }}
+                      className="bg-white overflow-hidden flex flex-col h-[420px] w-[60vw] min-w-[60vw] max-w-[380px] rounded-lg"
+                      style={{ flex: '0 0 60vw' }}
                     >
-                      <div className="relative flex-shrink-0 h-[280px]">
-                        <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-sm z-20 shadow-sm">
-                          NEW
-                        </div>
-                        <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
+                      <div className="relative flex-shrink-0 h-[340px] flex items-center justify-center overflow-hidden">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                        <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">NEW</span>
                       </div>
                       <div className="p-3 flex flex-col flex-1">
                         <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                        <p className="text-gray-600 text-xs mb-2">{product.size}</p>
+                       
                         <div className="flex items-center space-x-2 mb-2">
                           {product.colors?.map((color) => (
                             <button
@@ -643,7 +636,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color }}
+                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -655,6 +648,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                           to={`/item-description/${product.id}`}
                           state={user ? { user } : undefined}
                           className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
+                          style={{ marginTop: '16px' }} // Added marginTop for mobile view
                         >
                           Choose options
                         </Link>
@@ -668,17 +662,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 >
                   {freshDropsProducts.map((product) => (
                     <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[420px]">
-                      <div className="relative flex-grow h-[280px]">
-                        <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-sm z-20 shadow-sm">
-                          NEW
-                        </div>
-                        <div className="w-full h-full bg-white flex items-center justify-center">
-                          <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
-                        </div>
+                      <div className="relative flex-grow h-[340px] flex items-center justify-center overflow-hidden">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                        <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">NEW</span>
                       </div>
                       <div className="p-3 sm:p-4 flex flex-col flex-grow">
                         <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                        <p className="text-gray-600 text-xs mb-2">{product.size}</p>
+                       
                         <div className="flex items-center space-x-2 mb-2">
                           {product.colors?.map((color) => (
                             <button
@@ -687,7 +677,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color }}
+                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -750,7 +740,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         {/* FREE DESIGN CONSULTATION*/}
         <div className="mt-8 md:mt-16 mb-8 md:mb-16 px-4 md:px-8">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-4 md:mb-8 text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "extra-bold" }}>
-            FREE DESIGN CONSULTATION
+            FREE LIGHTING CONSULTATION
           </h2>
           <p className="text-base md:text-lg lg:text-xl text-black leading-relaxed mb-4 md:mb-6 text-center max-w-[90%] md:max-w-[80%] lg:max-w-4xl mx-auto px-2 md:px-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
             We'd love to hear from you! Whether you have questions about our products, need assistance with your order, or want to provide feedback, please reach out to us through any of the following channels.
@@ -778,31 +768,26 @@ const Home: React.FC<HomeProps> = ({ user }) => {
           </Link>
         </div>
 
-       
+        {/* Slide Animation Styles */}
+        <style>{`
+          .slide-left {
+            animation: slideLeft 0.3s ease-out;
+          }
+          .slide-right {
+            animation: slideRight 0.3s ease-out;
+          }
+          @keyframes slideLeft {
+            from { transform: translateX(100%); opacity: 0.5; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+          @keyframes slideRight {
+            from { transform: translateX(-100%); opacity: 0.5; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        `}</style>
       </main>
     </div>
   );
 };
 
-// Add these styles at the top of your file, after the imports
-const styles = `
-  .slide-left {
-    transform: translateX(-30%);
-    opacity: 0;
-  }
-  .slide-right {
-    transform: translateX(30%);
-    opacity: 0;
-  }
-  .grid {
-    opacity: 1;
-    transform: translateX(0);
-  }
-`;
-
-// Add this style tag to your component
-const styleSheet = document.createElement("style");
-styleSheet.innerText = styles;
-document.head.appendChild(styleSheet);
-
-export default Home; 
+export default Home;

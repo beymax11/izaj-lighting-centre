@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import FavoritesDropdown from '../FavoritesDropdown';
 import NotificationDropdown from '../NotificationDropdown';
+import { useMediaQuery } from 'react-responsive';
 
 interface User {
   firstName: string;
@@ -34,6 +35,7 @@ const Header: React.FC<HeaderProps> = ({
   const productsDropdownRef = useRef<HTMLLIElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
 
   useEffect(() => {
@@ -92,7 +94,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <div className="bg-black text-white text-center py-3 flex items-center justify-center" style={{ height: '30px', zIndex: 100 }}>
-        <p className="text-sm px-4">Monthly Sale is here! &rarr; Enjoy 10% OFF items for the month of May</p>
+        <p className="text-sm px-4">Monthly Sale is here! &rarr; Enjoy 10% OFF items for the month of June</p>
       </div>
 
       <header className="bg-white px-4 md:px-10 py-3 flex flex-col">
@@ -156,90 +158,123 @@ const Header: React.FC<HeaderProps> = ({
             {/* Login/Signup Section with Icons */}
             <div className="flex items-center space-x-4">
               {/* User Icon or Account Dropdown */}
-              {!user ? (
+              {isMobile ? (
                 <button
-                  onClick={() => setIsModalOpen?.(true)}
+                  onClick={() => {
+                    if (user) {
+                      navigate('/my-profile');
+                    } else {
+                      setIsModalOpen?.(true);
+                    }
+                  }}
                   className="text-black hover:text-orange-500 transition-colors duration-200"
-                  aria-label="Login"
+                  aria-label="User"
                 >
                   <Icon icon="lucide:user" width="28" height="28" />
                 </button>
               ) : (
-                <div className="relative" ref={accountDropdownRef}>
+                !user ? (
                   <button
-                    onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                    className="flex items-center transition-transform duration-300"
-                    aria-haspopup="true"
-                    aria-expanded={isAccountDropdownOpen}
-                    style={{
-                      transform: isAccountDropdownOpen ? "translateY(-2px)" : "translateY(0)",
-                      color: isAccountDropdownOpen ? "#4B0082" : "black",
-                    }}
+                    onClick={() => setIsModalOpen?.(true)}
+                    className="text-black hover:text-orange-500 transition-colors duration-200"
+                    aria-label="Login"
                   >
-                    <Icon
-                      icon="lucide:user"
-                      width="28"
-                      height="28"
-                      className="text-black hover:text-orange-500 transition-colors duration-200"
-                    />
-                    <div className="hidden md:flex flex-col ml-2 text-left">
-                      <span
-                        className="font-medium text-sm text-gray-500 leading-none"
-                        style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
-                      >
-                        Hello, {user?.firstName || 'Guest'}
-                      </span>
-                      <div className="flex items-center text-black">
-                        <span
-                          className="font-medium text-lg"
-                          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
-                        >
-                          My Account
-                        </span>
-                        <Icon
-                          icon="mdi:chevron-down"
-                          width="20"
-                          height="20"
-                          className={`ml-1 text-black transition-transform duration-300 ${
-                            isAccountDropdownOpen ? "rotate-180" : "rotate-0"
-                          }`}
-                        />
-                      </div>
-                    </div>
+                    <Icon icon="lucide:user" width="28" height="28" />
                   </button>
-
-                  {/* Account Dropdown - Adjusted for mobile */}
-                  {isAccountDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
-                      <div className="py-1">
-                        <Link
-                          to="/my-profile"
-                          className="flex items-center px-4 py-3 text-sm text-black hover:bg-gray-50 hover:text-black transition-colors group"
+                ) : (
+                  <div className="relative" ref={accountDropdownRef}>
+                    <button
+                      onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                      className="flex items-center transition-transform duration-300"
+                      aria-haspopup="true"
+                      aria-expanded={isAccountDropdownOpen}
+                      style={{
+                        transform: isAccountDropdownOpen ? "translateY(-2px)" : "translateY(0)",
+                        color: isAccountDropdownOpen ? "#4B0082" : "black",
+                      }}
+                    >
+                      <Icon
+                        icon="lucide:user"
+                        width="28"
+                        height="28"
+                        className="text-black hover:text-orange-500 transition-colors duration-200"
+                      />
+                      <div className="hidden md:flex flex-col ml-2 text-left">
+                        <span
+                          className="font-medium text-sm text-gray-500 leading-none"
+                          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
                         >
-                          <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-black" />
-                          My Account
-                        </Link>
-                       
-                        <hr className="border-gray-200 my-1" />
-                        <button
-                          onClick={handleLogoutClick}
-                          className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
-                        >
-                          <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
-                          Logout
-                        </button>
+                          Hello, {user?.firstName || 'Guest'}
+                        </span>
+                        <div className="flex items-center text-black">
+                          <span
+                            className="font-medium text-lg"
+                            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+                          >
+                            My Account
+                          </span>
+                          <Icon
+                            icon="mdi:chevron-down"
+                            width="20"
+                            height="20"
+                            className={`ml-1 text-black transition-transform duration-300 ${
+                              isAccountDropdownOpen ? "rotate-180" : "rotate-0"
+                            }`}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    </button>
+
+                    {/* Account Dropdown - Adjusted for mobile */}
+                    {isAccountDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 transform origin-top-right transition-all duration-200 ease-out">
+                        <div className="py-1">
+                          <Link
+                            to="/my-profile"
+                            className="flex items-center px-4 py-3 text-sm text-black hover:bg-gray-50 hover:text-black transition-colors group"
+                            onClick={() => setIsAccountDropdownOpen(false)}
+                          >
+                            <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 text-black group-hover:text-black" />
+                            My Account
+                          </Link>
+                          
+                          <hr className="border-gray-200 my-1" />
+                          <button
+                            onClick={handleLogoutClick}
+                            className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors group"
+                          >
+                            <Icon icon="mdi:logout" className="h-5 w-5 mr-3 text-red-400 group-hover:text-red-500" />
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
               )}
 
               {/* Heart Icon */}
               <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
-                <FavoritesDropdown 
-                  user={user} 
-                  onOpenAuthModal={() => setIsModalOpen?.(true)}
-                />
+                {isMobile ? (
+                  <button
+                    onClick={() => {
+                      if (user) {
+                        navigate('/my-favorites');
+                      } else {
+                        setIsModalOpen?.(true);
+                      }
+                    }}
+                    className="text-black hover:text-orange-500 transition-colors duration-200"
+                    aria-label="Favorites"
+                  >
+                    <Icon icon="mdi:heart-outline" width="28" height="28" />
+                  </button>
+                ) : (
+                  <FavoritesDropdown 
+                    user={user} 
+                    onOpenAuthModal={() => setIsModalOpen?.(true)}
+                  />
+                )}
               </div>
 
               {/* Notification Icon */}
@@ -477,25 +512,26 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop Navbar - Hidden on mobile */}
         <nav className="hidden md:block bg-white py-3">
-          <ul className="flex justify-center space-x-10 text-sm font-medium">
+          <ul className="flex justify-center items-center space-x-10 text-sm font-medium">
             {/* HOME NAVIGATION - use onClick for SPA navigation */}
-            <li>
+            <li className="flex items-center h-full">
               <a
                 href="#home"
-                className="text-black hover:border-b-2 border-black pb-1"
+                className="text-black hover:border-b-2 border-black pb-1 flex items-center h-full"
                 onClick={handleHomeClick}
-              >
+                style={{height: '100%'}}>
                 HOME
               </a>
             </li>
 
             {/* Products Dropdown Menu */}
-            <li className="relative group" ref={productsDropdownRef}>
+            <li className="relative group flex items-center h-full" ref={productsDropdownRef}>
               <div
-                className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center justify-between cursor-pointer transition-all duration-300"
+                className="text-black font-medium text-sm hover:border-b-2 border-black pb-1 flex items-center justify-between cursor-pointer transition-all duration-300 h-full"
                 style={{
                   transform: isDropdownOpen ? "translateY(-2px)" : "translateY(0)",
                   color: isDropdownOpen ? "#4B0082" : "black",
+                  height: '100%'
                 }}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 onMouseEnter={() => setIsDropdownOpen(true)}
@@ -648,17 +684,19 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </li>
-            <li>
-              <Link to="/collection" className="text-black hover:border-b-2 border-black pb-1">
+            <li className="flex items-center h-full">
+              <Link to="/collection" className="text-black hover:border-b-2 border-black pb-1 flex items-center h-full">
                 NEW
               </Link>
             </li>
-            <li>
-              <Link to="/sales" className="text-black hover:border-b-2 border-black pb-1">
+            <li className="flex items-center h-full">
+              <Link to="/sales" className="text-black hover:border-b-2 border-black pb-1 flex items-center h-full">
                 SALES
               </Link>
             </li>
-            <Link to="/aboutus" className="text-black hover:border-b-2 border-black pb-1">ABOUT US</Link>
+            <li className="flex items-center h-full">
+              <Link to="/aboutus" className="text-black hover:border-b-2 border-black pb-1 flex items-center h-full">ABOUT US</Link>
+            </li>
           </ul>
         </nav>
       </header>

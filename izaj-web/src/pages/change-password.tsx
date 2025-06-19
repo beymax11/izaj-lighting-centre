@@ -8,6 +8,7 @@ const ChangePass: React.FC = () => {
     lastName: '',
   });
   const [profileImage, setProfileImage] = useState<string>('profile.webp');
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -32,13 +33,60 @@ const ChangePass: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
-    
+      {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
+      <div className="md:hidden bg-white px-4 pt-4">
+        <div
+          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
+          onClick={() => setIsAccountModalOpen(true)}
+        >
+          <span>Change Password</span>
+          <Icon icon="mdi:chevron-down" className="text-black w-6 h-6 ml-1" />
+        </div>
+      </div>
+      {/* My Account Modal for Mobile */}
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black bg-opacity-40" onClick={() => setIsAccountModalOpen(false)}>
+          <div
+            className="w-full bg-white animate-slideUp  relative shadow-lg"
+            style={{ minHeight: '240px' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+              onClick={() => setIsAccountModalOpen(false)}
+              aria-label="Close"
+            >
+              <Icon icon="mdi:close" />
+            </button>
+            <div className="font-bold text-xl mb-4 text-black text-center mt-4">My Account</div>
+            <ul className="space-y-1 px-4 pb-6">
+              <li>
+                <span className="inline-flex items-center text-black font-semibold text-base">
+                  My Account
+                </span>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/my-profile" className="text-black hover:text-gray-900 text-base block transition-colors">Profile</Link>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/banks-cards" className="text-black hover:text-gray-900 text-base block transition-colors">Payment Methods</Link>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/addresses" className="text-black hover:text-gray-900 text-base block transition-colors">Addresses</Link>
+              </li>
+              <li className="pl-8 py-3 bg-gray-100 rounded-lg mb-2 transition-colors duration-300">
+                <Link to="/change-password" className="text-black font-semibold text-base block transition-colors">Change Password</Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
       {/* Main Content */}
-<main className="flex-grow bg-gray-50 py-12">
+<main className="flex-grow white py-12">
   <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6">
     <div className="flex flex-col md:flex-row gap-8">
       {/* Left Column - User Profile */}
-      <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6">
+      <div className="hidden md:block w-full md:w-72 bg-white rounded-xl shadow-sm p-6">
         <div className="flex flex-col items-center">
           <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm">
             <img src={profileImage} alt="User" className="w-full h-full object-cover" />
@@ -48,36 +96,35 @@ const ChangePass: React.FC = () => {
           </div>
         
             <ul className="w-full space-y-1">
-            <li className="flex items-center p-3 bg-gray-50 rounded-lg mb-1">
-              <Icon icon="mdi:account" className="text-gray-600 mr-2 w-5 h-5" />
-              <span className="text-gray-700 font-medium text-sm">My Account</span>
+            <li className="flex items-center p-3 rounded-lg mb-1">
+               <Icon icon="lucide:user" className="text-black mr-2 w-5 h-5" />
+              <span className="text-black font-medium text-sm">My Account</span>
             </li>
             <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-              <Link to="/my-profile" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Profile</Link>
+              <Link to="/my-profile" className="text-black hover:text-gray-900 text-sm block transition-colors">Profile</Link>
             </li>
             <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-              <Link to="/banks-cards" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
+              <Link to="/banks-cards" className="text-black hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
             </li>
             <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-              <Link to="/addresses" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
+              <Link to="/addresses" className="text-black hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
             </li>
-            <li className="pl-10 py-2 bg-gray-50 rounded-lg mb-2">
-              <a href="#change-password" className="text-gray-600 font-medium text-sm block">Change Password</a>
+            <li className="pl-10 py-2 bg-gray-100 rounded-lg mb-2">
+              <a href="#change-password" className="text-black font-semibold text-sm block">Change Password</a>
             </li>
            
             </ul>
           
         </div>
       </div>
-      
       {/* Right Column - Change Password Section */}
-      <div className="flex-1">
+      <div className="w-full md:flex-1">
      
         
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-gray-800">Update Your Password</h3>
+            <h3 className="text-lg font-bold text-black">Update Your Password</h3>
           </div>
 
           {/* Password Form */}
@@ -85,7 +132,7 @@ const ChangePass: React.FC = () => {
             <div className="max-w-md space-y-4">
               {/* Current Password */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">Current Password</label>
+                <label className="block text-sm font-medium mb-2 text-black">Current Password</label>
                 <input 
                   type="password" 
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors"
@@ -95,7 +142,7 @@ const ChangePass: React.FC = () => {
 
               {/* New Password */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">New Password</label>
+                <label className="block text-sm font-medium mb-2 text-black">New Password</label>
                 <input 
                   type="password" 
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors"
@@ -105,7 +152,7 @@ const ChangePass: React.FC = () => {
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">Confirm Password</label>
+                <label className="block text-sm font-medium mb-2 text-black">Confirm Password</label>
                 <input 
                   type="password" 
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors"
@@ -115,7 +162,7 @@ const ChangePass: React.FC = () => {
 
               {/* Save Button */}
               <div className="pt-6">
-                <button className="px-8 py-3 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <button className="px-8 py-3 bg-black hover:bg-gray-900 text-white text-sm font-medium  transition-colors shadow-sm">
                   Update Password
                 </button>
               </div>

@@ -1,12 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Icon } from '@iconify/react';
+import React, { useState, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import PrivateRoute from './routes/PrivateRoute';
 import AuthForm from './AuthForm';
 import Cart from './pages/cart';
 import MyFavorites from './pages/MyFavorites';
-
 import MyProfile from './pages/MyProfile';
 import Addresses from './pages/addresses';
 import BanksCards from './pages/banks-cards';
@@ -34,15 +32,8 @@ import Subscribe from './pages/subscribe';
 import CookieConsent from './components/CookieConsent';
 import "./App.css";
 
-interface ChatMessage {
-  text: string;
-  sender: 'user' | 'support';
-  timestamp: Date;
-}
-
 const App: React.FC = () => {
   const [user, setUser] = useState<{ firstName: string; lastName: string; email: string } | null>(() => {
-    // Check for stored user data on initial load
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
     if (storedUser) {
       try {
@@ -55,45 +46,14 @@ const App: React.FC = () => {
     return null;
   });
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      text: "Hello! How can we help you today?",
-      sender: 'support',
-      timestamp: new Date()
-    }
-  ]);
-  const [newMessage, setNewMessage] = useState('');
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const footerRef = useRef<HTMLDivElement>(null);
-  const [isFooterInView, setIsFooterInView] = useState(false);
-
-  // Auto scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (shouldAutoScroll && chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages, shouldAutoScroll]);
-
-  // Handle manual scroll
-  const handleScroll = () => {
-    if (chatContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
-      setShouldAutoScroll(isAtBottom);
-    }
-  };
 
   const handleLogout = () => {
-    // Clear stored data
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     sessionStorage.removeItem('authToken');
     sessionStorage.removeItem('user');
-    
-    // Clear user state
     setUser(null);
     setIsAccountDropdownOpen(false);
   };
@@ -104,47 +64,10 @@ const App: React.FC = () => {
     setIsAccountDropdownOpen(false);
   };
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const userMessage: ChatMessage = {
-        text: newMessage,
-        sender: 'user',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, userMessage]);
-      setNewMessage('');
-
-      // Simulate support response after 1 second
-      setTimeout(() => {
-        const supportMessage: ChatMessage = {
-          text: "Thank you for your message. Our support team will get back to you shortly.",
-          sender: 'support',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, supportMessage]);
-      }, 1000);
-    }
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => setIsFooterInView(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    if (footerRef.current) observer.observe(footerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <>
       {/* Cookie Consent - Placed outside Router to ensure it's always visible */}
       <CookieConsent />
-      
       <Router>
         <Layout
           user={user}
@@ -192,7 +115,6 @@ const App: React.FC = () => {
                 </PrivateRoute>
               }
             />
-           
             <Route
               path="/my-profile"
               element={
@@ -226,7 +148,6 @@ const App: React.FC = () => {
               }
             />
           </Routes>
-
           {/* Auth Modal */}
           {isModalOpen && (
             <div className="fixed inset-0 z-50">
@@ -246,106 +167,7 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* Floating Chat Conversation */}
-          {isChatOpen && (
-            <div
-              className="fixed bottom-24 right-8 z-50 w-80 bg-white rounded-xl shadow-2xl flex flex-col"
-              style={{ 
-                minHeight: "400px", 
-                maxHeight: "70vh",
-                height: "auto",
-                display: "flex",
-                flexDirection: "column"
-              }}
-            >
-              <div className="flex items-center justify-between px-4 py-3 bg-yellow-400 rounded-t-xl">
-                <span className="font-bold text-black">Chat with Us</span>
-                <button
-                  onClick={() => setIsChatOpen(false)}
-                  className="text-black hover:text-red-500"
-                  aria-label="Close Chat"
-                >
-                  <Icon icon="mdi:close" width="20" height="20" />
-                </button>
-              </div>
-              <div 
-                ref={chatContainerRef}
-                onScroll={handleScroll}
-                className="flex-1 p-4 overflow-y-auto text-black scroll-smooth"
-                style={{ 
-                  fontFamily: "'Poppins', sans-serif",
-                  scrollbarWidth: "thin",
-                  scrollbarColor: "#e5e7eb transparent",
-                  minHeight: "200px"
-                }}
-              >
-                {messages.map((message, index) => (
-                  <div key={index} className={`mb-4 ${message.sender === 'user' ? 'text-right' : ''}`}>
-                    <div
-                      className={`inline-block rounded-lg p-2 max-w-[80%] ${
-                        message.sender === 'user'
-                          ? 'bg-yellow-400 ml-auto'
-                          : 'bg-gray-100'
-                      }`}
-                    >
-                      {message.text}
-                    </div>
-                    <div className={`text-xs text-gray-400 mt-1 ${message.sender === 'user' ? 'text-right' : ''}`}>
-                      {message.sender === 'user' ? 'You' : 'Support'} • {formatTime(message.timestamp)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-3 border-t bg-white flex gap-2">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Type your message..."
-                  className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400 bg-white text-black"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold hover:bg-yellow-500 transition-colors whitespace-nowrap"
-                >
-                  Send
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!isFooterInView && (
-            <button
-              type="button"
-              onClick={() => setIsChatOpen((v) => !v)}
-              className={`fixed z-50 bottom-8 right-8 rounded-full p-4 hover:bg-orange-500 transition-colors animate-bounce-custom ${isModalOpen ? 'hidden' : ''}`}
-              style={{
-                backgroundColor: "#000000",
-                boxShadow: "none",
-              }}
-              aria-label="Chat Now"
-            >
-              <Icon icon="mdi:message-text-outline" color="white" width="32" height="32" />
-            </button>
-          )}
-
-          {/* Custom bounce animation */}
-          <style>
-            {`
-              @keyframes soft-bounce {
-                0%, 100% { transform: translateY(0);}
-                20% { transform: translateY(-14px);}
-                40% { transform: translateY(0);}
-                60% { transform: translateY(-7px);}
-                80% { transform: translateY(0);}
-              }
-              .animate-bounce-custom {
-                animation: soft-bounce 1.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-              }
-            `}
-          </style>
+          {/* Removed floating chat component as requested */}
         </Layout>
       </Router>
     </>

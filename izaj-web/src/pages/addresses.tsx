@@ -23,6 +23,7 @@ const MyPurchase: React.FC = () => {
     phone: '',
     address: ''
   });
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -134,12 +135,60 @@ const MyPurchase: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
+      {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
+      <div className="md:hidden bg-white px-4 pt-4">
+        <div
+          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
+          onClick={() => setIsAccountModalOpen(true)}
+        >
+          <span>Addresses</span>
+          <Icon icon="mdi:chevron-down" className="text-black w-6 h-6 ml-1" />
+        </div>
+      </div>
+      {/* My Account Modal for Mobile */}
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black bg-opacity-40" onClick={() => setIsAccountModalOpen(false)}>
+          <div
+            className="w-full bg-white animate-slideUp  relative shadow-lg"
+            style={{ minHeight: '240px' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+              onClick={() => setIsAccountModalOpen(false)}
+              aria-label="Close"
+            >
+              <Icon icon="mdi:close" />
+            </button>
+            <div className="font-bold text-xl mb-4 text-black text-center mt-4">My Account</div>
+            <ul className="space-y-1 px-4 pb-6">
+              <li>
+                <span className="inline-flex items-center text-black font-semibold text-base">
+                  My Account
+                </span>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/my-profile" className="text-black hover:text-gray-900 text-base block transition-colors">Profile</Link>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/banks-cards" className="text-black hover:text-gray-900 text-base block transition-colors">Payment Methods</Link>
+              </li>
+              <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
+                <Link to="/addresses" className="text-black font-semibold text-base block transition-colors">Addresses</Link>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
+                <Link to="/change-password" className="text-black hover:text-gray-900 text-base block transition-colors">Change Password</Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
       {/* Main Content */}
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6">
+      <main className="flex-grow bg-white py-6 md:py-12">
+        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left Column - User Profile */}
-            <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6">
+            <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6 hidden md:block">
               <div className="flex flex-col items-center">
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm">
                   <img src={profileImage} alt="User" className="w-full h-full object-cover" />
@@ -149,23 +198,22 @@ const MyPurchase: React.FC = () => {
                 </div>
             
                 <ul className="w-full space-y-1">
-                  <li className="flex items-center p-3 bg-gray-100 rounded-lg mb-1">
-                    <Icon icon="lucide:user" className="text-gray-600 mr-2 w-5 h-5" />
-                    <span className="text-gray-700 font-medium text-sm">My Account</span>
+                  <li className="flex items-center p-3 rounded-lg mb-1">
+                    <Icon icon="lucide:user" className="text-black mr-2 w-5 h-5" />
+                    <span className="text-black font-medium text-sm">My Account</span>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-                    <Link to="/my-profile" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Profile</Link>
+                    <Link to="/my-profile" className="text-black hover:text-gray-900 text-sm block transition-colors">Profile</Link>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-                    <Link to="/banks-cards" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
+                    <Link to="/banks-cards" className="text-black hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
                   </li>
                   <li className="pl-10 py-2 bg-gray-100 rounded-lg">
-                    <Link to="/addresses" className="text-gray-700 font-medium text-sm block">Addresses</Link>
+                    <Link to="/addresses" className="text-black font-semibold text-sm block">Addresses</Link>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2">
-                    <Link to="/change-password" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
+                    <Link to="/change-password" className="text-black hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
                   </li>
-                 
                 </ul>
               </div>
             </div>
@@ -175,11 +223,11 @@ const MyPurchase: React.FC = () => {
               <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 {/* Header with Add New Address Button */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-bold text-gray-800">Addresses</h3>
+                  <h3 className="text-lg font-bold text-black">Addresses</h3>
                   {!isAddingNew && (
                     <button 
                       onClick={handleAddNewAddress}
-                      className="px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                      className="px-5 py-2 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
                     >
                       Add New Address
                     </button>
@@ -191,14 +239,14 @@ const MyPurchase: React.FC = () => {
                   {isAddingNew ? (
                     <div className="bg-white rounded-xl p-6 border border-gray-200">
                       <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-gray-800">
+                        <h3 className="text-xl font-bold text-black">
                           {editingAddress ? 'Edit Address' : 'Add New Address'}
                         </h3>
                       </div>
                       <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4">
                           <div className="relative">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <label className="block text-sm font-medium text-black mb-2">Full Name</label>
                             <div className="relative">
                               <Icon icon="mdi:account" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                               <input
@@ -213,7 +261,7 @@ const MyPurchase: React.FC = () => {
                             </div>
                           </div>
                           <div className="relative">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <label className="block text-sm font-medium text-black mb-2">Phone Number</label>
                             <div className="relative">
                               <Icon icon="mdi:phone" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                               <input
@@ -228,7 +276,7 @@ const MyPurchase: React.FC = () => {
                             </div>
                           </div>
                           <div className="relative">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                            <label className="block text-sm font-medium text-black mb-2">Address</label>
                             <div className="relative">
                               <Icon icon="mdi:map-marker" className="absolute left-3 top-4 text-gray-400 w-5 h-5" />
                               <textarea
@@ -247,13 +295,13 @@ const MyPurchase: React.FC = () => {
                           <button
                             type="button"
                             onClick={handleCancel}
-                            className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
+                            className="px-6 py-3 text-black hover:text-gray-800 font-medium transition-colors duration-200"
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
-                            className="px-6 py-3 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                            className="px-6 py-3 bg-black hover:bg-gray-900 text-white font-medium  transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
                           >
                             {editingAddress ? 'Save Changes' : 'Add Address'}
                           </button>
@@ -268,14 +316,14 @@ const MyPurchase: React.FC = () => {
                     </div>
                   ) : (
                     addresses.map((address) => (
-                      <div key={address.id} className="mb-4 p-4 border border-gray-100 rounded-lg bg-gray-50">
-                        <h3 className="font-bold mb-2 text-gray-800">Address</h3>
-                        <p className="text-gray-800">{address.name} | {address.phone}</p>
-                        <p className="text-gray-800">{address.address}</p>
+                      <div key={address.id} className="mb-4 p-4 border border-gray-100 rounded-lg bg-white shadow-sm">
+                        <h3 className="font-bold mb-2 text-black">Address</h3>
+                        <p className="text-black">{address.name} | {address.phone}</p>
+                        <p className="text-black">{address.address}</p>
                         <div className="flex space-x-3 mt-3">
                           <button 
                             onClick={() => handleEditAddress(address)}
-                            className="text-gray-700 hover:text-gray-900 text-sm font-medium px-2 py-1 transition-colors"
+                            className="text-indigo-700 hover:text-gray-900 text-sm font-medium px-2 py-1 transition-colors"
                           >
                             Edit
                           </button>

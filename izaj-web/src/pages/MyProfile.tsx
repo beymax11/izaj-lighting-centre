@@ -167,25 +167,25 @@ const MyProfile: React.FC = () => {
     });
   };
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   return (
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
       <div className="md:hidden bg-white px-4 pt-4">
         <div
-          className="w-full flex items-center gap-2 p-0 text-gray-700 font-medium text-base cursor-pointer"
+          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
           onClick={() => setIsAccountModalOpen(true)}
         >
-          <Icon icon="mdi:account" className="text-gray-600 w-5 h-5" />
-          <span>My Account</span>
-          <Icon icon="mdi:chevron-down" className="text-gray-600 w-5 h-5 ml-1" />
+          <span>My Profile</span>
+          <Icon icon="mdi:chevron-down" className="text-black w-6 h-6 ml-1" />
         </div>
       </div>
       {/* My Account Modal for Mobile */}
       {isAccountModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black bg-opacity-40" onClick={() => setIsAccountModalOpen(false)}>
           <div
-            className="w-full bg-white animate-slideUp relative"
-            style={{ minHeight: '220px' }}
+            className="w-full bg-white animate-slideUp  relative shadow-lg"
+            style={{ minHeight: '240px' }}
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -195,36 +195,35 @@ const MyProfile: React.FC = () => {
             >
               <Icon icon="mdi:close" />
             </button>
-            <div className="font-semibold text-lg mb-4 text-black text-center mt-2">My Account</div>
+            <div className="font-bold text-xl mb-4 text-black text-center mt-4">My Account</div>
             <ul className="space-y-1 px-4 pb-6">
               <li>
-                <span className="inline-flex items-center text-gray-700 font-medium text-sm">
-                  <Icon icon="mdi:account" className="text-gray-600 mr-2 w-5 h-5" />
+                <span className="inline-flex items-center text-black font-semibold text-base">
                   My Account
                 </span>
               </li>
-              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <a href="#profile" className="text-black font-medium text-sm block">Profile</a>
+              <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
+                <a href="#profile" className="text-black font-semibold text-base block">Profile</a>
               </li>
-              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link to="/banks-cards" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/banks-cards" className="text-black hover:text-gray-900 text-base block transition-colors">Payment Methods</Link>
               </li>
-              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link to="/addresses" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link to="/addresses" className="text-black  hover:text-gray-900 text-base block transition-colors">Addresses</Link>
               </li>
-              <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                <Link to="/change-password" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
+                <Link to="/change-password" className="text-black hover:text-gray-900 text-base block transition-colors">Change Password</Link>
               </li>
             </ul>
           </div>
         </div>
       )}
       {/* Main Content - My Profile Section */}
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6">
+      <main className="flex-grow bg-white py-6 md:py-12">
+        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left Column - User Profile (Narrower) - Hidden on mobile */}
-            <div className="w-full md:w-72 bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md hidden md:block">
+            <div className="w-full md:w-72 p-6 transition-all duration-300 hover:shadow-md hidden md:block">
               <div className="flex flex-col items-center">
                 {/* Profile image and name only on desktop */}
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm transition-transform duration-300 hover:scale-105">
@@ -234,23 +233,23 @@ const MyProfile: React.FC = () => {
                   {`${formData.firstName} ${formData.lastName}`.trim() || 'User'}
                 </div>
                 <ul className="w-full space-y-1">
-                  {/* My Account - Active Item */}
-                  <li className="flex items-center p-3 bg-gray-50 rounded-lg mb-1 transition-colors duration-300">
-                    <Icon icon="mdi:account" className="text-gray-600 mr-2 w-5 h-5" />
-                    <span className="text-gray-700 font-medium text-sm">My Account</span>
+                  {/* My Account - Not highlighted */}
+                  <li className="flex items-center p-3 rounded-lg mb-1 transition-colors duration-300">
+                    <Icon icon="lucide:user" className="text-black mr-2 w-5 h-5" />
+                    <span className="text-black font-medium text-sm">My Account</span>
                   </li>
                   {/* Submenu Items */}
-                  <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <a href="#profile" className="text-gray-600 font-medium text-sm block">Profile</a>
+                  <li className="pl-10 py-2 bg-gray-100 rounded-lg transition-colors duration-300">
+                    <a href="#profile" className="text-black font-semibold text-sm block">Profile</a>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <Link to="/banks-cards" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
+                    <Link to="/banks-cards" className="text-black hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <Link to="/addresses" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
+                    <Link to="/addresses" className="text-black hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                    <Link to="/change-password" className="text-gray-600 hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
+                    <Link to="/change-password" className="text-black hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
                   </li>
                 </ul>
               </div>
@@ -258,90 +257,163 @@ const MyProfile: React.FC = () => {
             
             {/* Right Column - Profile Content */}
             <div className="flex-1">
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
-               
-
                 {/* Profile Form */}
-                <form onSubmit={handleSubmit} className="p-6">
+                <form onSubmit={handleSubmit} className="p-2 sm:p-4 md:p-6">
                   <div className="flex flex-col md:flex-row gap-8">
                     {/* Left Column - Form Fields */}
                     <div className="flex-1">
                       {/* First Name Field */}
-                      <div className="mb-5">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name:</label>
+                      <div className="mb-4 sm:mb-5">
+                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">First Name:</label>
                         <input 
                           type="text" 
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
                           disabled={!isEditMode}
-                          className={`w-full p-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
+                          className={`w-full p-2 sm:p-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
                           placeholder="Enter your first name"
                         />
-                        {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+                        {errors.firstName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.firstName}</p>}
                       </div>
 
                       {/* Last Name Field */}
-                      <div className="mb-5">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name:</label>
+                      <div className="mb-4 sm:mb-5">
+                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">Last Name:</label>
                         <input 
                           type="text" 
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
                           disabled={!isEditMode}
-                          className={`w-full p-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
+                          className={`w-full p-2 sm:p-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
                           placeholder="Enter your last name"
                         />
-                        {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
+                        {errors.lastName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.lastName}</p>}
                       </div>
 
                       {/* Email Field (always disabled) */}
-                      <div className="mb-5">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email:</label>
+                      <div className="mb-4 sm:mb-5">
+                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">Email:</label>
                         <input 
                           type="email" 
                           value={formData.email} 
                           disabled
-                          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                          className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
                         />
                       </div>
 
                       {/* Phone Number Field */}
-                      <div className="mb-5">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number:</label>
+                      <div className="mb-4 sm:mb-5">
+                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">Phone Number:</label>
                         <input 
                           type="tel" 
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           disabled={!isEditMode}
-                          className={`w-full p-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
+                          className={`w-full p-2 sm:p-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
                           placeholder="Enter your phone number"
                         />
-                        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                        {errors.phone && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.phone}</p>}
+                      </div>
+
+                      {/* Save and Edit Buttons - moved here */}
+                      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-2 sm:mt-4 mb-2">
+                        {isEditMode ? (
+                          <>
+                            <button 
+                              type="button"
+                              onClick={handleCancelEdit}
+                              className="px-6 sm:px-8 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm text-xs sm:text-base"
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              type="submit"
+                              disabled={isLoading}
+                              className={`px-6 sm:px-8 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center text-xs sm:text-base ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                            >
+                              {isLoading ? (
+                                <>
+                                  <Icon icon="mdi:loading" className="animate-spin mr-2" />
+                                  Saving...
+                                </>
+                              ) : (
+                                'Save'
+                              )}
+                            </button>
+                          </>
+                        ) : (
+                          <button 
+                            type="button"
+                            onClick={handleEditClick}
+                            className="px-6 sm:px-8 py-2 sm:py-3 bg-indigo-700 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors shadow-sm text-xs sm:text-base"
+                          >
+                            Edit
+                          </button>
+                        )}
                       </div>
 
                       {/* Request Account Deletion and Delete Buttons */}
-                      <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200">
+                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-6 sm:mt-8 pt-4 border-t border-gray-200 gap-2 sm:gap-0">
                         <button 
                           type="button"
-                          className="text-red-500 text-sm font-medium hover:text-red-600 transition-colors"
+                          className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left"
+                          onClick={() => setShowDeleteModal(true)}
                         >
-                          Request Account Deletion
+                          Account Deletion
                         </button>
                         <button 
                           type="button"
-                          className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                          className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors shadow-sm"
+                          onClick={() => setShowDeleteModal(true)}
                         >
                           Delete
                         </button>
                       </div>
+
+                      {/* Delete Confirmation Modal */}
+                      {showDeleteModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative">
+                            <button
+                              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+                              onClick={() => setShowDeleteModal(false)}
+                              aria-label="Close"
+                            >
+                              <Icon icon="mdi:close" />
+                            </button>
+                            <div className="text-lg font-semibold text-gray-900 mb-2">Confirm Account Deletion</div>
+                            <div className="text-gray-700 text-sm mb-6">
+                              Are you sure you want to delete your account? A confirmation link will be sent to your email <span className="font-semibold">{formData.email}</span>. Please check your inbox to proceed.
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                                onClick={() => setShowDeleteModal(false)}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm"
+                                onClick={() => {
+                                  setShowDeleteModal(false);
+                                  // Simulate sending confirmation email here
+                                  alert(`A confirmation link has been sent to ${formData.email}`);
+                                }}
+                              >
+                                Confirm
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Right Column - Image Upload */}
-                    <div className="flex flex-col items-center md:items-start">
-                      <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-4 shadow-sm transition-transform duration-300 hover:scale-105">
+                    <div className="flex flex-col items-center md:items-start mt-6 md:mt-0">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105">
                         <img src={profileImage} alt="Profile" className="w-full h-full object-cover"/>
                       </div>
                       <input
@@ -354,55 +426,17 @@ const MyProfile: React.FC = () => {
                       <button 
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-gray-600 text-sm font-medium hover:text-gray-700 mb-2 transition-colors"
+                        className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors"
                       >
                         Change Photo
                       </button>
-                      <p className="text-gray-500 text-xs">
+                      <p className="text-gray-500 text-[10px] sm:text-xs text-center">
                         File size: maximum 1 MB<br/>
                         File extension: JPEG, PNG
                       </p>
                     </div>
                   </div>
-
-                  {/* Save and Edit Buttons */}
-                  <div className="flex justify-end gap-4 mt-8">
-                    {isEditMode ? (
-                      <>
-                        <button 
-                          type="button"
-                          onClick={handleCancelEdit}
-                          className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm"
-                        >
-                          Cancel
-                        </button>
-                        <button 
-                          type="submit"
-                          disabled={isLoading}
-                          className={`px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
-                        >
-                          {isLoading ? (
-                            <>
-                              <Icon icon="mdi:loading" className="animate-spin mr-2" />
-                              Saving...
-                            </>
-                          ) : (
-                            'Save'
-                          )}
-                        </button>
-                      </>
-                    ) : (
-                      <button 
-                        type="button"
-                        onClick={handleEditClick}
-                        className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
                 </form>
-              </div>
             </div>
           </div>
         </div>

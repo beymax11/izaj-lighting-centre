@@ -15,6 +15,7 @@ const ItemDescription: React.FC = () => {
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [product, setProduct] = useState<any>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState(1);
   
   useEffect(() => {
     // Get product data from the allProducts array in Home.tsx
@@ -227,18 +228,34 @@ const ItemDescription: React.FC = () => {
               <div>
                 <p className="text-2xl font-bold mb-4 text-black">{product.price}</p>
                 <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-green-600">In Stock</span></p>
-                {product.size && (
-                  <p className="mb-6 text-gray-600">Size: <span className="font-semibold">{product.size}</span></p>
-                )}
+                
                 <div className="flex flex-col gap-4 mb-8">
                   <div className="flex items-center gap-4">
                     <label className="font-medium text-black">Quantity:</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      defaultValue="1" 
-                      className="w-16 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:outline-none text-black" 
-                    />
+                    <div className="flex items-center border border-gray-300 rounded">
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-black hover:bg-gray-100 disabled:opacity-50"
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        disabled={quantity <= 1}
+                      >
+                        <Icon icon="mdi:minus" className="w-5 h-5" />
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={quantity}
+                        onChange={e => setQuantity(Math.max(1, Number(e.target.value)))}
+                        className="w-12 p-2 text-center border-0 focus:ring-0 focus:outline-none text-black bg-transparent"
+                      />
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-black hover:bg-gray-100"
+                        onClick={() => setQuantity(q => q + 1)}
+                      >
+                        <Icon icon="mdi:plus" className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <label className="font-medium text-black">Branch Availability:</label>
@@ -410,21 +427,34 @@ const ItemDescription: React.FC = () => {
               {/* Stock */}
               <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-green-600">In Stock</span></p>
 
-              {/* Size */}
-              {product.size && (
-                <p className="mb-6 text-gray-600">Size: <span className="font-semibold">{product.size}</span></p>
-              )}
-
               {/* Quantity & Branch Availability */}
               <div className="flex flex-col gap-4 mb-8">
                 <div className="flex items-center gap-4">
                   <label className="font-medium text-black">Quantity:</label>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    defaultValue="1" 
-                    className="w-16 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:outline-none text-black" 
-                  />
+                  <div className="flex items-center border border-gray-300 rounded">
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-black hover:bg-gray-100 disabled:opacity-50"
+                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                      disabled={quantity <= 1}
+                    >
+                      <Icon icon="mdi:minus" className="w-5 h-5" />
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={e => setQuantity(Math.max(1, Number(e.target.value)))}
+                      className="w-12 p-2 text-center border-0 focus:ring-0 focus:outline-none text-black bg-transparent"
+                    />
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-black hover:bg-gray-100"
+                      onClick={() => setQuantity(q => q + 1)}
+                    >
+                      <Icon icon="mdi:plus" className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <label className="font-medium text-black">Branch Availability:</label>

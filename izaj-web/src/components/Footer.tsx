@@ -156,7 +156,7 @@ const Footer: React.FC = () => {
               <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2 text-black">Phone Contact</h3>
-                <p className="text-sm md:text-base text-gray-600">Monday to Sunday 9:00am - 5:00pm</p>
+                <p className="text-sm md:text-base text-gray-600">Monday to Sunday 8:00am - 7:00pm</p>
               </div>
             </div>
         
@@ -240,13 +240,13 @@ const Footer: React.FC = () => {
               </ul>
             </div>
 
-            {/* Our Location - Mobile Dropdown */}
+            {/* Connect With Us - Mobile Dropdown */}
             <div>
               <button 
                 onClick={() => setIsLocationOpen(!isLocationOpen)}
                 className="flex items-center justify-between w-full md:hidden"
               >
-                <h3 className="font-bold text-lg md:text-xl tracking-tight">OUR LOCATION</h3>
+                <span className="font-bold text-lg md:text-xl tracking-tight whitespace-nowrap">CONNECT WITH US</span>
                 <Icon 
                   icon={isLocationOpen ? "mdi:chevron-up" : "mdi:chevron-down"} 
                   width="24" 
@@ -254,10 +254,32 @@ const Footer: React.FC = () => {
                   className="text-gray-700"
                 />
               </button>
-              <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">OUR LOCATION</h3>
-              <ul className={`space-y-2 md:space-y-3 ${isLocationOpen ? 'block' : 'hidden'} md:block`}>
-                <li><a href="tel:+639123456789" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">173 1, San Pablo City, 4000 Laguna</a></li>
-              </ul>
+                <span className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block whitespace-nowrap">CONNECT WITH US</span>
+                <ul className={`space-y-2 md:space-y-3 ${isLocationOpen ? 'block' : 'hidden'} md:block`}>
+                <li>
+                  <a href="mailto:izajtrading@gmail.com" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2">
+                  <span className="flex items-center">
+                    <Icon icon="mdi:email-outline" width={18} height={18} className="inline-block align-middle !text-gray-700" />
+                    <span className="inline-block align-middle ml-1">izajtrading@gmail.com</span>
+                  </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+639123456789" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2">
+                  <Icon icon="mdi:cellphone" width="18" height="18" /> +63 9423633442
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+63491234567" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2">
+                  <Icon icon="mdi:phone" width="18" height="18" /> (049) 123 4567
+                  </a>
+                </li>
+                <li>
+                  <a href="https://facebook.com/izajlighting" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2">
+                  <Icon icon="mdi:facebook" width="18" height="18" className="text-[#1877F3]" /> Izaj Lighting Centre
+                  </a>
+                </li>
+                </ul>
             </div>
 
             {/* Our Branches - Mobile Dropdown */}
@@ -276,13 +298,46 @@ const Footer: React.FC = () => {
               </button>
               <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">OUR BRANCHES</h3>
               <ul className={`space-y-1 md:space-y-2 text-gray-500 text-sm md:text-base ${isBranchesOpen ? 'block' : 'hidden'} md:block`}>
-                <li>Quezon</li>
-                <li>Laguna</li>
-                <li>Cavite</li>
-                <li>Batangas</li>
-                <li>Camarines Sur</li>
-                <li>Sorsogon</li>
-                <li>La Union</li>
+                <li>
+                  <BranchDropdown name="San Pablo City">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">173 1, San Pablo City, 4000 Laguna</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="Quezon">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Lucena, Quezon Province</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="Laguna">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Sta. Cruz, Laguna</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="Cavite">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Silang, Cavite</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="Batangas">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Lipa, Batangas</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="Camarines Sur">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Naga City, Camarines Sur</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="Sorsogon">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Sorsogon City, Sorsogon</span>
+                  </BranchDropdown>
+                </li>
+                <li>
+                  <BranchDropdown name="La Union">
+                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Bauang, La Union</span>
+                  </BranchDropdown>
+                </li>
               </ul>
             </div>
           </div>
@@ -495,6 +550,32 @@ const Footer: React.FC = () => {
         </div>
       )}
     </>
+  );
+};
+
+// BranchDropdown component
+interface BranchDropdownProps {
+  name: string;
+  children: React.ReactNode;
+}
+
+const BranchDropdown: React.FC<BranchDropdownProps> = ({ name, children }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="w-full text-left px-2 py-1 hover:text-orange-500 transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        <span>{name}</span>
+      </button>
+      {open && (
+        <div className="pl-4 pt-1">
+          {children}
+        </div>
+      )}
+    </div>
   );
 };
 
