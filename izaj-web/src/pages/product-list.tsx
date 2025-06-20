@@ -671,7 +671,14 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           className="flex flex-row bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 p-3 items-center space-x-4 transition-all duration-300"
         >
           {/* Image on the left */}
-          <div className="w-24 h-24 flex-shrink-0 bg-white flex items-center justify-center">
+          <div className="w-24 h-24 flex-shrink-0 bg-white flex items-center justify-center relative">
+            {/* SALE and NEW labels */}
+            {product.isOnSale && (
+              <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">SALE</div>
+            )}
+            {product.isNew && (
+              <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">NEW</div>
+            )}
             <img
               src={product.image}
               alt={product.name}
@@ -694,45 +701,49 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             >
               Choose options
             </button>
-            <button
-              className="w-full py-2 rounded bg-[#F6D376] text-white font-bold text-base mt-2"
-              style={{ fontFamily: 'Poppins, sans-serif' }}
-            >
-              Add to cart
-            </button>
           </div>
         </div>
       ) : (
-        <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[420px] rounded-lg">
-          <div className="relative flex-grow h-[280px]">
-            <div className="w-full h-full bg-white flex items-center justify-center">
-              <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
-            </div>
+        <div key={product.id} className="flex flex-row bg-white rounded-lg overflow-hidden shadow border border-gray-200 items-center p-4 max-w-5xl mx-auto">
+          {/* Image on the left */}
+          <div className="w-56 h-56 flex-shrink-0 flex items-center justify-center bg-white relative">
+            {/* SALE and NEW labels */}
+            {product.isOnSale && (
+              <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded shadow z-10">SALE</div>
+            )}
+            {product.isNew && (
+              <div className="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded shadow z-10">NEW</div>
+            )}
+            <img src={product.image} alt={product.name} className="w-full h-full object-contain p-2" />
           </div>
-          <div className="p-3 sm:p-4 flex flex-col flex-grow">
-            <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-            <div className="flex items-center space-x-2 mb-2 mt-2">
-              {product.colors?.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => handleColorSelect(product.id, color)}
-                  className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
-                    selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
-                  }`}
-                  style={{ backgroundColor: color }}
-                  title={color.charAt(0).toUpperCase() + color.slice(1)}
-                />
-              ))}
+          {/* Details on the right */}
+          <div className="flex-1 flex flex-col justify-between pl-10 h-full min-w-0">
+            <div>
+              <h3 className="font-semibold text-xl text-gray-900 mb-1 truncate" style={{ fontFamily: 'Poppins, sans-serif' }}>{product.name}</h3>
+              <div className="flex items-center space-x-2 mb-2 mt-2">
+                {product.colors?.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => handleColorSelect(product.id, color)}
+                    className={`w-5 h-5 border border-gray-300 transition-all duration-200 ${selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''}`}
+                    style={{ backgroundColor: color }}
+                    title={color.charAt(0).toUpperCase() + color.slice(1)}
+                  />
+                ))}
+              </div>
+              <p className="font-bold text-gray-800 text-lg mb-1">₱{product.price.toLocaleString()}</p>
+              <p className="text-green-600 text-xs mb-2">● In stock</p>
             </div>
-            <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">{product.price}</p>
-            <p className="text-green-600 text-xs mt-1 mb-3">● In stock</p>
-            <Link
-              to={`/item-description/${product.id}`}
-              state={user ? { user } : undefined}
-              className="mt-auto w-full bg-black text-white py-1.5 sm:py-2 hover:bg-gray-800 transition-colors duration-300 text-xs sm:text-sm text-center block"
-            >
-              Choose options
-            </Link>
+            <div className="flex flex-row gap-4 mt-2">
+              <Link
+                to={`/item-description/${product.id}`}
+                state={user ? { user } : undefined}
+                className="flex-1 bg-black text-white py-3 rounded-md text-base font-semibold text-center hover:bg-gray-800 transition-colors duration-300"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                Choose options
+              </Link>
+            </div>
           </div>
         </div>
       )
