@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { supabase } from '../supabase/supabaseClient.js';
 import sessionHandler from './sessionHandler.js';
+import { supabase as productSupabase } from '../supabase/supabaseProduct.js';
 import { logAuditEvent, AuditActions } from '../../src/util/auditLogger.js';
 
 const app = express();
@@ -700,6 +701,310 @@ app.get('/api/admin/audit-logs', authenticate, async (req, res) => {
     });
   }
 });
+
+// GET Products from Inventory DB and upsert into Client DB
+app.get('/api/products', authenticate, async (req, res) => {
+  try {
+    const { after, limit = 100, sync } = req.query;
+
+    if (!sync || sync === 'false') {
+      return res.redirect('/api/products/existing');
+    }
+
+    let invQuery = productSupabase
+      .from('centralized_product')
+      .select(`
+        id,
+        product_name,
+        quantity,
+        price,
+        status,
+        category:category ( category_name ),
+        branch:branch ( location )
+      `)
+      .order('created_at', { ascending: true })
+      .limit(parseInt(limit, 10));
+
+    if (after) invQuery = invQuery.gt('created_at', after);
+
+    const { data: invRows, error: fetchErr } = await invQuery;
+    if (fetchErr) {
+      console.error('Error fetching products:', fetchErr);
+      return res.status(500).json({
+        error: 'Failed to fetch products',
+        details: fetchErr.message
+      });
+    }
+
+    if (!invRows?.length) {
+      return res.json({
+        success: true,
+        products: [],
+        synced: 0,
+        skipped: 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const rowsForClient = invRows.map((r) => ({
+      product_id: r.id,
+      product_name: r.product_name,
+      quantity: r.quantity,
+      price: r.price,
+      status: r.status ?? 'active',
+      category: r.category?.category_name?.trim() || null,
+      branch: r.branch?.location?.trim() || null,
+      is_published: false,
+    }));
+
+    const { data: upserted, error: upsertErr } = await supabase
+      .from('products')
+      .upsert(rowsForClient, {
+        onConflict: 'product_id',
+        ignoreDuplicates: false
+      })
+      .select();
+
+    if (upsertErr) {
+      console.error('Error inserting into client DB:', upsertErr);
+      return res.status(500).json({
+        error: 'Failed to insert products into client database',
+        details: upsertErr.message
+      });
+    }
+
+    const syncedCount = upserted ? upserted.length : rowsForClient.length;
+
+    res.json({
+      success: true,
+      products: upserted,
+      synced: syncedCount,
+      skipped: Math.max(0, invRows.length - syncedCount),
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error syncing products:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to sync products'
+    });
+  }
+});
+
+// GET Products from Client DB (DB2) for display
+app.get('/api/client-products', async (req, res) => {
+  try {
+    const { page = 1, limit = 100, status, category, search } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let query = supabase
+      .from('products')
+      .select(`
+        id,
+        product_id,
+        product_name,
+        quantity,
+        price,
+        status,
+        category,
+        branch,
+        inserted_at
+      `)
+      .eq('is_published', true)
+      .order('inserted_at', { ascending: false });
+
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
+    }
+
+    if (search && search.trim()) {
+      query = query.ilike('product_name', `%${search.trim()}%`);
+    }
+
+    query = query.range(offset, offset + parseInt(limit) - 1);
+
+    const { data: products, error: fetchError, count } = await query;
+
+    if (fetchError) {
+      console.error('Error fetching client products:', fetchError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch products from client database',
+        details: fetchError.message
+      });
+    }
+
+    const { count: totalCount, error: countError } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+       .eq('is_published', true);
+
+    if (countError) {
+      console.error('Error getting product count:', countError);
+    }
+
+    res.json({
+      success: true,
+      products: products || [],
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalCount || 0,
+        totalPages: Math.ceil((totalCount || 0) / parseInt(limit))
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Server error in client-products:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      details: error.message
+    });
+  }
+});
+
+// GET Product categories from Client DB for filters
+app.get('/api/client-products/categories', async (req, res) => {
+  try {
+    const { data: categories, error } = await supabase
+      .from('products')
+      .select('category')
+      .not('category', 'is', null)
+      .order('category');
+
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch categories',
+        details: error.message
+      });
+    }
+
+    // Get unique categories
+    const uniqueCategories = [...new Set(categories.map(item => item.category))];
+
+    res.json({
+      success: true,
+      categories: uniqueCategories,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Server error in categories:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      details: error.message
+    });
+  }
+});
+
+// UPDATE product description & image URL in Client DB
+app.put('/api/client-products/:id/configure', async (req, res) => {
+  const { id } = req.params;
+  const { description, image_url } = req.body;
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ description, image_url })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true, product: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// 1. Endpoint to fetch existing products from Client DB
+app.get('/api/products/existing', authenticate, async (req, res) => {
+  try {
+    const { data: products, error } = await supabase
+      .from('products')
+      .select(`
+        id,
+        product_name,
+        quantity,
+        price,
+        status,
+        category,
+        branch,
+        description,
+        image_url,
+        is_published
+      `)
+      .eq('is_published', true)
+      .order('inserted_at', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching existing products:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch existing products',
+        details: error.message
+      });
+    }
+
+    res.json({
+      success: true,
+      products: products || []
+    });
+  } catch (error) {
+    console.error('Error fetching existing products:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch existing products'
+    });
+  }
+});
+
+// Get pending products count
+app.get('/api/products/pending-count', authenticate, async (req, res) => {
+  const { count, error } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_published', false);
+  
+  res.json({ count: count || 0 });
+});
+
+// Get pending products for modal
+app.get('/api/products/pending', authenticate, async (req, res) => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('is_published', false);
+  
+  res.json({ success: true, products: data || [] });
+});
+
+// Publish selected products
+app.post('/api/products/publish', authenticate, async (req, res) => {
+  const { productIds } = req.body;
+  
+  const { data, error } = await supabase
+    .from('products')
+    .update({ is_published: true })
+    .in('id', productIds);
+  
+  res.json({ success: !error });
+});
+
+
+
+
+
 
 
 

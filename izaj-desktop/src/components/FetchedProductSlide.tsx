@@ -3,11 +3,15 @@ import { Session } from '@supabase/supabase-js';
 
 interface FetchedProduct {
   id: string;
-  name: string;
-  price: string;
-  description: string;
-  category: string;
-  image: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  status: string;
+  category: string | { category_name: string } | null;
+  branch: string | { location: string } | null;
+  description: string | null;
+  image_url: string | null;   
+  created_at?: string;
 }
 
 interface FetchedProductSlideProps {
@@ -17,10 +21,13 @@ interface FetchedProductSlideProps {
   handlePrev: () => void;
   handleNext: () => void;
   handleAdd: (product: FetchedProduct) => void;
+  
 }
 
 export function FetchedProductSlide({ fetchedProducts, currentIndex, handlePrev, handleNext}: FetchedProductSlideProps) {
-  if (!fetchedProducts.length) return null;
+  if (!fetchedProducts.length || currentIndex >= fetchedProducts.length) {return 
+    <p className ="text-center text-gray-500"> No unpublished products to review. </p>
+  }
   const product = fetchedProducts[currentIndex];
   return (
     <div className="w-full flex justify-center relative" style={{ minHeight: '280px' }}>
@@ -38,16 +45,20 @@ export function FetchedProductSlide({ fetchedProducts, currentIndex, handlePrev,
         {/* Card Content */}
         <div className="relative">
           <img
-            src={product.image}
-            alt={product.name}
+            src={product.image_url ?? ""}
+            alt={product.product_name}
             className="w-full h-48 sm:h-64 md:h-96 object-cover transition-transform duration-300 group-hover:scale-105 bg-gray-100"
           />
           <div className="absolute top-4 sm:top-8 left-4 sm:left-8 bg-white/80 px-3 sm:px-6 py-2 sm:py-3 shadow text-sm sm:text-lg font-semibold text-yellow-700 border border-yellow-100">
-            {product.category}
+            {typeof product.category === 'string'
+              ? product.category
+              : product.category && typeof product.category === 'object'
+                ? product.category.category_name
+                : ''}
           </div>
         </div>
         <div className="p-4 sm:p-8 md:p-12 space-y-3 sm:space-y-6">
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2 sm:mb-3">{product.name}</h3>
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2 sm:mb-3">{product.product_name}</h3>
           <p className="text-lg sm:text-xl md:text-2xl text-yellow-600 font-semibold">{product.price}</p>
         </div>
       </div>
