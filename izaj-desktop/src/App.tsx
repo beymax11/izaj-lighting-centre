@@ -13,8 +13,11 @@ import Dashboard from './pages/Dashboard';
 import { Session } from '@supabase/supabase-js';
 import { ProfileData } from './pages/profile';
 import PrivateRoute from './route/PrivateRoute';
+import { useNotifications } from './util/notificationsProvider';
 
-function App() {
+function App(
+
+) {
 
   const [session, setSession] = useState<Session | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -23,34 +26,14 @@ function App() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'New Order',
-      message: 'You have received a new order #1234',
-      time: '5 minutes ago',
-      read: false,
-      type: 'order'
-    },
-    {
-      id: 2,
-      title: 'Payment Received',
-      message: 'Payment of ₱2,500 has been received',
-      time: '1 hour ago',
-      read: false,
-      type: 'payment'
-    },
-    {
-      id: 3,
-      title: 'Low Stock Alert',
-      message: 'Product "Ceiling Light" is running low on stock',
-      time: '2 hours ago',
-      read: true,
-      type: 'alert'
-    }
-  ]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); 
+  const {
+  notifications,
+  notificationsOpen,
+  toggleNotifications,
+  handleNotificationClick,
+  markAllAsRead,
+} = useNotifications();
 
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
@@ -87,7 +70,6 @@ function App() {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.notification-container')) {
-        setNotificationsOpen(false);
       }
     };
 
@@ -97,20 +79,6 @@ function App() {
     };
   }, []);
 
-  const handleNotificationClick = (id: number) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === id ? { ...notification, read: true } : notification
-    ));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
-  };
-
-  const toggleNotifications = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setNotificationsOpen(!notificationsOpen);
-  };
 
   const handleNavigation = (page: string) => {
     setCurrentPage(page);

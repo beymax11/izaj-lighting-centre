@@ -1,11 +1,14 @@
 import { Icon } from '@iconify/react';
 import { Session } from '@supabase/supabase-js';
+import { useNotifications } from '../util/notificationsProvider';
 
 interface HeaderProps {
   session: Session | null;
   sidebarCollapsed: boolean;
   setMobileMenuOpen: (open: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+
+  // Notifications
   notifications: Array<{
     id: number;
     title: string;
@@ -20,17 +23,26 @@ interface HeaderProps {
   markAllAsRead: () => void;
 }
 
+
 const Header = ({
   sidebarCollapsed,
   setMobileMenuOpen,
   setSidebarCollapsed,
-  notifications,
-  notificationsOpen,
-  toggleNotifications,
-  handleNotificationClick,
-  markAllAsRead,
-}: HeaderProps) => {
+  session,
+}:
+
+HeaderProps) => {
+  const {
+    notifications,
+    notificationsOpen,
+    toggleNotifications,
+    handleNotificationClick,
+    markAllAsRead,
+  } = useNotifications();
+
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  console.log('Header notifications:', notifications);
 
   return (
     <header

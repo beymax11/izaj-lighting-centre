@@ -1,29 +1,43 @@
-// Products.tsx
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AddProductModal } from '../components/AddProductModal';
 import { ManageStockModal } from '../components/ManageStockModal';
 import Stock from './Stock';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
+import { toast } from 'react-hot-toast';
 
 interface Product {
+  id: string;
   name: string;
   category: string;
   price: string;
-  stock: number;
+  quantity: number;
   status: string;
   variant: number | null;
   image: string;
 }
 
-interface FetchedProduct {
+export interface FetchedProduct {
   id: string;
-  name: string;
-  price: string;
-  description: string;
-  category: string;
-  image: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  status: string;
+  category: string | { category_name: string } | null;
+  branch: string | { location: string } | null;
+  description: string | null;
+  image_url: string | null;   
+  created_at?: string;
+  is_published?: boolean;
+}
+
+interface ApiResponse {
+  success: boolean;
+  products: FetchedProduct[];
+  synced: number;
+  skipped: number;
+  timestamp: string;
 }
 
 interface ProductsProps {
@@ -39,71 +53,36 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   const [showManageStockModal, setShowManageStockModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFetching, setIsFetching] = useState(false);
-  const [fetchedProducts, setFetchedProducts] = useState<FetchedProduct[]>([]);
   const [filter, setFilter] = useState<'all' | 'sale'>('all');
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<ViewType>('products');
-  const [products, setProducts] = useState<Product[]>([
-    {
-      name: 'LED Surface Panel Light',
-      category: 'Ceiling Light',
-      price: '₱ 3,999',
-      stock: 210,
-      status: 'Active',
-      variant: null,
-      image: '/aber.webp'
-    },
-    {
-      name: 'Plug in Pendant Light',
-      category: 'Pendant Light',
-      price: '₱ 1,999',
-      stock: 16,
-      status: 'Active',
-      variant: 2,
-      image: '/ceiling.jpg'
-    },
-    {
-      name: 'Cluster Chandelier',
-      category: 'Chandelier',
-      price: '₱ 6,999',
-      stock: 0,
-      status: 'Out of Stock',
-      variant: null,
-      image: '/chadelier.jpg'
-    },
-    {
-      name: 'Modern Chandelier Ceiling',
-      category: 'Chandelier',
-      price: '₱ 5,499',
-      stock: 0,
-      status: 'Out of Stock',
-      variant: null,
-      image: '/cluster.jpg'
-    },
-    {
-      name: 'Kovacs 1 Light Arc Floor Lamp',
-      category: 'Floor Light',
-      price: '₱ 1,499',
-      stock: 350,
-      status: 'Active',
-      variant: 4,
-      image: '/floor.jpg'
-    },
-    {
-      name: 'Progress Lightning Ceiling',
-      category: 'Ceiling Light',
-      price: '₱ 3,999',
-      stock: 99,
-      status: 'Active',
-      variant: null,
-      image: '/pendant.jpg'
-    },
-  ]);
-  const [showFetchNotification, setShowFetchNotification] = useState(false);
+  const [fetchSuccess, setFetchSuccess] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState<string | null>(null);
+  const [syncStats, setSyncStats] = useState({ synced: 0, skipped: 0 });
+  const [hasLoadedFromDB, setHasLoadedFromDB] = useState(false);
+  const fetchingRef = useRef(false);
+  const [publishedProducts, setPublishedProducts] = useState<FetchedProduct[]>([]);
+  const [pendingProducts, setPendingProducts] = useState<FetchedProduct[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
 
-  const filteredProducts = filter === 'sale'
-    ? products.filter(p => p.variant !== null)
-    : products;
+  const filteredProducts = filter === 'sale' 
+    ? publishedProducts.filter(p => p.status === 'Sale') 
+    : publishedProducts;
+  
+  const convertFetchedToProduct = (fetchedProduct: FetchedProduct): Product => {
+    return {
+      id: fetchedProduct.id,
+      name: fetchedProduct.product_name,
+      category: typeof fetchedProduct.category === 'object'
+        ? fetchedProduct.category?.category_name || 'Uncategorized'
+        : fetchedProduct.category || 'Uncategorized',
+      price: `₱ ${fetchedProduct.price.toLocaleString()}`,
+      quantity: fetchedProduct.quantity,
+      status: fetchedProduct.status,
+      variant: null,
+      image: '/default-product.jpg'
+    };
+  };
 
   const handleViewChange = (newView: ViewType) => {
     if (newView === 'products') {
@@ -120,59 +99,220 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
 
   const handleUpdateStock = (newStock: number) => {
     if (selectedProduct) {
-      setProducts(prevProducts => 
+      setPublishedProducts(prevProducts => 
         prevProducts.map(p => 
-          p.name === selectedProduct.name 
-            ? { ...p, stock: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
+          p.id === selectedProduct.id 
+            ? { ...p, quantity: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
             : p
         )
       );
     }
   };
 
-  const handleFetchProducts = async () => {
-    setIsFetching(true);
+  const fetchPendingCount = useCallback(async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock data
-      const mockProducts: FetchedProduct[] = [
-        {
-          id: '1',
-          name: 'Modern LED Chandelier',
-          price: '$299.99',
-          description: 'Elegant modern LED chandelier with crystal accents',
-          category: 'Chandelier',
-          image: 'https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=800&auto=format&fit=crop&q=60'
-        },
-        {
-          id: '2',
-          name: 'Smart LED Panel',
-          price: '$199.99',
-          description: 'Ultra-thin smart LED panel with adjustable brightness',
-          category: 'Panel Light',
-          image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=800&auto=format&fit=crop&q=60'
-        },
-        {
-          id: '3',
-          name: 'Crystal Pendant Light',
-          price: '$149.99',
-          description: 'Beautiful crystal pendant light for modern interiors',
-          category: 'Ceiling Light',
-          image: 'https://images.unsplash.com/photo-1543198126-c78d457a604e?w=800&auto=format&fit=crop&q=60'
+      const response = await fetch(`http://localhost:3001/api/products/pending-count`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && {
+            'Authorization': `Bearer ${session.access_token}`
+          })
         }
-      ];
-      
-      setFetchedProducts(mockProducts);
-      setShowFetchNotification(true);
-      setTimeout(() => setShowFetchNotification(false), 3000);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingCount(data.count || 0);
+      }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching pending count:', error);
+    }
+  }, [session?.access_token]);
+
+  const fetchPendingProducts = useCallback(async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/products/pending`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && {
+            'Authorization': `Bearer ${session.access_token}`
+          })
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingProducts(data.products || []);
+      }
+    } catch (error) {
+      console.error('Error fetching pending products:', error);
+    }
+  }, [session?.access_token]);
+
+  const loadExistingProducts = useCallback(async () => {
+    if (fetchingRef.current) {
+      return;
+    }
+
+    fetchingRef.current = true;
+    setIsFetching(true);
+    
+    try {
+      const response = await fetch(`http://localhost:3001/api/products/existing?published=true`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && {
+            'Authorization': `Bearer ${session.access_token}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.products) {
+        const published = data.products?.filter((p: FetchedProduct) => p.is_published === true);
+        setPublishedProducts(published);
+        setHasLoadedFromDB(true);
+      }
+
+    } catch (error) {
+      console.error('Error loading existing products:', error);
     } finally {
       setIsFetching(false);
+      fetchingRef.current = false;
     }
+  }, [session?.access_token]);
+
+  // Add refresh function to reload both published and pending data
+  const refreshProductsData = useCallback(async () => {
+    console.log('Refreshing products data...');
+    await Promise.all([
+      loadExistingProducts(),
+      fetchPendingCount(),
+      fetchPendingProducts()
+    ]);
+  }, [loadExistingProducts, fetchPendingCount, fetchPendingProducts]);
+
+  const handleFetchProducts = useCallback(async (isManualSync: boolean = true) => {
+    if (fetchingRef.current) {
+      console.log('Fetch already in progress, skipping...');
+      return;
+    }
+
+    fetchingRef.current = true;
+    setIsFetching(true);
+    setFetchSuccess(false);
+    
+    try {
+      const params = new URLSearchParams();
+      if (lastFetchTime) {
+        params.append('after', lastFetchTime);
+      }
+      params.append('limit', '100');
+      params.append('sync', 'true');
+            
+      const response = await fetch(`http://localhost:3001/api/products?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && {
+            'Authorization': `Bearer ${session.access_token}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data: ApiResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error('API returned unsuccessful response');
+      }
+
+      const newProducts = data.products || [];
+      
+      if (newProducts.length === 0 && lastFetchTime) {
+        toast('No new products to fetch');
+        setFetchSuccess(true);
+        setSyncStats({ synced: 0, skipped: 0 });
+        return;
+      }
+
+      setLastFetchTime(data.timestamp);
+      localStorage.setItem('lastFetchTime', data.timestamp);
+      setFetchSuccess(true);
+      setSyncStats({ synced: data.synced, skipped: data.skipped });
+
+      await fetchPendingCount();
+
+      if (isManualSync) {
+        const successMessage = newProducts.length === 1 
+          ? `Successfully synced 1 product (${data.synced} synced, ${data.skipped} skipped)` 
+          : `Successfully synced ${newProducts.length} products (${data.synced} synced, ${data.skipped} skipped)`;
+        
+        toast.success(successMessage);
+      }
+
+    } catch (error) {
+      console.error('Error syncing products:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unknown error occurred while syncing products';
+      
+      if (isManualSync) {
+        toast.error(`Failed to sync products: ${errorMessage}`);
+      }
+      setFetchSuccess(false);
+    } finally {
+      setIsFetching(false);
+      fetchingRef.current = false;
+    }
+  }, [session?.access_token, lastFetchTime, fetchPendingCount]);
+
+  const handleManualSync = useCallback(() => {
+    handleFetchProducts(true);
+  }, [handleFetchProducts]);
+
+  const handleAddProductClick = async () => {
+    await fetchPendingProducts();
+    setShowAddProductModal(true);
   };
+
+  // Modified handleAddProductModalClose to refresh data
+  const handleAddProductModalClose = useCallback(async (shouldRefresh: boolean = false) => {
+    setShowAddProductModal(false);
+    
+    // If products were published, refresh the data
+    if (shouldRefresh) {
+      console.log('Product published, refreshing data...');
+      await refreshProductsData();
+      toast.success('Products updated successfully!');
+    }
+  }, [refreshProductsData]);
+
+  useEffect(() => {
+    if (session?.user?.id && !hasLoadedFromDB) {
+      console.log('Loading existing published products from DB2...');
+      loadExistingProducts();
+      fetchPendingCount();
+    }
+
+    const savedTime = localStorage.getItem('lastFetchTime');
+    if (savedTime) {
+      setLastFetchTime(savedTime);
+    }
+
+  }, [session?.user?.id, loadExistingProducts, hasLoadedFromDB, fetchPendingCount]);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -243,36 +383,52 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                       ? 'Manage product sales and discounts' 
                       : 'Manage product inventory and listings'}
                   </p>
+                  {/* Add sync stats display */}
+                  {fetchSuccess && syncStats.synced > 0 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Last sync: {syncStats.synced} synced, {syncStats.skipped} skipped
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <div className="relative flex-1 sm:flex-none">
                     <button
-                      onClick={handleFetchProducts}
+                      onClick={handleManualSync}
                       disabled={isFetching}
-                      className="w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl bg-white text-gray-700 font-medium border-2 border-gray-200 hover:border-gray-300 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-gray-200 focus:outline-none flex items-center justify-center gap-2"
+                      className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl font-medium border-2 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:outline-none flex items-center justify-center gap-2 ${
+                        fetchSuccess && !isFetching
+                          ? 'bg-green-500 text-white border-green-500 hover:bg-green-600'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 focus:ring-gray-200'
+                      }`}
                       style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
                     >
                       <Icon 
-                        icon={isFetching ? "mdi:loading" : "mdi:refresh"} 
+                        icon={
+                          isFetching 
+                            ? "mdi:loading" 
+                            : fetchSuccess 
+                              ? "mdi:check" 
+                              : "mdi:refresh"
+                        } 
                         className={`text-xl ${isFetching ? 'animate-spin' : ''}`} 
                       />
-                      {isFetching ? 'Fetching...' : 'Fetch'}
+                      {isFetching ? 'Syncing...' : fetchSuccess ? 'Synced' : 'Sync'}
                     </button>
-                    {showFetchNotification && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
-                        New!
-                      </span>
-                    )}
                   </div>
                   <button
-                    className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200"
+                    className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200 relative"
                     style={{
                       boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
                     }}
-                    onClick={() => setShowAddProductModal(true)}
+                    onClick={handleAddProductClick}
                   >
                     <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
                     {filter === 'sale' ? 'Add Sale' : 'Add Products'}
+                    {pendingCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                        {pendingCount}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -325,103 +481,143 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {filteredProducts.map((product, idx) => (
-                  <div key={idx} 
-                    className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group"
-                    style={{
-                      boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
-                    }}>
-                    <div className="mb-4">
-                      <div className="relative mb-4">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
-                        />
-                        {product.variant && (
-                          <span className="absolute top-2 right-2 bg-yellow-400 text-black px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
-                            {product.variant} variants
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-lg sm:text-xl mb-2 text-gray-800">{product.name}</h3>
-                      <p className="text-gray-500 text-sm mb-2">{product.category}</p>
-                      {product.status === 'Active' && (
-                        <span className="inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full bg-green-100 text-green-700 font-medium">🟢 Active</span>
-                      )}
-                      {product.status === 'Out of Stock' && (
-                        <span className="inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full bg-red-100 text-red-700 font-medium">⭕ Out of Stock</span>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="flex justify-between items-center border-t border-gray-100 pt-3 sm:pt-4">
-                        <div>
-                          <p className="text-xs sm:text-sm text-gray-500">Price</p>
-                          <p className="text-xl sm:text-2xl font-bold text-gray-800">{product.price}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs sm:text-sm text-gray-500">Stock</p>
-                          <p className={`text-base sm:text-lg font-semibold ${
-                            product.stock === 0 ? 'text-red-600' : 
-                            product.stock < 100 ? 'text-orange-500' : 
-                            'text-green-600'
-                          }`}>
-                            {product.stock}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 sm:space-y-2">
-                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-300 ${
-                              product.stock === 0 ? 'bg-red-400' : 
-                              product.stock < 100 ? 'bg-orange-400' : 
-                              'bg-green-400'
-                            }`}
-                            style={{ width: `${Math.min(product.stock / 3.5, 100)}%` }}
-                          ></div>
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-500">
-                          <span>Stock level</span>
-                          <span>{product.stock === 0 ? 'Out' : product.stock < 100 ? 'Low' : 'High'}</span>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowManageStockModal(true);
-                        }}
-                        className="w-full py-2.5 sm:py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg text-sm sm:text-base"
-                      >
-                        <Icon icon="mdi:plus-box" width={20} />
-                        {product.stock === 0 ? 'RESTOCK NOW' : 'MANAGE STOCK'}
-                      </button>
-                    </div>
+              {/* Loading state */}
+              {isFetching && !hasLoadedFromDB && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="flex items-center gap-3">
+                    <Icon icon="mdi:loading" className="text-2xl animate-spin text-gray-500" />
+                    <span className="text-gray-500">Loading products...</span>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!isFetching && filteredProducts.length === 0 && hasLoadedFromDB && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Icon icon="mdi:package-variant-closed" className="text-6xl text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-500 mb-2">No products found</h3>
+                  <p className="text-gray-400 mb-4">Click the Sync button to fetch products from your inventory.</p>
+                </div>
+              )}
+
+              {/* Products grid */}
+              {filteredProducts.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                  {filteredProducts.map((product) => (
+                    <div key={product.id} 
+                      className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
+                      }}>
+                      <div className="mb-4">
+                        <div className="relative mb-4">
+                          <img
+                            src="/default-product.jpg"
+                            alt={product.product_name}
+                            className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
+                          />
+                        </div>
+                        <h3 className="font-semibold text-lg sm:text-xl mb-2 text-gray-800">{product.product_name}</h3>
+                        <div className="space-y-1 mb-2">
+                          <p className="text-gray-500 text-sm">
+                            Category: {
+                              typeof product.category === 'object'
+                                ? product.category?.category_name
+                                : product.category || 'Uncategorized'
+                            }
+                          </p>
+                          {product.branch && (
+                            <p className="text-gray-500 text-sm">
+                              Branch: {
+                                typeof product.branch === 'object'
+                                  ? product.branch?.location
+                                  : product.branch
+                              }
+                            </p>
+                          )}
+                        </div>
+                        <span className={`inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full ${
+                          product.status === 'Active' || product.status === 'active'
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
+                        } font-medium`}>
+                          {(product.status === 'Active' || product.status === 'active') ? '🟢 Active' : '⭕ Out of Stock'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className="flex justify-between items-center border-t border-gray-100 pt-3 sm:pt-4">
+                          <div>
+                            <p className="text-xs sm:text-sm text-gray-500">Price</p>
+                            <p className="text-xl sm:text-2xl font-bold text-gray-800">₱ {product.price.toLocaleString()}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs sm:text-sm text-gray-500">Stock</p>
+                            <p className={`text-base sm:text-lg font-semibold ${
+                              product.quantity === 0 ? 'text-red-600' : 
+                              product.quantity < 100 ? 'text-orange-500' : 
+                              'text-green-600'
+                            }`}>
+                              {product.quantity}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 sm:space-y-2">
+                          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 ${
+                                product.quantity === 0 ? 'bg-red-400' : 
+                                product.quantity < 100 ? 'bg-orange-400' : 
+                                'bg-green-400'
+                              }`}
+                              style={{ width: `${Math.min(product.quantity / 3.5, 100)}%` }}
+                            ></div>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>Stock level</span>
+                            <span>{product.quantity === 0 ? 'Out' : product.quantity < 100 ? 'Low' : 'High'}</span>
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => {
+                            setSelectedProduct(convertFetchedToProduct(product));
+                            setShowManageStockModal(true);
+                          }}
+                          className="w-full py-2.5 sm:py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg text-sm sm:text-base"
+                        >
+                          <Icon icon="mdi:plus-box" width={20} />
+                          {product.quantity === 0 ? 'RESTOCK NOW' : 'MANAGE STOCK'}
+                        </button>
+
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             </div>
 
             {/* Modals */}
             {showAddProductModal && (
               <AddProductModal
-                onClose={() => setShowAddProductModal(false)}
+                session={session}
+                onClose={() => handleAddProductModalClose(false)}
+                onSuccess={() => handleAddProductModalClose(true)}
                 mode={filter === 'sale' ? 'sale' : 'product'}
-                fetchedProducts={fetchedProducts}
+                fetchedProducts={pendingProducts}
               />
             )}
-
+            {/* Manage Stock Modal 
             {showManageStockModal && selectedProduct && (
               <ManageStockModal
+                session={session}
                 onClose={() => setShowManageStockModal(false)}
                 product={selectedProduct}
                 onUpdateStock={handleUpdateStock}
               />
-            )}
+            )} */}
           </>
         )}
       </main>
