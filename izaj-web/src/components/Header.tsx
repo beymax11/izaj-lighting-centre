@@ -93,17 +93,19 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <div className="bg-black text-white text-center py-3 flex items-center justify-center" style={{ height: '30px', zIndex: 100 }}>
-        <p className="text-sm px-4">Monthly Sale is here! &rarr; Enjoy 10% OFF items for the month of June</p>
+      <div className="bg-black text-white text-center py-2 md:py-3 flex items-center justify-center w-full" style={{ height: undefined, minHeight: '30px', zIndex: 100 }}>
+        <p className="text-xs md:text-sm px-2 md:px-4 truncate whitespace-nowrap overflow-x-auto w-full">
+          Monthly Sale is here! &rarr; Enjoy 10% OFF items for the month of June
+        </p>
       </div>
 
-      <header className="bg-white px-4 md:px-10 py-3 flex flex-col">
+      <header className="bg-white px-4 lg:px-10 py-3 flex flex-col">
            {/* Top Header Row */}
            <div className="flex items-center justify-between w-full">
           {/* Mobile Menu Button and Logo Container */}
           <div className="flex items-center space-x-4">
             <button 
-              className="md:hidden text-black"
+              className="lg:hidden text-black"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               <Icon icon="mdi:menu" width="28" height="28" />
@@ -112,7 +114,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* Logo */}
             <Link to="/" className="flex flex-col items-start flex-shrink-0 w-full">
               <div
-                className="text-3xl md:text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
+                className="text-3xl lg:text-6xl tracking-wide flex-shrink-0 leading-tight font-regular"
                 style={{
                   color: "#000000",
                   fontFamily: "'Playfair Display', serif",
@@ -131,9 +133,9 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right Section with Search, User, Notification, and Cart Icons */}
-          <div className="flex items-center space-x-4 md:space-x-6">
+          <div className="flex items-center space-x-4 lg:space-x-6">
             {/* Search Bar - Hidden on mobile */}
-            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1/2">
+            <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-full max-w-xl">
               <input
                 type="text"
                 placeholder="Search"
@@ -149,7 +151,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Search Button */}
             <button 
-              className="md:hidden text-black"
+              className="lg:hidden text-black"
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
             >
               <Icon icon="ic:outline-search" width="25" height="25" />
@@ -316,7 +318,7 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Search Bar - Only visible when search icon is clicked */}
         {isMobileSearchOpen && (
-          <div className="md:hidden mt-4 relative">
+          <div className="lg:hidden mt-4 relative">
             <input
               type="text"
               placeholder="Search"
@@ -343,14 +345,14 @@ const Header: React.FC<HeaderProps> = ({
           <>
             {/* Backdrop */}
             <div 
-              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+              className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
               onClick={() => setIsMobileMenuOpen(false)}
             />
             
             {/* Modal Content */}
             <div
               ref={mobileMenuRef}
-              className="md:hidden absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white z-50 shadow-xl"
+              className="lg:hidden absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white z-50 shadow-xl"
             >
               {/* Top Bar with Close Button */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
@@ -511,7 +513,7 @@ const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Desktop Navbar - Hidden on mobile */}
-        <nav className="hidden md:block bg-white py-3">
+        <nav className="hidden lg:block bg-white py-3">
           <ul className="flex justify-center items-center space-x-10 text-sm font-medium">
             {/* HOME NAVIGATION - use onClick for SPA navigation */}
             <li className="flex items-center h-full">

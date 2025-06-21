@@ -189,9 +189,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
           <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 z-20" aria-label="Close modal">
             <Icon icon="fa6-solid:xmark" className="w-5 h-5 text-gray-500" />
           </button>
-          <div className="relative z-10 flex flex-col md:flex-row h-full">
+          <div className="relative z-10 flex flex-col lg:flex-row h-full">
             {/* Left side - Auth Form */}
-            <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
+            <div className="w-full lg:w-1/2 p-6 md:p-8 flex flex-col">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-1">
                   {isLogin ? 'Log in to your account' : 'Create an IZAJ account'}
@@ -499,7 +499,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
             </div>
 
             {/* Right side - Image Slideshow */}
-            <div className="hidden md:block w-1/2 relative overflow-hidden bg-gray-100">
+            <div className="w-full lg:w-1/2 relative overflow-hidden bg-gray-100 mt-6 lg:mt-0">
               {!imageError ? (
                 <>
                   {slides.map((slide, index) => (

@@ -171,7 +171,7 @@ const MyProfile: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
-      <div className="md:hidden bg-white px-4 pt-4">
+      <div className="lg:hidden bg-white px-4 pt-4">
         <div
           className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
           onClick={() => setIsAccountModalOpen(true)}
@@ -182,9 +182,9 @@ const MyProfile: React.FC = () => {
       </div>
       {/* My Account Modal for Mobile */}
       {isAccountModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black bg-opacity-40" onClick={() => setIsAccountModalOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40 overflow-y-auto" onClick={() => setIsAccountModalOpen(false)}>
           <div
-            className="w-full bg-white animate-slideUp  relative shadow-lg"
+            className="w-full bg-white animate-slideUp relative shadow-lg max-h-screen overflow-y-auto"
             style={{ minHeight: '240px' }}
             onClick={e => e.stopPropagation()}
           >
@@ -219,11 +219,11 @@ const MyProfile: React.FC = () => {
         </div>
       )}
       {/* Main Content - My Profile Section */}
-      <main className="flex-grow bg-white py-6 md:py-12">
-        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6">
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* Left Column - User Profile (Narrower) - Hidden on mobile */}
-            <div className="w-full md:w-72 p-6 transition-all duration-300 hover:shadow-md hidden md:block">
+      <main className="flex-grow bg-white py-6 md:py-8 lg:py-12">
+        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+            {/* Left Column - User Profile (Sidebar) - Only on large screens */}
+            <div className="w-full lg:w-72 p-6 transition-all duration-300 hover:shadow-md hidden lg:block">
               <div className="flex flex-col items-center">
                 {/* Profile image and name only on desktop */}
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm transition-transform duration-300 hover:scale-105">
@@ -258,9 +258,33 @@ const MyProfile: React.FC = () => {
             {/* Right Column - Profile Content */}
             <div className="flex-1">
                 {/* Profile Form */}
-                <form onSubmit={handleSubmit} className="p-2 sm:p-4 md:p-6">
-                  <div className="flex flex-col md:flex-row gap-8">
-                    {/* Left Column - Form Fields */}
+                <form onSubmit={handleSubmit} className="p-2 sm:p-4 md:p-6 lg:p-8">
+                  <div className="flex flex-col gap-4">
+                    {/* Image Upload Section - Always on top for mobile and md */}
+                    <div className="flex flex-col items-center mb-2">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105">
+                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover"/>
+                      </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        accept="image/jpeg,image/png"
+                        className="hidden"
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors"
+                      >
+                        Change Photo
+                      </button>
+                      <p className="text-gray-500 text-[10px] sm:text-xs text-center">
+                        File size: maximum 1 MB<br/>
+                        File extension: JPEG, PNG
+                      </p>
+                    </div>
+                    {/* Form Fields */}
                     <div className="flex-1">
                       {/* First Name Field */}
                       <div className="mb-4 sm:mb-5">
@@ -375,8 +399,8 @@ const MyProfile: React.FC = () => {
 
                       {/* Delete Confirmation Modal */}
                       {showDeleteModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 overflow-y-auto">
+                          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative max-h-screen overflow-y-auto">
                             <button
                               className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
                               onClick={() => setShowDeleteModal(false)}
@@ -409,31 +433,6 @@ const MyProfile: React.FC = () => {
                           </div>
                         </div>
                       )}
-                    </div>
-
-                    {/* Right Column - Image Upload */}
-                    <div className="flex flex-col items-center md:items-start mt-6 md:mt-0">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105">
-                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover"/>
-                      </div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        accept="image/jpeg,image/png"
-                        className="hidden"
-                      />
-                      <button 
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors"
-                      >
-                        Change Photo
-                      </button>
-                      <p className="text-gray-500 text-[10px] sm:text-xs text-center">
-                        File size: maximum 1 MB<br/>
-                        File extension: JPEG, PNG
-                      </p>
                     </div>
                   </div>
                 </form>

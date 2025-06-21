@@ -12,6 +12,7 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ user }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   const [isHoveringProducts, setIsHoveringProducts] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -128,6 +129,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768); 
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
     };
 
     checkMobile();
@@ -231,7 +233,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
     }
   ];
 
-  const productsPerPage = isMobile ? 2 : 5;
+  // Determine productsPerPage based on screen size
+  let productsPerPage = 5;
+  if (isMobile) {
+    productsPerPage = 2;
+  } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+    productsPerPage = 3;
+  }
   const totalPages = Math.ceil(allProducts.length / productsPerPage);
   const currentProducts = allProducts.slice(
     (isMobile ? currentPage : desktopCurrentPage) * productsPerPage,
@@ -254,6 +262,15 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setSlideDirection('right');
         setCurrentPage(currentPage - 1);
       }
+    } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+      if (desktopCurrentPage > 0) {
+        setIsAnimating(true);
+        setSlideDirection('right');
+        setTimeout(() => {
+          setDesktopCurrentPage(desktopCurrentPage - 1);
+          setIsAnimating(false);
+        }, 300);
+      }
     } else {
       if (desktopCurrentPage > 0) {
         setIsAnimating(true);
@@ -261,7 +278,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setTimeout(() => {
           setDesktopCurrentPage(desktopCurrentPage - 1);
           setIsAnimating(false);
-        }, 300); // Reduced duration
+        }, 300);
       }
     }
   };
@@ -272,6 +289,15 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setSlideDirection('left');
         setCurrentPage(currentPage + 1);
       }
+    } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+      if (desktopCurrentPage < totalPages - 1) {
+        setIsAnimating(true);
+        setSlideDirection('left');
+        setTimeout(() => {
+          setDesktopCurrentPage(desktopCurrentPage + 1);
+          setIsAnimating(false);
+        }, 300);
+      }
     } else {
       if (desktopCurrentPage < totalPages - 1) {
         setIsAnimating(true);
@@ -279,7 +305,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setTimeout(() => {
           setDesktopCurrentPage(desktopCurrentPage + 1);
           setIsAnimating(false);
-        }, 300); // Reduced duration
+        }, 300);
       }
     }
   };
@@ -290,6 +316,15 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setFreshDropsSlideDirection('right');
         setFreshDropsPage(freshDropsPage - 1);
       }
+    } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+      if (desktopFreshDropsPage > 0) {
+        setIsFreshDropsAnimating(true);
+        setFreshDropsSlideDirection('right');
+        setTimeout(() => {
+          setDesktopFreshDropsPage(desktopFreshDropsPage - 1);
+          setIsFreshDropsAnimating(false);
+        }, 300);
+      }
     } else {
       if (desktopFreshDropsPage > 0) {
         setIsFreshDropsAnimating(true);
@@ -297,7 +332,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setTimeout(() => {
           setDesktopFreshDropsPage(desktopFreshDropsPage - 1);
           setIsFreshDropsAnimating(false);
-        }, 300); // Reduced duration
+        }, 300);
       }
     }
   };
@@ -308,6 +343,15 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setFreshDropsSlideDirection('left');
         setFreshDropsPage(freshDropsPage + 1);
       }
+    } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+      if (desktopFreshDropsPage < totalPages - 1) {
+        setIsFreshDropsAnimating(true);
+        setFreshDropsSlideDirection('left');
+        setTimeout(() => {
+          setDesktopFreshDropsPage(desktopFreshDropsPage + 1);
+          setIsFreshDropsAnimating(false);
+        }, 300);
+      }
     } else {
       if (desktopFreshDropsPage < totalPages - 1) {
         setIsFreshDropsAnimating(true);
@@ -315,7 +359,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         setTimeout(() => {
           setDesktopFreshDropsPage(desktopFreshDropsPage + 1);
           setIsFreshDropsAnimating(false);
-        }, 300); // Reduced duration
+        }, 300);
       }
     }
   };
@@ -383,7 +427,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         {/* Monthly Deals */}
         <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
           <div className="flex justify-between items-baseline mb-6">
-            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Avenir Next', sans-serif", fontWeight: "bold" }}>
               Monthly Deals 
             </h2>
             <div className="flex-grow"></div>
@@ -402,8 +446,8 @@ const Home: React.FC<HomeProps> = ({ user }) => {
             onMouseEnter={() => setIsHoveringProducts(true)}
             onMouseLeave={() => setIsHoveringProducts(false)}
           >
-            {/* Navigation Buttons - Hidden on mobile */}
-            {!isMobile && desktopCurrentPage > 0 && (
+            {/* Navigation Buttons - Hidden on mobile and tablet */}
+            {!isMobile && !isTablet && desktopCurrentPage > 0 && (
               <button 
                 onClick={handlePrevPage}
                 className={`absolute -left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
@@ -415,7 +459,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 </svg>
               </button>
             )}
-            {!isMobile && desktopCurrentPage < totalPages - 1 && (
+            {!isMobile && !isTablet && desktopCurrentPage < totalPages - 1 && (
               <button 
                 onClick={handleNextPage}
                 className={`absolute -right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
@@ -434,13 +478,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
-              {isMobile ? (
+              {(isMobile || isTablet) ? (
                 <div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1">
                   {allProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="bg-white overflow-hidden flex flex-col h-[420px] w-[60vw] min-w-[60vw] max-w-[380px]"
-                      style={{ flex: '0 0 60vw' }}
+                      className="bg-white overflow-hidden flex flex-col h-[420px] max-w-[380px] min-w-0"
+                      style={isMobile ? { width: '60vw', minWidth: '60vw', flex: '0 0 60vw' } : isTablet ? { width: '33.33vw', minWidth: '33.33vw', flex: '0 0 33.33vw' } : {}}
                     >
                       <div className="relative flex-shrink-0 h-[340px] flex items-center justify-center overflow-hidden">
                         <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
@@ -457,7 +501,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
+                              style={{ backgroundColor: color, marginTop: '8px' }}
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -469,7 +513,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                           to={`/item-description/${product.id}`}
                           state={user ? { user } : undefined}
                           className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
-                          style={{ marginTop: '16px' }} // Added marginTop for mobile view
+                          style={{ marginTop: '16px' }}
                         >
                           Choose options
                         </Link>
@@ -498,7 +542,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
+                              style={{ backgroundColor: color, marginTop: '8px' }}
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -562,7 +606,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         {/* Fresh Drops */}
         <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
           <div className="flex justify-between items-baseline mb-6">
-            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Avenir Next', sans-serif", fontWeight: "bold" }}>
               Fresh Drops
             </h2>
             <div className="flex-grow"></div>
@@ -581,8 +625,8 @@ const Home: React.FC<HomeProps> = ({ user }) => {
             onMouseEnter={() => setIsHoveringFreshDrops(true)}
             onMouseLeave={() => setIsHoveringFreshDrops(false)}
           >
-            {/* Navigation Buttons - Hidden on mobile */}
-            {!isMobile && desktopFreshDropsPage > 0 && (
+            {/* Navigation Buttons - Hidden on mobile and tablet */}
+            {!isMobile && !isTablet && desktopFreshDropsPage > 0 && (
               <button 
                 onClick={handleFreshDropsPrevPage}
                 className={`absolute -left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
@@ -594,7 +638,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 </svg>
               </button>
             )}
-            {!isMobile && desktopFreshDropsPage < totalPages - 1 && (
+            {!isMobile && !isTablet && desktopFreshDropsPage < totalPages - 1 && (
               <button 
                 onClick={handleFreshDropsNextPage}
                 className={`absolute -right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
@@ -613,13 +657,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
               onTouchMove={onFreshDropsTouchMove}
               onTouchEnd={onFreshDropsTouchEnd}
             >
-              {isMobile ? (
+              {(isMobile || isTablet) ? (
                 <div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1">
                   {allProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="bg-white overflow-hidden flex flex-col h-[420px] w-[60vw] min-w-[60vw] max-w-[380px] rounded-lg"
-                      style={{ flex: '0 0 60vw' }}
+                      className="bg-white overflow-hidden flex flex-col h-[420px] max-w-[380px] min-w-0 rounded-lg"
+                      style={isMobile ? { width: '60vw', minWidth: '60vw', flex: '0 0 60vw' } : isTablet ? { width: '33.33vw', minWidth: '33.33vw', flex: '0 0 33.33vw' } : {}}
                     >
                       <div className="relative flex-shrink-0 h-[340px] flex items-center justify-center overflow-hidden">
                         <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
@@ -636,7 +680,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
+                              style={{ backgroundColor: color, marginTop: '8px' }}
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}
@@ -648,7 +692,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                           to={`/item-description/${product.id}`}
                           state={user ? { user } : undefined}
                           className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
-                          style={{ marginTop: '16px' }} // Added marginTop for mobile view
+                          style={{ marginTop: '16px' }}
                         >
                           Choose options
                         </Link>
@@ -677,7 +721,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                               className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
                                 selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
                               }`}
-                              style={{ backgroundColor: color, marginTop: '8px' }} // Added marginTop to move down
+                              style={{ backgroundColor: color, marginTop: '8px' }}
                               title={color.charAt(0).toUpperCase() + color.slice(1)}
                             />
                           ))}

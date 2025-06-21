@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';  
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Icon } from '@iconify/react';
 import "../App.css";
@@ -92,7 +92,6 @@ const Cart: React.FC = () => {
     }
   ]);
 
-  const [] = useState(0);
   const [showShipping, setShowShipping] = useState(false);
   const [shippingAddress, setShippingAddress] = useState({
     street: '',
@@ -101,128 +100,7 @@ const Cart: React.FC = () => {
     country: 'Philippines'
   });
 
-  const [isMobile, setIsMobile] = useState(false);
-  const [isHoveringProducts, setIsHoveringProducts] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [, setSlideDirection] = useState<'left' | 'right'>('right');
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
-  // Sample product data for "You may also like"
-  const allProducts = [
-    {
-      id: 1,
-      name: "Abednego | Chandelier/Large",
-      price: "₱32,995",
-      image: "/abed.webp",
-      size: "φ110*H15cm",
-      colors: ["black", "gold", "silver"]
-    },
-    {
-      id: 2,
-      name: "Aberdeen | Modern LED Chandelier",
-      price: "₱25,464",
-      image: "/aber.webp",
-      colors: ["black", "gold"]
-    },
-    {
-      id: 3,
-      name: "Acadia | Table Lamp",
-      price: "₱12,234",
-      image: "/acad.webp",
-      colors: ["black"]
-    },
-    {
-      id: 4,
-      name: "Ademar | Modern Chandelier",
-      price: "₱11,237",
-      image: "/mar.webp",
-      colors: ["black"]
-    },
-    {
-      id: 5,
-      name: "Aeris | Modern Pendant Light",
-      price: "₱9,435",
-      image: "/aeris.webp",
-      colors: ["black"]
-    },
-    {
-      id: 6,
-      name: "Aina | Modern LED Chandelier",
-      price: "₱29,995",
-      image: "/aina.webp",
-      colors: ["black"]
-    },
-    {
-      id: 7,
-      name: "Alabama | Table Lamp",
-      price: "₱27,995",
-      image: "/alab.webp",
-      colors: ["black"]
-    },
-    {
-      id: 8,
-      name: "Alphius | Surface Mounted Downlight",
-      price: "₱25,995",
-      image: "/alph.webp",
-      colors: ["black"]
-    }
-  ];
-
-  const productsPerPage = isMobile ? 2 : 5;
-  const totalPages = Math.ceil(allProducts.length / productsPerPage);
-  const currentProducts = allProducts.slice(
-    currentPage * productsPerPage,
-    (currentPage + 1) * productsPerPage
-  );
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe && currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(prev => prev + 1);
-    }
-    if (isRightSwipe && currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(prev => prev - 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const navigate = useNavigate();
 
   const calculateShipping = () => {
     // Simple shipping calculation based on city
@@ -272,8 +150,7 @@ const Cart: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    // Implement checkout logic here
-    alert('Proceeding to checkout...');
+    navigate('/checkout');
   };
 
   return (
@@ -322,18 +199,14 @@ const Cart: React.FC = () => {
                       <div 
                         key={item.id} 
                         className={
-                          isMobile
-                            ? "flex items-start p-4 border-b border-gray-100 bg-white relative"
-                            : "flex flex-col lg:flex-row items-start justify-between p-4 lg:py-8 lg:px-10 hover:bg-gray-50 transition-colors duration-200"
+                          "flex items-start p-4 border-b border-gray-100 bg-white relative"
                         }
-                        style={isMobile ? { scrollSnapAlign: 'start' } : { scrollSnapAlign: 'start' }}
+                        style={{ scrollSnapAlign: 'start' }}
                       >
                         {/* Product Image */}
                         <div
                           className={
-                            isMobile
-                              ? "w-24 h-24 flex-shrink-0 mr-4 bg-white flex items-center justify-center rounded-lg border border-gray-100"
-                              : "w-full lg:w-32 h-32 flex-shrink-0 mb-4 lg:mb-0 lg:mr-8 bg-white flex items-center justify-center rounded-lg border border-gray-100"
+                            "w-24 h-24 flex-shrink-0 mr-4 bg-white flex items-center justify-center rounded-lg border border-gray-100"
                           }
                         >
                           <img
@@ -346,9 +219,7 @@ const Cart: React.FC = () => {
                         {/* Product Details and Quantity Controls */}
                         <div
                           className={
-                            isMobile
-                              ? "flex flex-col justify-between flex-1"
-                              : "flex-grow flex flex-col justify-between w-full"
+                            "flex flex-col justify-between flex-1"
                           }
                         >
                           <div>
@@ -361,7 +232,7 @@ const Cart: React.FC = () => {
                             )}
                           </div>
 
-                          <div className={isMobile ? "flex items-center mt-3" : "flex flex-col lg:flex-row items-start lg:items-center mt-4 space-y-4 lg:space-y-0"}>
+                          <div className="flex flex-col lg:flex-row items-start lg:items-center mt-4 space-y-4 lg:space-y-0">
                             {/* Quantity Controls */}
                             <div className="flex items-center border border-gray-300 overflow-hidden">
                               <button
@@ -384,11 +255,9 @@ const Cart: React.FC = () => {
                         {/* Total Price and Action Buttons */}
                         <div
                           className={
-                            isMobile
-                              ? "flex flex-col items-end justify-between ml-2 min-h-[96px]"
-                              : "flex-shrink-0 mt-4 lg:mt-0 lg:ml-8 flex flex-col items-end justify-between h-full"
+                            "flex flex-col items-end justify-between ml-2 min-h-[96px]"
                           }
-                          style={isMobile ? { minHeight: '96px' } : { minHeight: '120px' }}
+                          style={{ minHeight: '96px' }}
                         >
                           <div>
                             <p className="font-semibold text-base lg:text-lg text-black">₱{(item.price * item.quantity).toLocaleString()}</p>
@@ -400,37 +269,21 @@ const Cart: React.FC = () => {
                           </div>
                           <div className="flex-grow"></div>
                           {/* Action buttons: bottom right on mobile */}
-                          {isMobile ? (
-                            <div className="absolute bottom-2 right-2 flex flex-row space-x-2 items-end z-10">
-                              <button
-                                onClick={() => handleRemoveItem(item.id)}
-                                className="text-gray-700 hover:text-red-500 transition-colors flex items-center p-2"
-                                aria-label="Remove"
-                              >
-                                <Icon icon="mdi:delete-outline" />
-                              </button>
-                              <button
-                                className="text-gray-700 hover:text-orange-500 transition-colors flex items-center p-2"
-                                aria-label="Save for later"
-                              >
-                                <Icon icon="mdi:heart-outline" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-row space-x-4 items-end mb-0">
-                              <button
-                                onClick={() => handleRemoveItem(item.id)}
-                                className="text-gray-700 hover:text-red-500 hover:underline transition-colors flex items-center"
-                              >
-                                <Icon icon="mdi:delete-outline" className="mr-1" />
-                                Remove
-                              </button>
-                              <button className="text-gray-700 hover:text-orange-500 hover:underline transition-colors flex items-center">
-                                <Icon icon="mdi:heart-outline" className="mr-1" />
-                                Save for later
-                              </button>
-                            </div>
-                          )}
+                          <div className="absolute bottom-2 right-2 flex flex-row space-x-2 items-end z-10">
+                            <button
+                              onClick={() => handleRemoveItem(item.id)}
+                              className="text-gray-700 hover:text-red-500 transition-colors flex items-center p-2"
+                              aria-label="Remove"
+                            >
+                              <Icon icon="mdi:delete-outline" />
+                            </button>
+                            <button
+                              className="text-gray-700 hover:text-orange-500 transition-colors flex items-center p-2"
+                              aria-label="Save for later"
+                            >
+                              <Icon icon="mdi:heart-outline" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -576,114 +429,6 @@ const Cart: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* You may also like - Moved to bottom */}
-        {/* ... rest of your code for "You may also like" */}
-        <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
-          <div className="flex justify-between items-baseline mb-6">
-            <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
-              You may also like
-            </h2>
-            <div className="flex-grow"></div>
-            <Link
-              to="/product-list"
-              className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
-            >
-              View all
-            </Link>
-          </div>
-
-          <div 
-            className="relative px-4 sm:px-12"
-            onMouseEnter={() => setIsHoveringProducts(true)}
-            onMouseLeave={() => setIsHoveringProducts(false)}
-          >
-            {/* Navigation Buttons - Hidden on mobile */}
-            {!isMobile && currentPage > 0 && (
-              <button 
-                onClick={handlePrevPage}
-                className={`absolute -left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
-                  isHoveringProducts ? 'opacity-90' : 'opacity-0'
-                }`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            )}
-            {!isMobile && currentPage < totalPages - 1 && (
-              <button 
-                onClick={handleNextPage}
-                className={`absolute -right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
-                  isHoveringProducts ? 'opacity-90' : 'opacity-0'
-                }`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            )}
-
-            <div 
-              className="relative overflow-hidden"
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-            >
-              <div 
-                className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5'} gap-4 sm:gap-6 justify-center`}
-              >
-                {currentProducts.map((product) => (
-                  <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-full">
-                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 flex items-center">
-                      Monthly Deals 
-                    </div>
-                    <div className="relative flex-grow">
-                      <img src={product.image} alt={product.name} className="w-full h-48 sm:h-64 object-cover" />
-                    </div>
-                    <div className="p-3 sm:p-4 flex flex-col flex-grow">
-                      <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                      <p className="text-gray-600 text-xs mb-2">{product.size}</p>
-                      <div className="flex items-center space-x-2 mb-2">
-                        {product.colors?.map((color) => (
-                          <button
-                            key={color}
-                            className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200`}
-                            style={{ backgroundColor: color }}
-                            title={color.charAt(0).toUpperCase() + color.slice(1)}
-                          />
-                        ))}
-                      </div>
-                      <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">{product.price}</p>
-                      <p className="text-green-600 text-xs mt-1">● In stock</p>
-                      <Link
-                        to={`/item-description/${product.id}`}
-                        className="mt-3 sm:mt-4 w-full bg-black text-white py-1.5 sm:py-2 hover:bg-gray-800 transition-colors duration-300 text-xs sm:text-sm text-center block"
-                      >
-                        Choose options
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mobile Pagination Dots */}
-            {isMobile && (
-              <div className="flex justify-center mt-4 space-x-2">
-                {Array.from({ length: totalPages }).map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      currentPage === index ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
       </div>
     </div>
   );

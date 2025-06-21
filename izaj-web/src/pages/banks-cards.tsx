@@ -37,7 +37,7 @@ const BankandCard: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
-      <div className="md:hidden bg-white px-4 pt-4">
+      <div className="lg:hidden bg-white px-4 pt-4">
         <div
           className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
           onClick={() => setIsAccountModalOpen(true)}
@@ -48,9 +48,9 @@ const BankandCard: React.FC = () => {
       </div>
       {/* My Account Modal for Mobile */}
       {isAccountModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black bg-opacity-40" onClick={() => setIsAccountModalOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40 overflow-y-auto" onClick={() => setIsAccountModalOpen(false)}>
           <div
-            className="w-full bg-white animate-slideUp  relative shadow-lg"
+            className="w-full bg-white animate-slideUp  relative shadow-lg max-h-screen overflow-y-auto"
             style={{ minHeight: '240px' }}
             onClick={e => e.stopPropagation()}
           >
@@ -86,10 +86,10 @@ const BankandCard: React.FC = () => {
       )}
       {/* Main Content */}
       <main className="flex-grow bg-white py-6 md:py-12">
-        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6">
-          <div className="flex flex-col md:flex-row gap-8">
+        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
             {/* Left Column - User Profile */}
-            <div className="hidden md:block w-full md:w-72 bg-white rounded-xl shadow-sm p-6">
+            <div className="hidden lg:block w-full lg:w-72 bg-white rounded-xl shadow-sm p-6">
               <div className="flex flex-col items-center">
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm">
                   <img src={profileImage} alt="User" className="w-full h-full object-cover" />

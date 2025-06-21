@@ -39,7 +39,8 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
   const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
   
   // New state variables for Recently Viewed section
-  const [isMobile, setIsMobile] = useState(false);
+  const [isCarousel, setIsCarousel] = useState(false);
+  const [productsPerPage, setProductsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
@@ -101,14 +102,19 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
 
   // Check for mobile view
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const checkDevice = () => {
+      setIsCarousel(window.innerWidth <= 1024);
+      if (window.innerWidth <= 640) {
+        setProductsPerPage(2);
+      } else if (window.innerWidth <= 1024) {
+        setProductsPerPage(3);
+      } else {
+        setProductsPerPage(5);
+      }
     };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => window.removeEventListener('resize', checkMobile);
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
   // Sample product data for Recently Viewed
@@ -150,7 +156,6 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
     }
   ];
 
-  const productsPerPage = isMobile ? 2 : 5;
   const totalPages = Math.ceil(allProducts.length / productsPerPage);
   const currentProducts = allProducts.slice(
     currentPage * productsPerPage,
@@ -437,15 +442,15 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
         `}
       </style>
 
-      {/* Breadcrumb */}
-      <div className="text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6 mobile-hide">
+      {/* Breadcrumb - hidden on screens below lg (1024px) */}
+      <div className="hidden lg:block text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6">
         <a href="/" className="hover:underline">Home</a>
         <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
-        <span>New Arrivals</span>
+        <span>New </span>
       </div>
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
-        <aside className="w-full lg:w-1/6 p-0 sm:p-4 lg:p-6 lg:pl-12 lg:pr-4 mobile-hide">
+        <aside className="hidden lg:block w-full lg:w-1/6 p-0 sm:p-4 lg:p-6 lg:pl-12 lg:pr-4 mobile-hide">
           <h3 className="font-bold text-black mb-4">SHOP</h3>
           <ul className="space-y-2 text-sm text-black">
             <li className="font-bold flex items-center justify-between cursor-pointer select-none" onClick={() => setSidebarDropdownOpen(v => !v)}>
@@ -533,26 +538,19 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
         {/* Product List */}
         <main className="w-full lg:w-5/6 p-0 sm:p-4 md:px-8 lg:px-12 mobile-center-main">
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-black mb-2 sm:mb-3" >New Arrivals</h1>
-            
-            {/* Banner with overlay text */}
-            <div className="relative mb-4 sm:mb-6">
-              <img src="/banner2.jpg" alt="Banner" className="w-full h-32 sm:h-56 object-cover rounded-md shadow-sm" />
-              <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col justify-center items-start p-4 sm:p-8 rounded-md">
-                <h2 className="text-lg sm:text-3xl font-bold text-white mb-1 sm:mb-2" >Elevate Your Space</h2>
-                <p className="text-white text-xs sm:text-lg mb-1 sm:mb-3">Premium lighting solutions for every room</p>
-                <button className="bg-white text-black px-3 sm:px-5 py-1.5 sm:py-2 rounded-md font-medium hover:bg-black hover:text-white transition-all duration-300 text-xs sm:text-base">
-                  Explore Collection
-                </button>
-              </div>
+            <div className="flex flex-col items-start mb-4 sm:mb-6 mt-6 mb-6 sm:mt-0 sm:mb-6">
+              <h1 className="text-2xl sm:text-2xl font-extrabold text-black" style={{ fontFamily: 'Avenir Next, sans-serif' }}>Fresh Drops</h1>
+              <h2 className="text-sm sm:text-base font-medium text-black mt-4" style={{ fontFamily: 'Avenir Next, sans-serif' }}>
+                Ready to ship Fresh new items!
+              </h2>
             </div>
             
             {/* Filter and Sort Controls - Now Functional */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 p-2 sm:p-4 rounded-md gap-2 sm:gap-0">
-              {/* Left: Product count (desktop only) */}
-              <span className="hidden sm:inline text-xs sm:text-sm text-black">{filteredProducts.length} products</span>
+              {/* Left: Product count (desktop only, hidden on lg and below) */}
+              <span className="hidden lg:inline text-xs sm:text-sm text-black">{filteredProducts.length} products</span>
               {/* Mobile: Filter, Sort by, Grid/List view arrangement */}
-              {isMobile ? (
+              {isCarousel ? (
                 <div className="flex w-full items-center justify-between">
                   {/* Left: Filter button */}
                   <button
@@ -629,7 +627,7 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
 
          {/* Product Grid/List - Responsive Design */}
 {viewMode === 'grid' ? (
-  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
     {filteredProducts.map((product) => (
       <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-full max-w-sm mx-auto w-full">
         <div className="relative flex-grow">
@@ -671,7 +669,7 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
 ) : (
   <div className="space-y-6">
     {filteredProducts.map((product) => (
-      isMobile ? (
+      isCarousel ? (
         <div key={product.id}
           className="flex flex-row bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 p-3 items-center space-x-4 transition-all duration-300"
         >
@@ -765,7 +763,7 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
 
       {/* Featured Products Section */}
 <div className="mt-12 sm:mt-16 px-0 sm:px-4">
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
     {/* Top Picks Card */}
     <div className="relative w-full h-48 sm:h-80 rounded-lg overflow-hidden">
       <img
@@ -823,7 +821,7 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
     onMouseLeave={() => setIsHoveringProducts(false)}
   >
     {/* Navigation Buttons - Hidden on mobile */}
-    {!isMobile && currentPage > 0 && (
+    {!isCarousel && currentPage > 0 && (
       <button 
         onClick={handlePrevPage}
         className={`absolute -left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
@@ -835,7 +833,7 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
         </svg>
       </button>
     )}
-    {!isMobile && currentPage < totalPages - 1 && (
+    {!isCarousel && currentPage < totalPages - 1 && (
       <button 
         onClick={handleNextPage}
         className={`absolute -right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all duration-300 z-10 shadow-lg ${
@@ -854,50 +852,53 @@ const Collection: React.FC<CollectionProps> = ({ user }) => {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {isMobile ? (
+      {isCarousel ? (
         <div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1 hide-scrollbar">
-          {allProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white overflow-hidden flex flex-col h-[420px] w-[48vw] min-w-[48vw] max-w-[320px] rounded-lg"
-              style={{ flex: '0 0 48vw' }}
-            >
-              <div className="relative flex-shrink-0 h-[280px]">
-                <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
-              </div>
-              <div className="p-3 flex flex-col flex-1">
-                <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                <div className="flex items-center space-x-2 mb-2 mt-2">
-                  {product.colors?.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => handleColorSelect(product.id, color)}
-                      className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
-                        selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                      title={color.charAt(0).toUpperCase() + color.slice(1)}
-                    />
-                  ))}
+          {allProducts.map((product) => {
+            // Card width: 48vw for <=640px, 32vw for 641-1024px
+            let cardWidth = '48vw';
+            if (window.innerWidth > 640 && window.innerWidth <= 1024) cardWidth = '32vw';
+            return (
+              <div
+                key={product.id}
+                className="bg-white overflow-hidden flex flex-col h-[420px] rounded-lg"
+                style={{ flex: `0 0 ${cardWidth}`, minWidth: cardWidth, maxWidth: '340px' }}
+              >
+                <div className="relative flex-shrink-0 h-[280px]">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
                 </div>
-                <p className="font-bold text-gray-800 text-sm">{product.price}</p>
-                <p className="text-green-600 text-xs mt-1">● In stock</p>
-                <div className="flex-grow"></div>
-                <Link
-                  to={`/item-description/${product.id}`}
-                  state={user ? { user } : undefined}
-                  className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
-                >
-                  Choose options
-                </Link>
+                <div className="p-3 flex flex-col flex-1">
+                  <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+                  <div className="flex items-center space-x-2 mb-2 mt-2">
+                    {product.colors?.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => handleColorSelect(product.id, color)}
+                        className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
+                          selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color.charAt(0).toUpperCase() + color.slice(1)}
+                      />
+                    ))}
+                  </div>
+                  <p className="font-bold text-gray-800 text-sm">{product.price}</p>
+                  <p className="text-green-600 text-xs mt-1">● In stock</p>
+                  <div className="flex-grow"></div>
+                  <Link
+                    to={`/item-description/${product.id}`}
+                    state={user ? { user } : undefined}
+                    className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
+                  >
+                    Choose options
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
-        <div 
-          className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out`}
-        >
+        <div className="grid grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out">
           {currentProducts.map((product) => (
             <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[420px] rounded-lg">
               <div className="relative flex-grow h-[280px]">
