@@ -43,7 +43,7 @@ const Sales: React.FC<SalesProps> = ({ user }) => {
   const [productsPerPage, setProductsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  const [, setSlideDirection] = useState<'left' | 'right'>('right');
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isHoveringProducts, setIsHoveringProducts] = useState(false);
