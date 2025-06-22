@@ -12,6 +12,7 @@ interface CartItem {
   quantity: number;
   image: string;
   isSale: boolean;
+  isNew?: boolean; // Added isNew property
 }
 
 // Cart Component
@@ -25,7 +26,8 @@ const Cart: React.FC = () => {
       originalPrice: 35995,
       quantity: 1,
       image: "/abed.webp",
-      isSale: true
+      isSale: true,
+      isNew: true
     },
     {
       id: 2,
@@ -43,7 +45,8 @@ const Cart: React.FC = () => {
       originalPrice: 13234,
       quantity: 1,
       image: "/acad.webp",
-      isSale: true
+      isSale: true,
+      isNew: true
     },
     {
       id: 4,
@@ -61,7 +64,8 @@ const Cart: React.FC = () => {
       originalPrice: 10435,
       quantity: 1,
       image: "/aeris.webp",
-      isSale: true
+      isSale: false,
+      isNew: true // NEW only
     },
     {
       id: 6,
@@ -70,7 +74,8 @@ const Cart: React.FC = () => {
       originalPrice: 32995,
       quantity: 1,
       image: "/aina.webp",
-      isSale: true
+      isSale: false,
+      isNew: true // NEW only
     },
     {
       id: 7,
@@ -226,8 +231,13 @@ const Cart: React.FC = () => {
                             <p className="font-bold text-base lg:text-lg text-black hover:text-orange-500 transition-colors cursor-pointer">{item.name}</p>
                             <p className="text-gray-700 mt-1 text-sm lg:text-base">₱{item.price.toLocaleString()}{item.quantity === 10 ? '/10 pieces' : ''}</p>
                             {item.isSale && (
-                              <span className="inline-block bg-red-100 text-red-600 text-xs px-2 py-1 mt-2">
-                                Sale
+                              <span className="inline-block bg-red-600 text-white text-xs font-bold px-2 py-1 mt-2 mr-2">
+                                SALE
+                              </span>
+                            )}
+                            {item.isNew && (
+                              <span className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-1 mt-2">
+                                NEW
                               </span>
                             )}
                           </div>
@@ -272,16 +282,16 @@ const Cart: React.FC = () => {
                           <div className="absolute bottom-2 right-2 flex flex-row space-x-2 items-end z-10">
                             <button
                               onClick={() => handleRemoveItem(item.id)}
-                              className="text-gray-700 hover:text-red-500 transition-colors flex items-center p-2"
+                              className="text-black hover:text-red-500 transition-colors flex items-center p-2"
                               aria-label="Remove"
                             >
-                              <Icon icon="mdi:delete-outline" />
+                              <Icon icon="mdi:delete-outline" width="22" height="22" className="lg:w-6 lg:h-6 w-[22px] h-[22px]" />
                             </button>
                             <button
-                              className="text-gray-700 hover:text-orange-500 transition-colors flex items-center p-2"
+                              className="text-black hover:text-red-500 transition-colors flex items-center p-2"
                               aria-label="Save for later"
                             >
-                              <Icon icon="mdi:heart-outline" />
+                              <Icon icon="mdi:heart-outline" width="22" height="22" className="lg:w-6 lg:h-6 w-[22px] h-[22px]" />
                             </button>
                           </div>
                         </div>

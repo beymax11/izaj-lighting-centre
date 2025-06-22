@@ -348,11 +348,10 @@ const Header: React.FC<HeaderProps> = ({
               className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
               onClick={() => setIsMobileMenuOpen(false)}
             />
-            
             {/* Modal Content */}
             <div
               ref={mobileMenuRef}
-              className="lg:hidden absolute left-0 top-0 bottom-0 w-[85%] max-w-sm bg-white z-50 shadow-xl"
+              className="lg:hidden fixed left-0 top-0 w-[85%] max-w-sm h-screen bg-white z-50 shadow-xl overflow-y-auto"
             >
               {/* Top Bar with Close Button */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
@@ -377,7 +376,7 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
               {/* Navigation Menu - Scrollable */}
-              <div className="h-[calc(100vh-64px)] overflow-y-auto">
+              <div className="h-auto">
                 <nav className="px-4 py-6">
                   <ul className="space-y-1">
                     <li>

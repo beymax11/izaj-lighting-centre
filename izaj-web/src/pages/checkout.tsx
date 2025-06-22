@@ -6,7 +6,7 @@ const Checkout = () => {
   const [billingAddress, setBillingAddress] = useState('same');
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white font-sans">
+    <div className="min-h-screen bg-white to-white font-sans">
      {/* Header */}
      <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-6">
