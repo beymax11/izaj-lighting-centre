@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { Session } from "@supabase/supabase-js"
-import { supabase } from "../../backend/supabase/supabaseClient";
+import { supabase } from "../../backend/nodejs/supabaseClient";
 
 interface ProfileProps {
   handleNavigation?: (page: string) => void;

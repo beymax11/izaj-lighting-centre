@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import { supabase } from '../supabase/supabaseClient.js';
+import  { supabase } from './supabaseClient.js';
 import sessionHandler from './sessionHandler.js';
-import { supabase as productSupabase } from '../supabase/supabaseProduct.js';
-import { logAuditEvent, AuditActions } from '../../src/util/auditLogger.js';
+import { supabase as productSupabase } from './supabaseProduct.js';
+import { logAuditEvent, AuditActions } from './util/auditLogger.js';
 
 const app = express();
 app.use(cors());

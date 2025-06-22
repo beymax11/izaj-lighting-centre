@@ -1,4 +1,4 @@
-import { supabase } from '../../backend/supabase/supabaseClient.js';
+import { supabase } from '../supabaseClient.js';
 
 export const AuditActions = {
   LOGIN: 'LOGIN',
