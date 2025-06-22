@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { AddProductModal } from '../components/AddProductModal';
 import { ManageStockModal } from '../components/ManageStockModal';
 import Stock from './Stock';
@@ -10,9 +10,11 @@ import { toast } from 'react-hot-toast';
 interface Product {
   id: string;
   name: string;
+  product_id: string; 
   category: string;
   price: string;
   quantity: number;
+  stock: number;
   status: string;
   variant: number | null;
   image: string;
@@ -22,6 +24,7 @@ export interface FetchedProduct {
   id: string;
   product_name: string;
   quantity: number;
+  product_id: string; 
   price: number;
   status: string;
   category: string | { category_name: string } | null;
@@ -65,22 +68,33 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   const [pendingProducts, setPendingProducts] = useState<FetchedProduct[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
 
-  const filteredProducts = filter === 'sale' 
+  const filteredProducts = useMemo(() => {
+  const products = filter === 'sale' 
     ? publishedProducts.filter(p => p.status === 'Sale') 
     : publishedProducts;
+    
+    return products.filter(product => 
+    product && 
+    product.id && 
+    product.product_name &&
+    product.product_id
+  );
+}, [publishedProducts, filter]);
   
   const convertFetchedToProduct = (fetchedProduct: FetchedProduct): Product => {
     return {
-      id: fetchedProduct.id,
-      name: fetchedProduct.product_name,
+      id: fetchedProduct.id || '',
+      name: fetchedProduct.product_name || 'Unknown Product',
+      product_id: fetchedProduct.product_id || '',
       category: typeof fetchedProduct.category === 'object'
         ? fetchedProduct.category?.category_name || 'Uncategorized'
         : fetchedProduct.category || 'Uncategorized',
-      price: `₱ ${fetchedProduct.price.toLocaleString()}`,
-      quantity: fetchedProduct.quantity,
-      status: fetchedProduct.status,
+      price: `₱ ${(fetchedProduct.price || 0).toLocaleString()}`,
+      quantity: fetchedProduct.quantity || 0,
+      stock: fetchedProduct.quantity || 0,
+      status: fetchedProduct.status || 'Unknown',
       variant: null,
-      image: '/default-product.jpg'
+      image: fetchedProduct.image_url || '/default-product.jpg'
     };
   };
 
@@ -97,17 +111,40 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     setShowDropdown(false);
   };
 
-  const handleUpdateStock = (newStock: number) => {
-    if (selectedProduct) {
-      setPublishedProducts(prevProducts => 
-        prevProducts.map(p => 
-          p.id === selectedProduct.id 
+  const handleUpdateStock = async (newStock: number) => {
+  if (!selectedProduct) return;
+  try {
+    const response = await fetch(
+      `http://localhost:3001/api/products/${selectedProduct.product_id}/stock`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
+        },
+        body: JSON.stringify({ newStock }),
+      }
+    );
+    const data = await response.json();
+    if (response.ok && data.success) {
+      toast.success('Stock updated successfully');
+      await refreshProductsData();
+      setShowManageStockModal(false);
+      setPublishedProducts(prev =>
+        prev.map(p =>
+          p.id === selectedProduct.id
             ? { ...p, quantity: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
             : p
         )
       );
+      stockCache.current[selectedProduct.id] = { quantity: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' };
+    } else {
+      toast.error(data.error || 'Failed to update stock');
     }
-  };
+  } catch (err) {
+    toast.error('Network error updating stock');
+  }
+};
 
   const fetchPendingCount = useCallback(async () => {
     try {
@@ -190,7 +227,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     }
   }, [session?.access_token]);
 
-  // Add refresh function to reload both published and pending data
   const refreshProductsData = useCallback(async () => {
     console.log('Refreshing products data...');
     await Promise.all([
@@ -288,13 +324,48 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     setShowAddProductModal(true);
   };
 
-  // Modified handleAddProductModalClose to refresh data
   const handleAddProductModalClose = useCallback(async (shouldRefresh: boolean = false) => {
     setShowAddProductModal(false);
     
     // If products were published, refresh the data
     if (shouldRefresh) {
       console.log('Product published, refreshing data...');
+      await refreshProductsData();
+      toast.success('Products updated successfully!');
+    }
+  }, [refreshProductsData]);
+
+  const stockCache = useRef<{ [productId: string]: { quantity: number, status: string } }>({});
+
+  const fetchProductStock = async (productId: string) => {
+    if (stockCache.current[productId]) {
+      return stockCache.current[productId];
+    }
+    try {
+      const response = await fetch(`http://localhost:3001/api/products/${productId}/stock`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` })
+        }
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        toast.error(err.error || 'Stock info not available');
+        return null;
+      }
+      const data = await response.json();
+      stockCache.current[productId] = { quantity: data.stock, status: data.status };
+      return stockCache.current[productId];
+    } catch (error) {
+      toast.error('Network error fetching stock info');
+      return null;
+    }
+  };
+
+ const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
+  setShowManageStockModal(false);
+    if (shouldRefresh) {
+      console.log('Stock synced, refreshing data...');
       await refreshProductsData();
       toast.success('Products updated successfully!');
     }
@@ -415,6 +486,13 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                       {isFetching ? 'Syncing...' : fetchSuccess ? 'Synced' : 'Sync'}
                     </button>
                   </div>
+                  <button
+                    className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-yellow-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-yellow-200 hover:border-yellow-400 transition-all duration-200"
+                    onClick={() => setShowManageStockModal(true)}
+                  >
+                    <Icon icon="mdi:sync" className="text-xl" />
+                    Manage Stock
+                  </button>
                   <button
                     className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200 relative"
                     style={{
@@ -549,7 +627,9 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                         <div className="flex justify-between items-center border-t border-gray-100 pt-3 sm:pt-4">
                           <div>
                             <p className="text-xs sm:text-sm text-gray-500">Price</p>
-                            <p className="text-xl sm:text-2xl font-bold text-gray-800">₱ {product.price.toLocaleString()}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-gray-800">
+                              ₱ {(product.price && typeof product.price === 'number') ? product.price.toLocaleString() : '0'}
+                            </p>                          
                           </div>
                           <div className="text-right">
                             <p className="text-xs sm:text-sm text-gray-500">Stock</p>
@@ -579,18 +659,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                             <span>{product.quantity === 0 ? 'Out' : product.quantity < 100 ? 'Low' : 'High'}</span>
                           </div>
                         </div>
-
-                        <button 
-                          onClick={() => {
-                            setSelectedProduct(convertFetchedToProduct(product));
-                            setShowManageStockModal(true);
-                          }}
-                          className="w-full py-2.5 sm:py-3 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors group-hover:shadow-lg text-sm sm:text-base"
-                        >
-                          <Icon icon="mdi:plus-box" width={20} />
-                          {product.quantity === 0 ? 'RESTOCK NOW' : 'MANAGE STOCK'}
-                        </button>
-
                       </div>
                     </div>
                   ))}
@@ -609,15 +677,15 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                 fetchedProducts={pendingProducts}
               />
             )}
-            {/* Manage Stock Modal 
-            {showManageStockModal && selectedProduct && (
+            {/* Manage Stock Modal */}
+            {showManageStockModal && (
               <ManageStockModal
                 session={session}
-                onClose={() => setShowManageStockModal(false)}
-                product={selectedProduct}
-                onUpdateStock={handleUpdateStock}
+                onClose={() => handleManageStockModalClose(true)} 
+                publishedProducts={publishedProducts}
+                setPublishedProducts={setPublishedProducts}
               />
-            )} */}
+            )}
           </>
         )}
       </main>

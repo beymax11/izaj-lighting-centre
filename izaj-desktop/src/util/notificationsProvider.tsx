@@ -48,7 +48,7 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const channel = supabase
-      .channel('products-insert-listener')
+      .channel('db-changes')
       .on(
         'postgres_changes',
         {
@@ -67,6 +67,29 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
           };
           setNotifications((prev) => [newNotif, ...prev]);
           toast.success(newNotif.message);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'products',
+          filter: 'quantity=neq.null',
+        },
+        (payload) => {
+          if (payload.old.quantity !== payload.new.quantity) {
+            const newNotif: NotificationItem = {
+              id: Date.now(),
+              title: 'Stock Updated',
+              message: `Stock for "${payload.new.product_name}" changed from ${payload.old.quantity} to ${payload.new.quantity}.`,
+              time: new Date().toLocaleTimeString(),
+              read: false,
+              type: 'stock',
+            };
+            setNotifications((prev) => [newNotif, ...prev]);
+            toast.success(newNotif.message);
+          }
         }
       )
       .subscribe();

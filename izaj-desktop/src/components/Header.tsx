@@ -28,7 +28,6 @@ const Header = ({
   sidebarCollapsed,
   setMobileMenuOpen,
   setSidebarCollapsed,
-  session,
 }:
 
 HeaderProps) => {

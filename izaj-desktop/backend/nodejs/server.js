@@ -357,7 +357,7 @@ app.post('/api/admin/logout', authenticate, async (req, res) => {
   }
 });
 
-// ADD NEW USER (Only for users with role 'Admin')
+// ADD User Route (Only for users with role 'Admin')
 app.post('/api/admin/addUsers', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -433,7 +433,7 @@ app.post('/api/admin/addUsers', authenticate, async (req, res) => {
   }
 });
 
-// GET all admin users (Only for users with role 'Admin')
+// GET all admins (Only for users with role 'Admin')
 app.get('/api/admin/users', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -513,7 +513,7 @@ app.get('/api/admin/users', authenticate, async (req, res) => {
   }
 });
 
-// EDIT admin/support user status (Only for Admins)
+// EDIT user status (Only for Admins)
 app.put('/api/admin/users/:id/status', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -575,7 +575,7 @@ app.put('/api/admin/users/:id/status', authenticate, async (req, res) => {
   }
 });
 
-// DELETE admin/support user (Only for Admins)
+// DELETE user (Only for Admins)
 app.delete('/api/admin/users/:id', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -925,14 +925,14 @@ app.put('/api/client-products/:id/configure', async (req, res) => {
   }
 });
 
-
-// 1. Endpoint to fetch existing products from Client DB
+// GET existing products from Client DB
 app.get('/api/products/existing', authenticate, async (req, res) => {
   try {
     const { data: products, error } = await supabase
       .from('products')
       .select(`
         id,
+        product_id,
         product_name,
         quantity,
         price,
@@ -999,6 +999,36 @@ app.post('/api/products/publish', authenticate, async (req, res) => {
     .in('id', productIds);
   
   res.json({ success: !error });
+});
+
+// GET only product_id, product_name, and quantity for all published products
+app.get('/api/products/stock-summary', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('product_id, product_name, quantity')
+      .eq('is_published', true);
+
+    // Audit log: record the stock summary fetch
+    await logAuditEvent(
+      req.user.id,
+      AuditActions.VIEW_STOCK_SUMMARY || 'VIEW_STOCK_SUMMARY',
+      {
+        action: 'Fetched stock summary',
+        count: data ? data.length : 0,
+        timestamp: new Date().toISOString()
+      },
+      req
+    );
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.json({ success: true, products: data || [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
 });
 
 

@@ -10,7 +10,8 @@ export const AuditActions = {
   UPDATE_PROFILE: 'UPDATE_PROFILE',
   VIEW_PROFILE: 'VIEW_PROFILE',
   VIEW_USERS: 'VIEW_USERS',
-  VIEW_AUDIT_LOGS: 'VIEW_AUDIT_LOGS'
+  VIEW_AUDIT_LOGS: 'VIEW_AUDIT_LOGS',
+  VIEW_STOCK_SUMMARY: 'VIEW_STOCK_SUMMARY'
 };
 
 export async function logAuditEvent(userId, action, details, req) {
