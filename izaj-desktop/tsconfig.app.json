@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "backend/nodejs/util/auditLogger.js"]
+  "include": ["src", "backend/nodejs/util/auditLogger.js", "config"]
 }

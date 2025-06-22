@@ -7,6 +7,9 @@
     "dev": "concurrently \"tauri dev\" \"node ./backend/nodejs/server.js\"",
     "vite": "vite",
     "build": "tsc -b && vite build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

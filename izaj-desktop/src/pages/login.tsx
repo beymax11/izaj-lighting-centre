@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
+import API_URL from '../../config/api'
+
 
 interface LoginProps {
   onLogin: (session: any) => void;
@@ -15,7 +17,7 @@ export default function Login({ onLogin }: LoginProps) {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3001/api/admin/login', {
+      const response = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

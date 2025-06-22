@@ -1,5 +1,7 @@
 import { Icon } from '@iconify/react';
 import { Session } from '@supabase/supabase-js';
+import API_URL from '../../config/api';
+
 
 interface SidebarProps {
   avatar: string;
@@ -35,7 +37,7 @@ const Sidebar = ({
   {
 
     const handleLogout = async () => {
-    await fetch(`http://localhost:3001/api/admin/logout`, {
+    await fetch(`${API_URL}/api/admin/logout`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session?.access_token || ''}`,

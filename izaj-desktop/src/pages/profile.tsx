@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { Session } from "@supabase/supabase-js"
 import { supabase } from "../../backend/nodejs/supabaseClient";
+import API_URL from "../../config/api";
 
 interface ProfileProps {
   handleNavigation?: (page: string) => void;
@@ -143,7 +144,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
 
       const avatarUrl = getAvatarUrl(filePath);
 
-      const response = await fetch(`http://localhost:3001/api/profile/${session.user.id}`, {
+      const response = await fetch(`${API_URL}/api/profile/${session.user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -228,7 +229,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`http://localhost:3001/api/profile/${userId}`, {
+      const response = await fetch(`${API_URL}/api/profile/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -293,7 +294,7 @@ const Profile: React.FC<ProfileProps> = ({ handleNavigation, session }) => {
       setError(null);
       setSuccess(null);
 
-      const response = await fetch(`http://localhost:3001/api/profile/${session?.user?.id}`, {
+      const response = await fetch(`${API_URL}/api/profile/${session?.user?.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

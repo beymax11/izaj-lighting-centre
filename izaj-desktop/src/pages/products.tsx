@@ -6,6 +6,7 @@ import Stock from './Stock';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
+import API_URL from '../../config/api';
 
 interface Product {
   id: string;
@@ -54,7 +55,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   console.log('Products session:',  session?.user.id);
 
   const [showManageStockModal, setShowManageStockModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [] = useState<Product | null>(null);
   const [isFetching, setIsFetching] = useState(false);
   const [filter, setFilter] = useState<'all' | 'sale'>('all');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -81,22 +82,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   );
 }, [publishedProducts, filter]);
   
-  const convertFetchedToProduct = (fetchedProduct: FetchedProduct): Product => {
-    return {
-      id: fetchedProduct.id || '',
-      name: fetchedProduct.product_name || 'Unknown Product',
-      product_id: fetchedProduct.product_id || '',
-      category: typeof fetchedProduct.category === 'object'
-        ? fetchedProduct.category?.category_name || 'Uncategorized'
-        : fetchedProduct.category || 'Uncategorized',
-      price: `₱ ${(fetchedProduct.price || 0).toLocaleString()}`,
-      quantity: fetchedProduct.quantity || 0,
-      stock: fetchedProduct.quantity || 0,
-      status: fetchedProduct.status || 'Unknown',
-      variant: null,
-      image: fetchedProduct.image_url || '/default-product.jpg'
-    };
-  };
 
   const handleViewChange = (newView: ViewType) => {
     if (newView === 'products') {
@@ -111,44 +96,10 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     setShowDropdown(false);
   };
 
-  const handleUpdateStock = async (newStock: number) => {
-  if (!selectedProduct) return;
-  try {
-    const response = await fetch(
-      `http://localhost:3001/api/products/${selectedProduct.product_id}/stock`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
-        },
-        body: JSON.stringify({ newStock }),
-      }
-    );
-    const data = await response.json();
-    if (response.ok && data.success) {
-      toast.success('Stock updated successfully');
-      await refreshProductsData();
-      setShowManageStockModal(false);
-      setPublishedProducts(prev =>
-        prev.map(p =>
-          p.id === selectedProduct.id
-            ? { ...p, quantity: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' }
-            : p
-        )
-      );
-      stockCache.current[selectedProduct.id] = { quantity: newStock, status: newStock === 0 ? 'Out of Stock' : 'Active' };
-    } else {
-      toast.error(data.error || 'Failed to update stock');
-    }
-  } catch (err) {
-    toast.error('Network error updating stock');
-  }
-};
 
   const fetchPendingCount = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/products/pending-count`, {
+      const response = await fetch(`${API_URL}/api/products/pending-count`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +120,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
 
   const fetchPendingProducts = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/products/pending`, {
+      const response = await fetch(`${API_URL}/api/products/pending`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +148,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     setIsFetching(true);
     
     try {
-      const response = await fetch(`http://localhost:3001/api/products/existing?published=true`, {
+      const response = await fetch(`${API_URL}/api/products/existing?published=true`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +205,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
       params.append('limit', '100');
       params.append('sync', 'true');
             
-      const response = await fetch(`http://localhost:3001/api/products?${params.toString()}`, {
+      const response = await fetch(`${API_URL}/api/products?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -327,40 +278,12 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   const handleAddProductModalClose = useCallback(async (shouldRefresh: boolean = false) => {
     setShowAddProductModal(false);
     
-    // If products were published, refresh the data
     if (shouldRefresh) {
       console.log('Product published, refreshing data...');
       await refreshProductsData();
       toast.success('Products updated successfully!');
     }
   }, [refreshProductsData]);
-
-  const stockCache = useRef<{ [productId: string]: { quantity: number, status: string } }>({});
-
-  const fetchProductStock = async (productId: string) => {
-    if (stockCache.current[productId]) {
-      return stockCache.current[productId];
-    }
-    try {
-      const response = await fetch(`http://localhost:3001/api/products/${productId}/stock`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` })
-        }
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        toast.error(err.error || 'Stock info not available');
-        return null;
-      }
-      const data = await response.json();
-      stockCache.current[productId] = { quantity: data.stock, status: data.status };
-      return stockCache.current[productId];
-    } catch (error) {
-      toast.error('Network error fetching stock info');
-      return null;
-    }
-  };
 
  const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
   setShowManageStockModal(false);

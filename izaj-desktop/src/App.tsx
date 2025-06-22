@@ -14,6 +14,7 @@ import { Session } from '@supabase/supabase-js';
 import { ProfileData } from './pages/profile';
 import PrivateRoute from './route/PrivateRoute';
 import { useNotifications } from './util/notificationsProvider';
+import API_URL from '../config/api';
 
 function App(
 
@@ -47,7 +48,7 @@ function App(
 
   useEffect(() => {
   if (session?.user?.id) {
-    fetch(`http://localhost:3001/api/profile/${session.user.id}`, {
+    fetch(`${API_URL}/api/profile/${session.user.id}`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },

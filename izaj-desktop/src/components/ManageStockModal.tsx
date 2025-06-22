@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Session } from '@supabase/supabase-js';
+import  API_URL  from '../../config/api';
 
 interface StockChangeSummary {
   increased: any[];
@@ -31,7 +32,7 @@ export function ManageStockModal({
     setIsSyncing(true);
     
     try {
-      const response = await fetch('http://localhost:3001/api/products/stock-summary', {
+      const response = await fetch(`${API_URL}/api/products/stock-summary`, {
         headers: {
           'Content-Type': 'application/json',
           ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),

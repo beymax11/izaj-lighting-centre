@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { FetchedProductSlide } from './FetchedProductSlide';
 import { Session } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
+import API_URL from '../../config/api';
 
 interface FetchedProduct {
   id: string;
@@ -65,7 +66,7 @@ export function AddProductModal({
 
     setIsPublishing(true);
     try {
-      const response = await fetch('http://localhost:3001/api/products/publish', {
+      const response = await fetch(`${API_URL}/api/products/publish`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -123,7 +124,7 @@ export function AddProductModal({
 
     setIsPublishing(true);
     try {
-      const response = await fetch('http://localhost:3001/api/sales', {
+      const response = await fetch(`${API_URL}/api/sales`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

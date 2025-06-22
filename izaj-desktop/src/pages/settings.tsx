@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { Session } from "@supabase/supabase-js";
+import API_URL from "../../config/api";
 
 interface AdminUser {
   id: string;
@@ -95,7 +96,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
 
   const fetchAdminUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/admin/users', {
+      const response = await fetch(`${API_URL}/api/admin/users`, {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -151,7 +152,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     setIsAddingAdmin(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/admin/addUsers', {
+      const response = await fetch(`${API_URL}/api/admin/addUsers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -198,7 +199,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
 
   const handleEditStatus = async (userId: string, newStatus: boolean) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}/status`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -220,7 +221,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const handleDeleteUser = async (userId: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
@@ -245,7 +246,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
 
   const fetchAuditLogs = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/admin/audit-logs', {
+    const response = await fetch(`${API_URL}/api/admin/audit-logs`, {
       headers: {
         Authorization: `Bearer ${session?.access_token}`,
       },
