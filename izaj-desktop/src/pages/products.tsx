@@ -24,7 +24,7 @@ interface Product {
 export interface FetchedProduct {
   id: string;
   product_name: string;
-  quantity: number;
+  display_quantity: number;
   product_id: string; 
   price: number;
   status: string;
@@ -34,6 +34,7 @@ export interface FetchedProduct {
   image_url: string | null;   
   created_at?: string;
   is_published?: boolean;
+  
 }
 
 interface ApiResponse {
@@ -51,9 +52,6 @@ interface ProductsProps {
 }
 
 export function Products({ showAddProductModal, setShowAddProductModal, session }: ProductsProps) {
-
-  console.log('Products session:',  session?.user.id);
-
   const [showManageStockModal, setShowManageStockModal] = useState(false);
   const [] = useState<Product | null>(null);
   const [isFetching, setIsFetching] = useState(false);
@@ -68,6 +66,8 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   const [publishedProducts, setPublishedProducts] = useState<FetchedProduct[]>([]);
   const [pendingProducts, setPendingProducts] = useState<FetchedProduct[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [stockStatus, setStockStatus] = useState({ needsSync: 0, total: 0 });
+  const [isLoadingStock, setIsLoadingStock] = useState(true);
 
   const filteredProducts = useMemo(() => {
   const products = filter === 'sale' 
@@ -81,7 +81,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     product.product_id
   );
 }, [publishedProducts, filter]);
-  
 
   const handleViewChange = (newView: ViewType) => {
     if (newView === 'products') {
@@ -95,7 +94,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     }
     setShowDropdown(false);
   };
-
 
   const fetchPendingCount = useCallback(async () => {
     try {
@@ -139,44 +137,62 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     }
   }, [session?.access_token]);
 
-  const loadExistingProducts = useCallback(async () => {
-    if (fetchingRef.current) {
-      return;
-    }
-
-    fetchingRef.current = true;
-    setIsFetching(true);
-    
+  const mergeStockIntoProducts = useCallback(async (products: FetchedProduct[]) => {
     try {
-      const response = await fetch(`${API_URL}/api/products/existing?published=true`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/api/products/stock-status`, {
         headers: {
           'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`
-          })
-        }
+          ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
       const data = await response.json();
-      
-      if (data.success && data.products) {
-        const published = data.products?.filter((p: FetchedProduct) => p.is_published === true);
-        setPublishedProducts(published);
-        setHasLoadedFromDB(true);
-      }
+      if (!data.success || !Array.isArray(data.products)) return products;
 
-    } catch (error) {
-      console.error('Error loading existing products:', error);
-    } finally {
-      setIsFetching(false);
-      fetchingRef.current = false;
+      console.log('Stock status API data:', data.products);
+
+      const stockMap = new Map();
+      data.products.forEach((p: { product_id: any; display_quantity: any; }) => {
+        stockMap.set(String(p.product_id).trim(), p.display_quantity ?? 0);
+      });
+
+      console.log('StockMap:', stockMap);
+
+      return products.map((p) => ({
+        ...p,
+        display_quantity: Number(stockMap.get(String(p.product_id).trim())) || 0,
+      }));
+    } catch (err) {
+      console.error('Failed to merge stock:', err);
+      return products;
     }
   }, [session?.access_token]);
+
+  const loadExistingProducts = useCallback(async () => {
+  setIsFetching(true);
+  try {
+    const response = await fetch(`${API_URL}/api/client-products`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token && {
+          'Authorization': `Bearer ${session.access_token}`
+        })
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const data = await response.json();
+    if (data.success && data.products) {
+      const merged = await mergeStockIntoProducts(data.products);
+      setPublishedProducts(merged);
+      setHasLoadedFromDB(true);
+    }
+  } catch (error) {
+    console.error('Error loading client products:', error);
+  } finally {
+    setIsFetching(false);
+  }
+  }, [session?.access_token, mergeStockIntoProducts]);
 
   const refreshProductsData = useCallback(async () => {
     console.log('Refreshing products data...');
@@ -186,6 +202,24 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
       fetchPendingProducts()
     ]);
   }, [loadExistingProducts, fetchPendingCount, fetchPendingProducts]);
+  
+  const checkStockStatus = useCallback(async () => {
+    setIsLoadingStock(true);
+    try {
+      const response = await fetch(`${API_URL}/api/products/stock-status`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
+        },
+      });
+      const data = await response.json();
+      setStockStatus(data.summary || { needsSync: 0, total: 0 });
+    } catch (error) {
+      console.error('Error checking stock status:', error);
+    } finally {
+      setIsLoadingStock(false);
+    }
+  }, [session?.access_token]);
 
   const handleFetchProducts = useCallback(async (isManualSync: boolean = true) => {
     if (fetchingRef.current) {
@@ -196,6 +230,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     fetchingRef.current = true;
     setIsFetching(true);
     setFetchSuccess(false);
+
     
     try {
       const params = new URLSearchParams();
@@ -242,6 +277,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
 
       await fetchPendingCount();
 
+
       if (isManualSync) {
         const successMessage = newProducts.length === 1 
           ? `Successfully synced 1 product (${data.synced} synced, ${data.skipped} skipped)` 
@@ -249,6 +285,9 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
         
         toast.success(successMessage);
       }
+
+      await checkStockStatus();
+
 
     } catch (error) {
       console.error('Error syncing products:', error);
@@ -264,11 +303,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
       setIsFetching(false);
       fetchingRef.current = false;
     }
-  }, [session?.access_token, lastFetchTime, fetchPendingCount]);
-
-  const handleManualSync = useCallback(() => {
-    handleFetchProducts(true);
-  }, [handleFetchProducts]);
+  }, [session?.access_token, lastFetchTime, fetchPendingCount, checkStockStatus]);
 
   const handleAddProductClick = async () => {
     await fetchPendingProducts();
@@ -280,15 +315,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     
     if (shouldRefresh) {
       console.log('Product published, refreshing data...');
-      await refreshProductsData();
-      toast.success('Products updated successfully!');
-    }
-  }, [refreshProductsData]);
-
- const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
-  setShowManageStockModal(false);
-    if (shouldRefresh) {
-      console.log('Stock synced, refreshing data...');
       await refreshProductsData();
       toast.success('Products updated successfully!');
     }
@@ -306,7 +332,18 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
       setLastFetchTime(savedTime);
     }
 
+    checkStockStatus();
   }, [session?.user?.id, loadExistingProducts, hasLoadedFromDB, fetchPendingCount]);
+
+ const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
+    setShowManageStockModal(false);
+    if (shouldRefresh) {
+      await refreshProductsData();
+      await checkStockStatus();
+      setPublishedProducts(await mergeStockIntoProducts(publishedProducts));
+      toast.success('Products updated successfully!');
+    }
+  }, [refreshProductsData, checkStockStatus, mergeStockIntoProducts, publishedProducts]);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -384,54 +421,62 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                     </p>
                   )}
                 </div>
+
+                {/* Sync, Stock and Add Product buttons */}
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-none">
-                    <button
-                      onClick={handleManualSync}
-                      disabled={isFetching}
-                      className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl font-medium border-2 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:outline-none flex items-center justify-center gap-2 ${
-                        fetchSuccess && !isFetching
-                          ? 'bg-green-500 text-white border-green-500 hover:bg-green-600'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 focus:ring-gray-200'
-                      }`}
-                      style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
-                    >
-                      <Icon 
-                        icon={
-                          isFetching 
-                            ? "mdi:loading" 
-                            : fetchSuccess 
-                              ? "mdi:check" 
-                              : "mdi:refresh"
-                        } 
-                        className={`text-xl ${isFetching ? 'animate-spin' : ''}`} 
-                      />
-                      {isFetching ? 'Syncing...' : fetchSuccess ? 'Synced' : 'Sync'}
-                    </button>
+                  <div className="relative flex-1 sm:flex-none"> 
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+            
+                      {/* Sync Products Button */}
+                      <button
+                        onClick={() => handleFetchProducts(true)}
+                        disabled={isFetching}
+                        className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl font-medium border-2 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:outline-none flex items-center justify-center gap-2 ${
+                          fetchSuccess && !isFetching
+                            ? 'bg-green-500 text-white border-green-500 hover:bg-green-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 focus:ring-gray-200'
+                        }`}
+                        style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
+                      >
+                        <Icon 
+                          icon={isFetching ? "mdi:loading" : fetchSuccess ? "mdi:check" : "mdi:refresh"} 
+                          className={`text-xl ${isFetching ? 'animate-spin' : ''}`} 
+                        />
+                        {isFetching ? 'Syncing Products...' : fetchSuccess ? 'Products Synced' : 'Sync Products'}
+                      </button>
+
+                      {/* Manage Stock Button */}
+                      {!isLoadingStock && stockStatus.needsSync > 0 && (
+                        <button
+                          className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-yellow-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-yellow-200 hover:border-yellow-400 transition-all duration-200"
+                          onClick={() => setShowManageStockModal(true)}
+                        >
+                          <Icon icon="mdi:sync" className="text-xl" />
+                          {`Manage Stock (${stockStatus.needsSync})`}
+                        </button>
+                      )}
+
+                      {/* Add Product button */}
+                      <button
+                        className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200 relative"
+                        style={{
+                          boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
+                        }}
+                        onClick={handleAddProductClick}
+                      >
+                        <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
+                        {filter === 'sale' ? 'Add Sale' : 'Add Products'}
+                        {pendingCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                            {pendingCount}
+                          </span>
+                        )}
+                      </button>
+
+                    </div>
                   </div>
-                  <button
-                    className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-yellow-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-yellow-200 hover:border-yellow-400 transition-all duration-200"
-                    onClick={() => setShowManageStockModal(true)}
-                  >
-                    <Icon icon="mdi:sync" className="text-xl" />
-                    Manage Stock
-                  </button>
-                  <button
-                    className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200 relative"
-                    style={{
-                      boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
-                    }}
-                    onClick={handleAddProductClick}
-                  >
-                    <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
-                    {filter === 'sale' ? 'Add Sale' : 'Add Products'}
-                    {pendingCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
-                        {pendingCount}
-                      </span>
-                    )}
-                  </button>
                 </div>
+                
               </div>
             )}
 
@@ -557,11 +602,11 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                           <div className="text-right">
                             <p className="text-xs sm:text-sm text-gray-500">Stock</p>
                             <p className={`text-base sm:text-lg font-semibold ${
-                              product.quantity === 0 ? 'text-red-600' : 
-                              product.quantity < 100 ? 'text-orange-500' : 
+                              product.display_quantity === 0 ? 'text-red-600' : 
+                              product.display_quantity < 100 ? 'text-orange-500' : 
                               'text-green-600'
                             }`}>
-                              {product.quantity}
+                              {product.display_quantity}
                             </p>
                           </div>
                         </div>
@@ -570,16 +615,16 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
                               className={`h-full transition-all duration-300 ${
-                                product.quantity === 0 ? 'bg-red-400' : 
-                                product.quantity < 100 ? 'bg-orange-400' : 
+                                product.display_quantity === 0 ? 'bg-red-400' : 
+                                product.display_quantity < 100 ? 'bg-orange-400' : 
                                 'bg-green-400'
                               }`}
-                              style={{ width: `${Math.min(product.quantity / 3.5, 100)}%` }}
+                              style={{ width: `${Math.min(product.display_quantity / 3.5, 100)}%` }}
                             ></div>
                           </div>
                           <div className="flex justify-between text-xs text-gray-500">
                             <span>Stock level</span>
-                            <span>{product.quantity === 0 ? 'Out' : product.quantity < 100 ? 'Low' : 'High'}</span>
+                            <span>{product.display_quantity === 0 ? 'Out' : product.display_quantity < 100 ? 'Low' : 'High'}</span>
                           </div>
                         </div>
                       </div>

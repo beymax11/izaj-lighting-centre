@@ -8,7 +8,6 @@ import API_URL from '../../config/api';
 interface FetchedProduct {
   id: string;
   product_name: string;
-  quantity: number;
   price: number;
   status: string;
   category: string | { category_name: string } | null;
@@ -16,6 +15,7 @@ interface FetchedProduct {
   description: string | null;
   image_url: string | null;   
   created_at?: string;
+  display_quantity: number;
 }
 
 interface AddProductModalProps {

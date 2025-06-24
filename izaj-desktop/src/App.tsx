@@ -4,7 +4,6 @@ import Orders from './pages/orders';
 import Reports from './pages/reports';
 import Payments from './pages/payments';
 import Feedbacks from './pages/feedbacks';
-import Messages from './pages/messages';
 import Profile from './pages/profile';
 import Settings from './pages/settings';
 import Header from './components/Header';
@@ -87,8 +86,6 @@ function App(
 
   const renderContent = () => {
     switch (currentPage) {
-      case 'MESSAGES':
-        return <Messages  session={session} handleNavigation={handleNavigation} />;
       case 'PRODUCTS':
         return <Products  session={session}
           showAddProductModal={showAddProductModal} 

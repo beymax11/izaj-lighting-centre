@@ -26,7 +26,6 @@ const generateAvatarUrl = (avatarPath) => {
   }
 };
 
-// Middleware for authentication
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -46,6 +45,66 @@ const authenticate = async (req, res, next) => {
   } catch (error) {
     console.error('Authentication error:', error);
     res.status(500).json({ error: 'Authentication failed' });
+  }
+};
+
+const updateProductStock = async (productId, inventoryQuantity) => {
+  try {
+    const timestamp = new Date().toISOString();
+
+    const { data: existingStock, error: fetchError } = await supabase
+      .from('product_stock')
+      .select('id, current_quantity, display_quantity')
+      .eq('product_id', productId)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error(`Fetch error for product ${productId}:`, fetchError);
+      return { success: false, error: fetchError.message };
+    }
+
+    if (existingStock) {
+      const { error: updateError } = await supabase
+        .from('product_stock')
+        .update({
+          current_quantity: inventoryQuantity,
+          display_quantity: inventoryQuantity, // Sync with current
+          last_sync_at: timestamp,
+          updated_at: timestamp
+        })
+        .eq('product_id', productId);
+
+      if (updateError) {
+        console.error(`Update error for product ${productId}:`, updateError);
+        return { success: false, error: updateError.message };
+      }
+      
+      return { success: true, action: 'updated' };
+    } else {
+      const { error: insertError } = await supabase
+        .from('product_stock')
+        .insert([{
+          product_id: productId,
+          current_quantity: inventoryQuantity,
+          display_quantity: inventoryQuantity,
+          reserved_quantity: 0,
+          last_sync_at: timestamp,
+          updated_at: timestamp
+        }]);
+
+        console.log("DEBUG Syncing stock for:", product.id, "→ quantity:", inventoryQuantity);
+
+
+      if (insertError) {
+        console.error(`Insert error for product ${productId}:`, insertError);
+        return { success: false, error: insertError.message };
+      }
+      
+      return { success: true, action: 'created' };
+    }
+  } catch (err) {
+    console.error(`Unhandled error for product ${productId}:`, err);
+    return { success: false, error: err.message };
   }
 };
 
@@ -702,7 +761,6 @@ app.get('/api/admin/audit-logs', authenticate, async (req, res) => {
   }
 });
 
-// GET Products from Inventory DB and upsert into Client DB
 app.get('/api/products', authenticate, async (req, res) => {
   try {
     const { after, limit = 100, sync } = req.query;
@@ -749,7 +807,6 @@ app.get('/api/products', authenticate, async (req, res) => {
     const rowsForClient = invRows.map((r) => ({
       product_id: r.id,
       product_name: r.product_name,
-      quantity: r.quantity,
       price: r.price,
       status: r.status ?? 'active',
       category: r.category?.category_name?.trim() || null,
@@ -774,25 +831,48 @@ app.get('/api/products', authenticate, async (req, res) => {
     }
 
     const syncedCount = upserted ? upserted.length : rowsForClient.length;
+    const timestamp = new Date().toISOString();
+    const stockResults = [];
 
-    res.json({
-      success: true,
-      products: upserted,
-      synced: syncedCount,
-      skipped: Math.max(0, invRows.length - syncedCount),
-      timestamp: new Date().toISOString()
-    });
+    for (const product of invRows) {
+      const result = await updateProductStock(product.id, product.quantity || 0);
+      stockResults.push({
+        product_id: product.id,
+        ...result,
+        quantity: product.quantity || 0
+      });
+      
+      console.log(`Stock ${result.action} for product ${product.id} with qty: ${product.quantity || 0}`);
+    }
 
-  } catch (error) {
-    console.error('Error syncing products:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to sync products'
-    });
-  }
-});
+        const stockSuccessCount = stockResults.filter(r => r.success).length;
+        const stockFailCount = stockResults.filter(r => !r.success).length;
 
-// GET Products from Client DB (DB2) for display
+        res.json({
+          success: true,
+          products: upserted,
+          synced: syncedCount,
+          skipped: Math.max(0, invRows.length - syncedCount),
+          stock: {
+            processed: stockResults.length,
+            success: stockSuccessCount,
+            failed: stockFailCount,
+            results: stockResults
+          },
+          timestamp: new Date().toISOString()
+        });
+
+      } catch (error) {
+        console.error('Error syncing products:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to sync products',
+          details: error.message
+        });
+      }
+  });
+
+// GET Products from Client DB for Client App
 app.get('/api/client-products', async (req, res) => {
   try {
     const { page = 1, limit = 100, status, category, search } = req.query;
@@ -803,13 +883,18 @@ app.get('/api/client-products', async (req, res) => {
       .select(`
         id,
         product_id,
-        product_name,
-        quantity,
+        product_name,       
         price,
         status,
         category,
         branch,
-        inserted_at
+        inserted_at,
+        description,
+        image_url,
+        product_stock (
+          display_quantity,
+          last_sync_at
+        )
       `)
       .eq('is_published', true)
       .order('inserted_at', { ascending: false });
@@ -828,7 +913,7 @@ app.get('/api/client-products', async (req, res) => {
 
     query = query.range(offset, offset + parseInt(limit) - 1);
 
-    const { data: products, error: fetchError, count } = await query;
+    const { data: products, error: fetchError } = await query;
 
     if (fetchError) {
       console.error('Error fetching client products:', fetchError);
@@ -839,10 +924,22 @@ app.get('/api/client-products', async (req, res) => {
       });
     }
 
+    const transformedProducts = products.map(product => {
+      const stock = product.product_stock?.[0] || {};
+      return {
+        ...product,
+        quantity: stock.display_quantity,
+        display_quantity: stock.display_quantity,
+        current_quantity: stock.current_quantity,
+        last_sync_at: stock.last_sync_at,
+        product_stock: undefined
+      };
+    });
+
     const { count: totalCount, error: countError } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
-       .eq('is_published', true);
+      .eq('is_published', true);
 
     if (countError) {
       console.error('Error getting product count:', countError);
@@ -850,7 +947,7 @@ app.get('/api/client-products', async (req, res) => {
 
     res.json({
       success: true,
-      products: products || [],
+      products: transformedProducts || [],
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -925,16 +1022,15 @@ app.put('/api/client-products/:id/configure', async (req, res) => {
   }
 });
 
-// GET existing products from Client DB
 app.get('/api/products/existing', authenticate, async (req, res) => {
   try {
-    const { data: products, error } = await supabase
+    // Fetch products
+    const { data: products, error: prodError } = await supabase
       .from('products')
       .select(`
         id,
         product_id,
         product_name,
-        quantity,
         price,
         status,
         category,
@@ -947,18 +1043,47 @@ app.get('/api/products/existing', authenticate, async (req, res) => {
       .order('inserted_at', { ascending: false })
       .limit(100);
 
-    if (error) {
-      console.error('Error fetching existing products:', error);
+    if (prodError) {
+      console.error('Error fetching products:', prodError);
       return res.status(500).json({
         success: false,
-        error: 'Failed to fetch existing products',
-        details: error.message
+        error: 'Failed to fetch products',
+        details: prodError.message
       });
     }
 
+    // Fetch stock
+    const { data: stocks, error: stockError } = await supabase
+      .from('product_stock')
+      .select('product_id, display_quantity, current_quantity, last_sync_at');
+
+    if (stockError) {
+      console.error('Error fetching stock:', stockError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch stock',
+        details: stockError.message
+      });
+    }
+
+    // Merge stock into products
+    const stockMap = {};
+    (stocks || []).forEach(s => { stockMap[String(s.product_id).trim()] = s; });
+
+    const productsWithStock = (products || []).map(product => {
+      const stock = stockMap[String(product.product_id).trim()] || {};
+      return {
+        ...product,
+        quantity: stock.display_quantity ?? 0,
+        display_quantity: stock.display_quantity,
+        current_quantity: stock.current_quantity,
+        last_sync_at: stock.last_sync_at,
+      };
+    });
+
     res.json({
       success: true,
-      products: products || []
+      products: productsWithStock
     });
   } catch (error) {
     console.error('Error fetching existing products:', error);
@@ -1001,12 +1126,11 @@ app.post('/api/products/publish', authenticate, async (req, res) => {
   res.json({ success: !error });
 });
 
-// GET only product_id, product_name, and quantity for all published products
 app.get('/api/products/stock-summary', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('product_id, product_name, quantity')
+      .select('product_id, product_name')
       .eq('is_published', true);
 
     // Audit log: record the stock summary fetch
@@ -1031,6 +1155,279 @@ app.get('/api/products/stock-summary', authenticate, async (req, res) => {
   }
 });
 
+app.get('/api/products/stock-status', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        product_id,
+        product_name,
+        product_stock(
+          current_quantity,
+          display_quantity,
+          reserved_quantity,
+          last_sync_at
+        )
+      `)
+      .eq('is_published', true);
+
+    if (error) {
+      console.error('Error fetching stock status:', error);
+      
+      console.log('Trying fallback method with separate queries...');
+      
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('product_id, product_name')
+        .eq('is_published', true);
+
+      if (productsError) {
+        return res.status(500).json({ error: productsError.message });
+      }
+
+      const { data: stocks, error: stocksError } = await supabase
+        .from('product_stock')
+        .select('product_id, current_quantity, display_quantity, reserved_quantity, last_sync_at');
+
+      if (stocksError) {
+        return res.status(500).json({ error: stocksError.message });
+      }
+
+      const stockMap = {};
+      stocks.forEach(stock => {
+        stockMap[stock.product_id] = stock;
+      });
+
+      const combinedData = products.map(product => ({
+        product_id: product.product_id,
+        product_name: product.product_name,
+        product_stock: stockMap[product.product_id] ? [stockMap[product.product_id]] : []
+      }));
+
+      const stockStatus = combinedData.map(product => {
+        const stock = product.product_stock || {};
+        const currentQty = stock.current_quantity || 0;
+        const displayQty = stock.display_quantity || 0;
+
+        return {
+          product_id: product.product_id,
+          product_name: product.product_name,
+          current_quantity: currentQty,
+          display_quantity: displayQty,
+          reserved_quantity: stock.reserved_quantity || 0,
+          needs_sync: currentQty !== displayQty,
+          last_sync_at: stock.last_sync_at,
+          difference: currentQty - displayQty,
+          has_stock_entry: !!stock.product_id
+        };
+      });
+
+      await logAuditEvent(req.user.id, 'VIEW_STOCK_STATUS', {
+        action: 'Fetched stock status (fallback method)',
+        count: stockStatus.length,
+        needsSync: stockStatus.filter(p => p.needs_sync).length
+      }, req);
+
+      return res.json({
+        success: true,
+        products: stockStatus,
+        summary: {
+          total: stockStatus.length,
+          needsSync: stockStatus.filter(p => p.needs_sync).length,
+          withoutStock: stockStatus.filter(p => !p.has_stock_entry).length
+        }
+      });
+    }
+
+    const stockStatus = data.map(product => {
+      const stock = product.product_stock || {};
+      const currentQty = stock.current_quantity || 0;
+      const displayQty = stock.display_quantity || 0;
+
+      return {
+        product_id: product.product_id,
+        product_name: product.product_name,
+        current_quantity: currentQty,
+        display_quantity: displayQty,
+        reserved_quantity: stock.reserved_quantity || 0,
+        needs_sync: currentQty !== displayQty,
+        last_sync_at: stock.last_sync_at,
+        difference: currentQty - displayQty,
+        has_stock_entry: !!stock.current_quantity || !!stock.display_quantity
+      };
+    });
+
+
+    await logAuditEvent(req.user.id, 'VIEW_STOCK_STATUS', {
+      action: 'Fetched stock status',
+      count: stockStatus.length,
+      needsSync: stockStatus.filter(p => p.needs_sync).length
+    }, req);
+
+    res.json({
+      success: true,
+      products: stockStatus,
+      summary: {
+        total: stockStatus.length,
+        needsSync: stockStatus.filter(p => p.needs_sync).length,
+        withoutStock: stockStatus.filter(p => !p.has_stock_entry).length
+      }
+    });
+
+  } catch (err) {
+    console.error('Error fetching stock status:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/products/initialize-stock', authenticate, async (req, res) => {
+  try {
+    // Get products without stock entries
+    const { data: productsWithoutStock, error: fetchError } = await supabase
+      .from('products')
+      .select('product_id')
+      .eq('is_published', true)
+      .not('product_id', 'in', `(SELECT product_id FROM product_stock)`);
+
+    if (fetchError) {
+      return res.status(500).json({ error: fetchError.message });
+    }
+
+    if (!productsWithoutStock || productsWithoutStock.length === 0) {
+      return res.json({
+        success: true,
+        message: 'All products already have stock entries',
+        initialized: 0
+      });
+    }
+
+    // Fetch initial quantities from centralized_product
+    const productIds = productsWithoutStock.map(p => p.product_id);
+    const { data: centralProducts, error: centralError } = await productSupabase
+      .from('centralized_product')
+      .select('id, quantity')
+      .in('id', productIds);
+
+    if (centralError) {
+      return res.status(500).json({ error: centralError.message });
+    }
+
+    // Map product_id to quantity
+    const quantityMap = {};
+    for (const cp of centralProducts || []) {
+      quantityMap[cp.id] = cp.quantity || 0;
+    }
+
+    const now = new Date().toISOString();
+    const stockEntries = productsWithoutStock.map(product => ({
+      product_id: product.product_id,
+      current_quantity: quantityMap[product.product_id] || 0,
+      display_quantity: quantityMap[product.product_id] || 0,
+      reserved_quantity: 0,
+      last_sync_at: now,
+      updated_at: now
+    }));
+
+    const { data: insertedStock, error: insertError } = await supabase
+      .from('product_stock')
+      .insert(stockEntries)
+      .select();
+
+    if (insertError) {
+      return res.status(500).json({ error: insertError.message });
+    }
+
+    await logAuditEvent(req.user.id, 'INITIALIZE_STOCK', {
+      action: 'Initialized stock entries',
+      count: insertedStock.length
+    }, req);
+
+    res.json({
+      success: true,
+      message: `Initialized stock for ${insertedStock.length} products`,
+      initialized: insertedStock.length
+    });
+
+  } catch (err) {
+    console.error('Error initializing stock:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/products/sync-stock', authenticate, async (req, res) => {
+  try {
+    const { productIds } = req.body;
+
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ error: 'Product IDs array is required' });
+    }
+
+    // Get current quantities from product_stock table
+    const { data: stocks, error: fetchError } = await supabase
+      .from('product_stock')
+      .select('product_id, current_quantity')
+      .in('product_id', productIds);
+
+    if (fetchError) {
+      return res.status(500).json({ error: fetchError.message });
+    }
+
+    const syncResults = [];
+    const timestamp = new Date().toISOString();
+
+    for (const stock of stocks) {
+      const { data: updatedStock, error: upsertError } = await supabase
+        .from('product_stock')
+        .upsert({
+          product_id: stock.product_id,
+          current_quantity: stock.current_quantity,
+          display_quantity: stock.current_quantity,
+          last_sync_at: timestamp,
+          updated_at: timestamp
+        }, {
+          onConflict: 'product_id'
+        })
+        .select()
+        .single();
+
+      if (upsertError) {
+        syncResults.push({
+          product_id: stock.product_id,
+          success: false,
+          error: upsertError.message
+        });
+      } else {
+        syncResults.push({
+          product_id: stock.product_id,
+          success: true,
+          synced_quantity: stock.current_quantity
+        });
+      }
+    }
+
+    const successCount = syncResults.filter(r => r.success).length;
+    const failCount = syncResults.filter(r => !r.success).length;
+
+    await logAuditEvent(req.user.id, 'SYNC_STOCK', {
+      action: 'Manual stock sync',
+      productIds,
+      successCount,
+      failCount,
+      results: syncResults
+    }, req);
+
+    res.json({
+      success: true,
+      message: `Synced ${successCount} products${failCount > 0 ? `, ${failCount} failed` : ''}`,
+      results: syncResults,
+      summary: { successCount, failCount }
+    });
+
+  } catch (err) {
+    console.error('Error syncing stock:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
 

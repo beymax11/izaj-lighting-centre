@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../../backend/nodejs/supabaseProduct';
+import { supabase as supabaseClient } from '../../backend/nodejs/supabaseClient';
 import toast from 'react-hot-toast';
 
 interface NotificationItem {
@@ -46,7 +47,8 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  useEffect(() => {
+ useEffect(() => {
+  const setupRealtime = async () => {
     const channel = supabase
       .channel('db-changes')
       .on(
@@ -60,7 +62,7 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
           const newNotif: NotificationItem = {
             id: Date.now(),
             title: 'New Product Added',
-            message: `Product "${payload.new.product_name}" added to inventory.`,
+            message: `Product ${payload.new.product_name} added to inventory.`,
             time: new Date().toLocaleTimeString(),
             read: false,
             type: 'product',
@@ -68,21 +70,26 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
           setNotifications((prev) => [newNotif, ...prev]);
           toast.success(newNotif.message);
         }
-      )
+      );
+
+    const channel2 = supabaseClient
+      .channel('db-changes')
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'products',
-          filter: 'quantity=neq.null',
+          table: 'product_stock',
         },
         (payload) => {
-          if (payload.old.quantity !== payload.new.quantity) {
+          const oldQty = payload.old.current_quantity;
+          const newQty = payload.new.current_quantity;
+
+          if (oldQty !== newQty) {
             const newNotif: NotificationItem = {
               id: Date.now(),
               title: 'Stock Updated',
-              message: `Stock for "${payload.new.product_name}" changed from ${payload.old.quantity} to ${payload.new.quantity}.`,
+              message: `Updated stock for product ${payload.new.product_id}.`,
               time: new Date().toLocaleTimeString(),
               read: false,
               type: 'stock',
@@ -91,13 +98,46 @@ export const NotificationsProvider = ({ children }: { children: React.ReactNode 
             toast.success(newNotif.message);
           }
         }
-      )
-      .subscribe();
+      );
+
+    const channel3 = supabase
+      .channel('db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'centralized_product',
+        },
+        (payload) => {
+          const newNotif: NotificationItem = {
+            id: Date.now(),
+            title: 'Product Updated',
+            message: `Product ${payload.old.product_name} Updated.`,
+            time: new Date().toLocaleTimeString(),
+            read: false,
+            type: 'product',
+          };
+          setNotifications((prev) => [newNotif, ...prev]);
+          toast.error(newNotif.message);
+        }
+      );
+
+    const sub1 = await channel.subscribe();
+    const sub2 = await channel2.subscribe();
+    const sub3 = await channel3.subscribe();
+
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(sub1);
+      supabaseClient.removeChannel(sub2);
+      supabase.removeChannel(sub3);
+      };
     };
+
+    setupRealtime();
   }, []);
+
 
   return (
     <NotificationsContext.Provider

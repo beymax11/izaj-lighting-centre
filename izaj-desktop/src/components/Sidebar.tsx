@@ -16,7 +16,6 @@ interface SidebarProps {
 
 const navigationItems = [
   { icon: 'mdi:view-dashboard', label: 'DASHBOARD' },
-  { icon: 'mdi:message-outline', label: 'MESSAGES' },
   { icon: 'mdi:shopping-outline', label: 'PRODUCTS' },
   { icon: 'mdi:clipboard-list-outline', label: 'ORDERS' },
   { icon: 'mdi:credit-card-outline', label: 'PAYMENTS' },

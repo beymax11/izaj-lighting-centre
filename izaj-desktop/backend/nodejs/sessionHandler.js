@@ -17,7 +17,6 @@ async function createAdminSession(email, password) {
     return { error: "Login failed" };
   }
 
-  console.log("Admin logged in:", data);
   savedSession = data.session;
   return data;
 }
@@ -37,7 +36,6 @@ async function logoutAdmin() {
 
 async function saveAdminSession(session) {
   savedSession = session;
-  console.log('Session Saved:', session);
 }
 
 export default {
