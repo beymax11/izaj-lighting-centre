@@ -1,54 +1,26 @@
-import { useState } from 'react';
 import { Icon } from '@iconify/react';
-import API_URL from '../../config/api'
-
+import { useLogin } from '../hooks/useLogin';
 
 interface LoginProps {
   onLogin: (session: any) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
- 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch(`${API_URL}/api/admin/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed');
-        return;
-      }
-
-      setError('');
-      onLogin(data.session);
-      setError(''); 
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('Something went wrong. Try again later.');
-    }
-  };
-
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    rememberMe,
+    setRememberMe,
+    error,
+    handleSubmit,
+  } = useLogin({ onLogin });
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100">
       <div className="bg-white rounded-3xl shadow-2xl border border-yellow-100 px-10 py-12 w-full max-w-md flex flex-col items-center relative">
-        {/* Decorative Icon */}
+        {/* Logo */}
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-100 rounded-full p-3 shadow-lg">
           <img
             src="/izaj.jpg"
@@ -56,21 +28,24 @@ export default function Login({ onLogin }: LoginProps) {
             className="w-16 h-16 rounded-full bg-yellow-400 border-4 border-yellow-200 shadow"
           />
         </div>
+
         <div className="mt-12 mb-2 flex flex-col items-center">
           <h2
             className="text-4xl font-bold text-gray-800 mb-1"
             style={{
-              color: "#000000",
+              color: '#000000',
               fontFamily: "'Playfair Display', serif",
-              textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-              letterSpacing: "10px",
+              textShadow: '-2px 0px 2px rgba(0, 0, 0, 0.5)',
+              letterSpacing: '10px',
             }}
           >
             IZAJ
           </h2>
           <span className="text-yellow-500 font-semibold tracking-widest text-xs mb-2">ADMIN PANEL</span>
         </div>
+
         <div className="text-gray-500 mb-6 text-sm">Sign in to your account</div>
+
         <form onSubmit={handleSubmit} className="w-full space-y-5">
           {error && (
             <div className="mb-2 text-red-500 text-sm text-center bg-red-50 rounded-lg py-2 px-3 border border-red-100">
@@ -78,6 +53,7 @@ export default function Login({ onLogin }: LoginProps) {
               {error}
             </div>
           )}
+
           <div>
             <label className="block text-gray-700 mb-2 font-medium">Email</label>
             <div className="relative">
@@ -92,6 +68,7 @@ export default function Login({ onLogin }: LoginProps) {
               />
             </div>
           </div>
+
           <div>
             <label className="block text-gray-700 mb-2 font-medium">Password</label>
             <div className="relative">
@@ -105,6 +82,21 @@ export default function Login({ onLogin }: LoginProps) {
               />
             </div>
           </div>
+
+          <div className="flex items-center">
+            <input
+              id="remember"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              className="mr-2"
+            />
+            <label htmlFor="remember" className="text-sm text-gray-600">
+              Remember Me
+            </label>
+          </div>
+
+
           <button
             type="submit"
             className="w-full bg-yellow-400 text-gray-900 py-2 rounded-xl font-semibold hover:bg-yellow-500 transition shadow-lg mt-2"
@@ -113,6 +105,7 @@ export default function Login({ onLogin }: LoginProps) {
             Login
           </button>
         </form>
+
         <div className="mt-6 text-xs text-gray-400 text-center">
           © {new Date().getFullYear()} IZAJ. All rights reserved.
         </div>

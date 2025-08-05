@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
 import  { supabase } from './supabaseClient.js';
 import sessionHandler from './sessionHandler.js';
 import { supabase as productSupabase } from './supabaseProduct.js';
@@ -107,6 +108,10 @@ const updateProductStock = async (productId, inventoryQuantity) => {
     return { success: false, error: err.message };
   }
 };
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 
 // LOGIN ROUTE
 app.post('/api/admin/login', async (req, res) => {
@@ -761,6 +766,7 @@ app.get('/api/admin/audit-logs', authenticate, async (req, res) => {
   }
 });
 
+// GET inventory db > client db (SYNC BUTTON)
 app.get('/api/products', authenticate, async (req, res) => {
   try {
     const { after, limit = 100, sync } = req.query;
@@ -812,6 +818,7 @@ app.get('/api/products', authenticate, async (req, res) => {
       category: r.category?.category_name?.trim() || null,
       branch: r.branch?.location?.trim() || null,
       is_published: false,
+      publish_status: false,
     }));
 
     const { data: upserted, error: upsertErr } = await supabase
@@ -891,6 +898,7 @@ app.get('/api/client-products', async (req, res) => {
         inserted_at,
         description,
         image_url,
+        publish_status,
         product_stock (
           display_quantity,
           last_sync_at
@@ -959,6 +967,108 @@ app.get('/api/client-products', async (req, res) => {
 
   } catch (error) {
     console.error('Server error in client-products:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      details: error.message
+    });
+  }
+});
+
+// UPLOAD Product Media
+app.post('/api/products/:productId/media', authenticate, upload.array('media', 10), async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const files = req.files;
+    
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'No files uploaded' });
+      }
+
+    const mediaUrls = [];
+
+    for (const file of files) {
+      const filePath = `products/${productId}/${Date.now()}_${file.originalname}`;
+      const { data, error } = await supabase.storage
+        .from('product-image')
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true
+        });
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to upload media file', details: error.message });
+    }
+
+    const { data: usrlData } = supabase.storage
+      .from('product-image')
+      .getPublicUrl(data.path);
+
+    mediaUrls.push(usrlData.publicUrl);
+    }
+    
+    const { error: dbError } = await supabase
+      .from('products')
+      .update({ media_urls: mediaUrls })
+      .eq('id', productId);
+      
+      if (dbError) {
+      return res.status(500).json({ error: 'Failed to update product media URLs', details: dbError.message });
+      }
+
+        res.json({ success: true, mediaUrls });
+      } catch (err) {
+
+      res.status(500).json({
+        error: 'Internal server error',
+        message: err.message,
+      });
+    }
+});
+
+// GET Product Media
+app.get('/api/products/:productId/media', async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('media_urls')
+      .eq('id', productId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching product media:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch product media',
+        details: error.message
+      });
+    }
+
+    if (!product || !product.media_urls) {
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found or no media available'
+      });
+    }
+
+    const parsedMediaUrls = Array.isArray(product.media_urls)
+    ? product.media_urls.map((entry) =>
+        typeof entry === 'string' && entry.startsWith('[')
+          ? JSON.parse(entry) // if stringified array, parse it
+          : entry
+      ).flat()
+    : JSON.parse(product.media_urls);
+
+
+    res.json({
+      success: true,
+      mediaUrls: parsedMediaUrls,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Server error in fetching product media:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -1362,7 +1472,6 @@ app.post('/api/products/sync-stock', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Product IDs array is required' });
     }
 
-    // Get current quantities from product_stock table
     const { data: stocks, error: fetchError } = await supabase
       .from('product_stock')
       .select('product_id, current_quantity')
@@ -1428,6 +1537,34 @@ app.post('/api/products/sync-stock', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.get('/api/products/product-status', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('publish_status')
+      .eq('is_published', true);
+
+    if (error) {
+      console.error('Error fetching product status:', error);
+      console.log('Error details:', error.details);
+      return res.status(500).json({ 
+        error: 'Failed to fetch product status',
+        details: error.message 
+      });
+    }
+
+  return res.status(200).json({ 
+    statusList: data.map((item) => item.publish_status) 
+  });
+
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 
 
 

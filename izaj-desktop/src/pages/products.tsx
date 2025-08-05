@@ -1,49 +1,24 @@
+
 import { Icon } from '@iconify/react';
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { AddProductModal } from '../components/AddProductModal';
 import { ManageStockModal } from '../components/ManageStockModal';
 import Stock from './Stock';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
-import API_URL from '../../config/api';
-
-interface Product {
-  id: string;
-  name: string;
-  product_id: string; 
-  category: string;
-  price: string;
-  quantity: number;
-  stock: number;
-  status: string;
-  variant: number | null;
-  image: string;
-}
-
-export interface FetchedProduct {
-  id: string;
-  product_name: string;
-  display_quantity: number;
-  product_id: string; 
-  price: number;
-  status: string;
-  category: string | { category_name: string } | null;
-  branch: string | { location: string } | null;
-  description: string | null;
-  image_url: string | null;   
-  created_at?: string;
-  is_published?: boolean;
-  
-}
-
-interface ApiResponse {
-  success: boolean;
-  products: FetchedProduct[];
-  synced: number;
-  skipped: number;
-  timestamp: string;
-}
+import { useProducts } from '../hooks/useProducts';
+import { 
+  formatPrice, 
+  getStockColor, 
+  getStockLevel, 
+  getStockProgressColor, 
+  getStockProgressWidth,
+  getStatusColor,
+  getStatusText,
+  getCategoryName,
+  getBranchName
+} from '../utils/productUtils';
 
 interface ProductsProps {
   showAddProductModal: boolean;
@@ -53,34 +28,30 @@ interface ProductsProps {
 
 export function Products({ showAddProductModal, setShowAddProductModal, session }: ProductsProps) {
   const [showManageStockModal, setShowManageStockModal] = useState(false);
-  const [] = useState<Product | null>(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'sale'>('all');
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<ViewType>('products');
-  const [fetchSuccess, setFetchSuccess] = useState(false);
-  const [lastFetchTime, setLastFetchTime] = useState<string | null>(null);
-  const [syncStats, setSyncStats] = useState({ synced: 0, skipped: 0 });
-  const [hasLoadedFromDB, setHasLoadedFromDB] = useState(false);
-  const fetchingRef = useRef(false);
-  const [publishedProducts, setPublishedProducts] = useState<FetchedProduct[]>([]);
-  const [pendingProducts, setPendingProducts] = useState<FetchedProduct[]>([]);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [stockStatus, setStockStatus] = useState({ needsSync: 0, total: 0 });
-  const [isLoadingStock, setIsLoadingStock] = useState(true);
 
-  const filteredProducts = useMemo(() => {
-  const products = filter === 'sale' 
-    ? publishedProducts.filter(p => p.status === 'Sale') 
-    : publishedProducts;
-    
-    return products.filter(product => 
-    product && 
-    product.id && 
-    product.product_name &&
-    product.product_id
-  );
-}, [publishedProducts, filter]);
+  const {
+    publishedProducts,
+    setPublishedProducts,
+    pendingProducts,
+    pendingCount,
+    isFetching,
+    filter,
+    setFilter,
+    fetchSuccess,
+    syncStats,
+    hasLoadedFromDB,
+    stockStatus,
+    isLoadingStock,
+    filteredProducts,
+    handleFetchProducts,
+    fetchPendingProducts,
+    refreshProductsData,
+    updatePublishedProducts,
+    checkStockStatus,
+    mediaUrlsMap,
+  } = useProducts(session);
 
   const handleViewChange = (newView: ViewType) => {
     if (newView === 'products') {
@@ -94,216 +65,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     }
     setShowDropdown(false);
   };
-
-  const fetchPendingCount = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/products/pending-count`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`
-          })
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPendingCount(data.count || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching pending count:', error);
-    }
-  }, [session?.access_token]);
-
-  const fetchPendingProducts = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/products/pending`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`
-          })
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPendingProducts(data.products || []);
-      }
-    } catch (error) {
-      console.error('Error fetching pending products:', error);
-    }
-  }, [session?.access_token]);
-
-  const mergeStockIntoProducts = useCallback(async (products: FetchedProduct[]) => {
-    try {
-      const response = await fetch(`${API_URL}/api/products/stock-status`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-        },
-      });
-
-      const data = await response.json();
-      if (!data.success || !Array.isArray(data.products)) return products;
-
-      console.log('Stock status API data:', data.products);
-
-      const stockMap = new Map();
-      data.products.forEach((p: { product_id: any; display_quantity: any; }) => {
-        stockMap.set(String(p.product_id).trim(), p.display_quantity ?? 0);
-      });
-
-      console.log('StockMap:', stockMap);
-
-      return products.map((p) => ({
-        ...p,
-        display_quantity: Number(stockMap.get(String(p.product_id).trim())) || 0,
-      }));
-    } catch (err) {
-      console.error('Failed to merge stock:', err);
-      return products;
-    }
-  }, [session?.access_token]);
-
-  const loadExistingProducts = useCallback(async () => {
-  setIsFetching(true);
-  try {
-    const response = await fetch(`${API_URL}/api/client-products`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(session?.access_token && {
-          'Authorization': `Bearer ${session.access_token}`
-        })
-      }
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    const data = await response.json();
-    if (data.success && data.products) {
-      const merged = await mergeStockIntoProducts(data.products);
-      setPublishedProducts(merged);
-      setHasLoadedFromDB(true);
-    }
-  } catch (error) {
-    console.error('Error loading client products:', error);
-  } finally {
-    setIsFetching(false);
-  }
-  }, [session?.access_token, mergeStockIntoProducts]);
-
-  const refreshProductsData = useCallback(async () => {
-    console.log('Refreshing products data...');
-    await Promise.all([
-      loadExistingProducts(),
-      fetchPendingCount(),
-      fetchPendingProducts()
-    ]);
-  }, [loadExistingProducts, fetchPendingCount, fetchPendingProducts]);
-  
-  const checkStockStatus = useCallback(async () => {
-    setIsLoadingStock(true);
-    try {
-      const response = await fetch(`${API_URL}/api/products/stock-status`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-        },
-      });
-      const data = await response.json();
-      setStockStatus(data.summary || { needsSync: 0, total: 0 });
-    } catch (error) {
-      console.error('Error checking stock status:', error);
-    } finally {
-      setIsLoadingStock(false);
-    }
-  }, [session?.access_token]);
-
-  const handleFetchProducts = useCallback(async (isManualSync: boolean = true) => {
-    if (fetchingRef.current) {
-      console.log('Fetch already in progress, skipping...');
-      return;
-    }
-
-    fetchingRef.current = true;
-    setIsFetching(true);
-    setFetchSuccess(false);
-
-    
-    try {
-      const params = new URLSearchParams();
-      if (lastFetchTime) {
-        params.append('after', lastFetchTime);
-      }
-      params.append('limit', '100');
-      params.append('sync', 'true');
-            
-      const response = await fetch(`${API_URL}/api/products?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`
-          })
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data: ApiResponse = await response.json();
-
-      if (!data.success) {
-        throw new Error('API returned unsuccessful response');
-      }
-
-      const newProducts = data.products || [];
-      
-      if (newProducts.length === 0 && lastFetchTime) {
-        toast('No new products to fetch');
-        setFetchSuccess(true);
-        setSyncStats({ synced: 0, skipped: 0 });
-        return;
-      }
-
-      setLastFetchTime(data.timestamp);
-      localStorage.setItem('lastFetchTime', data.timestamp);
-      setFetchSuccess(true);
-      setSyncStats({ synced: data.synced, skipped: data.skipped });
-
-      await fetchPendingCount();
-
-
-      if (isManualSync) {
-        const successMessage = newProducts.length === 1 
-          ? `Successfully synced 1 product (${data.synced} synced, ${data.skipped} skipped)` 
-          : `Successfully synced ${newProducts.length} products (${data.synced} synced, ${data.skipped} skipped)`;
-        
-        toast.success(successMessage);
-      }
-
-      await checkStockStatus();
-
-
-    } catch (error) {
-      console.error('Error syncing products:', error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'An unknown error occurred while syncing products';
-      
-      if (isManualSync) {
-        toast.error(`Failed to sync products: ${errorMessage}`);
-      }
-      setFetchSuccess(false);
-    } finally {
-      setIsFetching(false);
-      fetchingRef.current = false;
-    }
-  }, [session?.access_token, lastFetchTime, fetchPendingCount, checkStockStatus]);
 
   const handleAddProductClick = async () => {
     await fetchPendingProducts();
@@ -320,38 +81,21 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     }
   }, [refreshProductsData]);
 
-  useEffect(() => {
-    if (session?.user?.id && !hasLoadedFromDB) {
-      console.log('Loading existing published products from DB2...');
-      loadExistingProducts();
-      fetchPendingCount();
-    }
-
-    const savedTime = localStorage.getItem('lastFetchTime');
-    if (savedTime) {
-      setLastFetchTime(savedTime);
-    }
-
-    checkStockStatus();
-  }, [session?.user?.id, loadExistingProducts, hasLoadedFromDB, fetchPendingCount]);
-
- const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
+  const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
     setShowManageStockModal(false);
     if (shouldRefresh) {
       await refreshProductsData();
       await checkStockStatus();
-      setPublishedProducts(await mergeStockIntoProducts(publishedProducts));
+      await updatePublishedProducts();
       toast.success('Products updated successfully!');
     }
-  }, [refreshProductsData, checkStockStatus, mergeStockIntoProducts, publishedProducts]);
+  }, [refreshProductsData, checkStockStatus, updatePublishedProducts]);
 
   return (
     <div className="flex-1 overflow-y-auto">
       <main className="flex-1 px-8 py-6">
         {view === 'stock' ? (
-          <Stock session={session}
-            onViewChange={handleViewChange}
-          />
+          <Stock session={session} onViewChange={handleViewChange} />
         ) : (
           <>
             {/* Header section */}
@@ -369,7 +113,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                         <Icon icon="mdi:chevron-down" className="text-xl" />
                       </button>
                       
-                      {/* Updated Dropdown Menu */}
+                      {/* Dropdown Menu */}
                       {showDropdown && (
                         <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-10">
                           <button
@@ -414,7 +158,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                       ? 'Manage product sales and discounts' 
                       : 'Manage product inventory and listings'}
                   </p>
-                  {/* Add sync stats display */}
+                  {/* Sync stats display */}
                   {fetchSuccess && syncStats.synced > 0 && (
                     <p className="text-xs text-green-600 mt-1">
                       Last sync: {syncStats.synced} synced, {syncStats.skipped} skipped
@@ -422,11 +166,11 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                   )}
                 </div>
 
-                {/* Sync, Stock and Add Product buttons */}
+                {/* Action buttons */}
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <div className="relative flex-1 sm:flex-none"> 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-            
+                      
                       {/* Sync Products Button */}
                       <button
                         onClick={() => handleFetchProducts(true)}
@@ -459,9 +203,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                       {/* Add Product button */}
                       <button
                         className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-black text-white font-semibold rounded-xl shadow-lg hover:shadow-xl border-2 border-red-200 hover:border-red-400 transition-all duration-200 relative"
-                        style={{
-                          boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)',
-                        }}
+                        style={{ boxShadow: '0 4px 24px rgba(252, 211, 77, 0.15)' }}
                         onClick={handleAddProductClick}
                       >
                         <Icon icon="mdi:plus-circle" className="text-xl text-red-400" />
@@ -472,11 +214,9 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                           </span>
                         )}
                       </button>
-
                     </div>
                   </div>
                 </div>
-                
               </div>
             )}
 
@@ -484,6 +224,8 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
               style={{
                 boxShadow: '0 4px 32px 0 rgba(252, 211, 77, 0.07)',
               }}>
+
+              { /* Filter and search controls */}
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-0 mb-8">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <button
@@ -550,62 +292,42 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
               {filteredProducts.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                   {filteredProducts.map((product) => (
-                    <div key={product.id} 
-                      className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group"
-                      style={{
-                        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
-                      }}>
+                    <div key={product.id} className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group">
                       <div className="mb-4">
                         <div className="relative mb-4">
                           <img
-                            src="/default-product.jpg"
-                            alt={product.product_name}
-                            className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
-                          />
+                          src={mediaUrlsMap[product.id]?.[0] || '/placeholder.png'}
+                          alt={product.product_name}
+                          className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
+                        />
                         </div>
                         <h3 className="font-semibold text-lg sm:text-xl mb-2 text-gray-800">{product.product_name}</h3>
                         <div className="space-y-1 mb-2">
                           <p className="text-gray-500 text-sm">
-                            Category: {
-                              typeof product.category === 'object'
-                                ? product.category?.category_name
-                                : product.category || 'Uncategorized'
-                            }
+                            Category: {getCategoryName(product.category)}
                           </p>
                           {product.branch && (
                             <p className="text-gray-500 text-sm">
-                              Branch: {
-                                typeof product.branch === 'object'
-                                  ? product.branch?.location
-                                  : product.branch
-                              }
+                              Branch: {getBranchName(product.branch)}
                             </p>
                           )}
                         </div>
-                        <span className={`inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full ${
-                          product.status === 'Active' || product.status === 'active'
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        } font-medium`}>
-                          {(product.status === 'Active' || product.status === 'active') ? '🟢 Active' : '⭕ Out of Stock'}
+                        <span className={`inline-block px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full ${getStatusColor(product.publish_status)} font-medium`}>
+                          {getStatusText(product.publish_status)}
                         </span>
                       </div>
-                      
+
                       <div className="space-y-3 sm:space-y-4">
                         <div className="flex justify-between items-center border-t border-gray-100 pt-3 sm:pt-4">
                           <div>
                             <p className="text-xs sm:text-sm text-gray-500">Price</p>
                             <p className="text-xl sm:text-2xl font-bold text-gray-800">
-                              ₱ {(product.price && typeof product.price === 'number') ? product.price.toLocaleString() : '0'}
+                              {formatPrice(product.price)}
                             </p>                          
                           </div>
                           <div className="text-right">
                             <p className="text-xs sm:text-sm text-gray-500">Stock</p>
-                            <p className={`text-base sm:text-lg font-semibold ${
-                              product.display_quantity === 0 ? 'text-red-600' : 
-                              product.display_quantity < 100 ? 'text-orange-500' : 
-                              'text-green-600'
-                            }`}>
+                            <p className={`text-base sm:text-lg font-semibold ${getStockColor(product.display_quantity)}`}>
                               {product.display_quantity}
                             </p>
                           </div>
@@ -614,17 +336,13 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                         <div className="space-y-1 sm:space-y-2">
                           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              className={`h-full transition-all duration-300 ${
-                                product.display_quantity === 0 ? 'bg-red-400' : 
-                                product.display_quantity < 100 ? 'bg-orange-400' : 
-                                'bg-green-400'
-                              }`}
-                              style={{ width: `${Math.min(product.display_quantity / 3.5, 100)}%` }}
+                              className={`h-full transition-all duration-300 ${getStockProgressColor(product.display_quantity)}`}
+                              style={{ width: getStockProgressWidth(product.display_quantity) }}
                             ></div>
                           </div>
                           <div className="flex justify-between text-xs text-gray-500">
                             <span>Stock level</span>
-                            <span>{product.display_quantity === 0 ? 'Out' : product.display_quantity < 100 ? 'Low' : 'High'}</span>
+                            <span>{getStockLevel(product.display_quantity)}</span>
                           </div>
                         </div>
                       </div>
@@ -632,7 +350,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                   ))}
                 </div>
               )}
-
             </div>
 
             {/* Modals */}

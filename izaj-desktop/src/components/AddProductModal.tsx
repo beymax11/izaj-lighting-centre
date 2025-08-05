@@ -1,31 +1,8 @@
 import { Icon } from '@iconify/react';
-import { useState, useRef } from 'react';
 import { FetchedProductSlide } from './FetchedProductSlide';
-import { Session } from '@supabase/supabase-js';
-import { toast } from 'react-hot-toast';
-import API_URL from '../../config/api';
-
-interface FetchedProduct {
-  id: string;
-  product_name: string;
-  price: number;
-  status: string;
-  category: string | { category_name: string } | null;
-  branch: string | { location: string } | null;
-  description: string | null;
-  image_url: string | null;   
-  created_at?: string;
-  display_quantity: number;
-}
-
-interface AddProductModalProps {
-  session: Session | null;
-  onClose: () => void;
-  onSuccess: () => void;
-  mode: 'product' | 'sale';
-  fetchedProducts: FetchedProduct[];
-  onProductsPublished?: () => void; 
-}
+import { MediaDropzone } from './MediaDropZone';
+import { useModal } from '../hooks/useModal';
+import { AddProductModalProps } from '../types/modal';
 
 export function AddProductModal({ 
   onClose,
@@ -35,135 +12,38 @@ export function AddProductModal({
   session,
   onProductsPublished 
 }: AddProductModalProps) {
-  const [showFullForm, setShowFullForm] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<FetchedProduct | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    price: '',
-    image: ''
+  
+  const {
+    showFullForm,
+    selectedProduct,
+    currentIndex,
+    isPublishing,
+    uploading,
+    previewUrls,
+    previewIndex,
+    formData,
+    saleData,
+    
+    // Setters
+    setPreviewIndex,
+    setFormData,
+    setSaleData,
+    
+    // Actions
+    handleAddProduct,
+    handleFileChange,
+    handlePrev,
+    handleNext,
+    handleConfirmSingleProduct,
+    handleCreateSale,
+  } = useModal({
+    session,
+    onClose,
+    onSuccess,
+    mode,
+    fetchedProducts,
+    onProductsPublished
   });
-
-  const [saleData, setSaleData] = useState({
-    selectedProductId: '',
-    discountType: 'percentage',
-    discountValue: '',
-    startDate: '',
-    endDate: ''
-  });
-
-  const handlePublishProducts = async (productIds: string[]) => {
-    if (!session?.access_token) {
-      toast.error('Authentication required');
-      return;
-    }
-
-    setIsPublishing(true);
-    try {
-      const response = await fetch(`${API_URL}/api/products/publish`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ productIds }),
-      });
-
-      if (response.ok) {
-        toast.success(`Successfully published ${productIds.length} product(s)`);
-        onProductsPublished?.(); // Refresh parent data
-        onSuccess();
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to publish products');
-      }
-    } catch (error) {
-      console.error('Error publishing products:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to publish products');
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
-  const handleAddProduct = (product: FetchedProduct) => {
-    setSelectedProduct(product);
-    setFormData({
-      name: product.product_name,
-      description: product.description ?? '',
-      category: typeof product.category === 'string'
-        ? product.category
-        : product.category?.category_name ?? '',
-      price: product.price.toString(),
-      image: product.image_url ?? ''
-    });
-    setShowFullForm(true);
-  };
-
-  const handleConfirmSingleProduct = () => {
-    if (selectedProduct) {
-      handlePublishProducts([selectedProduct.id]);
-    }
-  };
-
-  const handleCreateSale = async () => {
-    if (!session?.access_token) {
-      toast.error('Authentication required');
-      return;
-    }
-
-    if (!saleData.selectedProductId || !saleData.discountValue || !saleData.startDate || !saleData.endDate) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setIsPublishing(true);
-    try {
-      const response = await fetch(`${API_URL}/api/sales`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify(saleData),
-      });
-
-      if (response.ok) {
-        toast.success('Sale created successfully');
-        onClose();
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create sale');
-      }
-    } catch (error) {
-      console.error('Error creating sale:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to create sale');
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? fetchedProducts.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === fetchedProducts.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setSelectedFile(file);
-  };
-
-  const handleUploadButtonClick = () => {
-    fileInputRef.current?.click();
-  };
 
   const renderSaleForm = () => (
     <div className="space-y-5 sm:space-y-7">
@@ -242,7 +122,7 @@ export function AddProductModal({
           currentIndex={currentIndex}
           handlePrev={handlePrev}
           handleNext={handleNext}
-          handleAdd={handleAddProduct}
+          handleAdd={() => handleAddProduct(fetchedProducts[currentIndex])} // Fixed: was calling handleUploadMedia
         />
       ) : (
         <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4 sm:px-6">
@@ -265,23 +145,67 @@ export function AddProductModal({
           <div className="mb-6 sm:mb-8">
             <div className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-yellow-100 bg-gradient-to-br from-yellow-50 via-white to-white p-4 sm:p-8">
               <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 items-start">
+                {/* Preview Image */}
                 <div className="w-full lg:w-2/5 flex-shrink-0 flex justify-center items-start">
-                  <img
-                    src={selectedProduct.image_url ?? '/default-product.jpg'}
-                    alt={selectedProduct.product_name}
-                    className="w-full max-w-md max-h-[20rem] sm:max-h-[28rem] object-cover rounded-xl sm:rounded-2xl border border-yellow-100 shadow"
-                  />
+                  {previewUrls.length > 0 && (
+                    <div className="relative w-full max-w-md mx-auto my-4">
+                      {/* LEFT ARROW */}
+                      {previewUrls.length > 1 && (
+                        <button
+                          onClick={() => setPreviewIndex((prev) => (prev - 1 + previewUrls.length) % previewUrls.length)}
+                          className="absolute top-1/2 left-0 -translate-y-1/2 bg-white/50 hover:bg-white p-2 rounded-full shadow z-10"
+                        >
+                          <Icon icon="mdi:chevron-left" className="text-2xl text-gray-900" />
+                        </button>
+                      )}
+
+                      {/* PREVIEW ITEM */}
+                      <div className="rounded-xl overflow-hidden border border-yellow-200 shadow">
+                        {previewUrls[previewIndex]?.includes('video') ? (
+                          <video
+                            src={previewUrls[previewIndex]}
+                            controls
+                            className="w-full h-60 object-cover rounded-xl"
+                            preload="metadata"
+                          />
+                        ) : (
+                          <img
+                            src={previewUrls[previewIndex]}
+                            alt={`Preview ${previewIndex + 1}`}
+                            className="w-full h-60 object-cover"
+                          />
+                        )}
+                      </div>
+
+                      {/* RIGHT ARROW */}
+                      {previewUrls.length > 1 && (
+                        <button
+                          onClick={() => setPreviewIndex((prev) => (prev + 1) % previewUrls.length)}
+                          className="absolute top-1/2 right-0 -translate-y-1/2 bg-white/50 hover:bg-white p-2 rounded-full shadow z-10"
+                        >
+                          <Icon icon="mdi:chevron-right" className="text-2xl text-gray-900" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
+                
+                {/* Product Information Area */}
                 <div className="w-full lg:w-3/5 flex flex-col gap-4 sm:gap-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    {/* Product Name */}
                     <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
                       <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Product Name</span>
                       <span className="text-lg sm:text-xl font-bold text-yellow-700 block">{selectedProduct.product_name}</span>
                     </div>
+                    
+                    {/* Price */}
                     <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
                       <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Price</span>
                       <span className="text-lg sm:text-xl font-bold text-yellow-700 block">₱{selectedProduct.price.toLocaleString()}</span>
                     </div>
+                    
+                    {/* Category */}
                     <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
                       <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Category</span>
                       <span className="text-base sm:text-lg font-semibold text-gray-800 block">
@@ -290,23 +214,14 @@ export function AddProductModal({
                           : selectedProduct.category?.category_name ?? 'Uncategorized'}
                       </span>
                     </div>
-                    <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
-                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Insert Media</span>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        onChange={handleFileSelect}
-                        accept="image/*,video/*"
-                      />
-                      <button
-                        onClick={handleUploadButtonClick}
-                        className="w-full py-2 sm:py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-sm sm:text-base"
-                      >
-                        <Icon icon="mdi:upload" width={18} />
-                        {selectedFile ? `Selected: ${selectedFile.name}` : 'Upload Photo/Video'}
-                      </button>
+                    
+                    {/* Insert Media */}
+                    <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100 relative z-20">
+                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2 block">Insert Media</span>
+                      <MediaDropzone onFilesSelected={handleFileChange} />
                     </div>
+                    
+                    {/* Details */}
                     <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100 sm:col-span-2">
                       <label htmlFor="product-description" className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">
                         Product Details
@@ -365,7 +280,7 @@ export function AddProductModal({
                 Archive
               </button>
             </div>
-            
+            {/* Cancel Button */}
             <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={onClose}
@@ -389,12 +304,12 @@ export function AddProductModal({
               {showFullForm && (
                 <button 
                   onClick={handleConfirmSingleProduct}
-                  disabled={isPublishing}
+                  disabled={isPublishing || uploading}
                   className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-3 rounded-xl bg-black text-white font-medium border-2 border-yellow-200 hover:border-yellow-400 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-yellow-200 focus:outline-none text-sm sm:text-base disabled:opacity-50 flex items-center gap-2"
                   style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
                 >
-                  {isPublishing && <Icon icon="mdi:loading" className="animate-spin" />}
-                  {isPublishing ? 'Publishing...' : 'Confirm'}
+                  {(isPublishing || uploading) && <Icon icon="mdi:loading" className="animate-spin" />}
+                  {isPublishing ? 'Publishing...' : uploading ? 'Uploading...' : 'Confirm'}
                 </button>
               )}
 

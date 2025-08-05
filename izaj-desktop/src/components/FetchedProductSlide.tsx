@@ -5,7 +5,7 @@ interface FetchedProduct {
   id: string;
   product_name: string;
   price: number;
-  status: string;
+  status: string; 
   category: string | { category_name: string } | null;
   branch: string | { location: string } | null;
   description: string | null;

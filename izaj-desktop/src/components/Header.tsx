@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { Session } from '@supabase/supabase-js';
-import { useNotifications } from '../util/notificationsProvider';
+import { useNotifications } from '../utils/notificationsProvider';
 
 interface HeaderProps {
   session: Session | null;

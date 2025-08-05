@@ -12,7 +12,7 @@ import Dashboard from './pages/Dashboard';
 import { Session } from '@supabase/supabase-js';
 import { ProfileData } from './pages/profile';
 import PrivateRoute from './route/PrivateRoute';
-import { useNotifications } from './util/notificationsProvider';
+import { useNotifications } from './utils/notificationsProvider';
 import API_URL from '../config/api';
 
 function App(
