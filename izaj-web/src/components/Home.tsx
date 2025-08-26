@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import LightingCategory from './LightingCategory';
+import { useHeroSlideshow, HeroSlide } from '../hooks/useHeroSlideshow';
+import { getAllProducts } from '../services/productService';
 
 interface HomeProps {
   user: {
@@ -13,7 +15,6 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ user }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
-  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
   const [isHoveringProducts, setIsHoveringProducts] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [desktopCurrentPage, setDesktopCurrentPage] = useState(0);
@@ -85,7 +86,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   };
 
   // Hero images for desktop
-  const desktopHeroImages = [
+  const desktopHeroImages: HeroSlide[] = [
     {
       image: "hero1.jpg",
       heading: "Soft Light, Slow Days",
@@ -104,7 +105,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   ];
 
   // Hero images for mobile
-  const mobileHeroImages = [
+  const mobileHeroImages: HeroSlide[] = [
     {
       image: "chadelier.jpg",
       heading: "Soft Light, Slow Days",
@@ -141,15 +142,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentHeroIndex((prevIndex) =>
-        (prevIndex + 1) % heroImages.length
-      );
-    }, 5000); // 5 seconds
-  
-    return () => clearInterval(interval);
-  }, [heroImages.length]); // Add heroImages.length as dependency
+  const { currentIndex } = useHeroSlideshow(heroImages, 5000);
 
   const handleColorSelect = (productId: number, color: string) => {
     setSelectedColors(prev => ({
@@ -159,79 +152,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   };
 
   // Sample product data
-  const allProducts = [
-    {
-      id: 1,
-      name: "Abednego | Chandelier/Large",
-      price: "₱32,995",
-      image: "/public/abed.webp",
-      size: "φ110*H15cm",
-      colors: ["black", "gold", "silver"]
-    },
-    {
-      id: 2,
-      name: "Aberdeen | Modern LED Chandelier",
-      price: "₱25,464",
-      image: "/public/aber.webp",
-      colors: ["black", "gold"]
-    },
-    {
-      id: 3,
-      name: "Acadia | Table Lamp",
-      price: "₱12,234",
-      image: "/public/acad.webp",
-      colors: ["black"]
-    },
-    {
-      id: 4,
-      name: "Ademar | Modern Chandelier",
-      price: "₱11,237",
-      image: "/public/mar.webp",
-      colors: ["black"]
-    },
-    {
-      id: 5,
-      name: "Aeris | Modern Pendant Light",
-      price: "₱9,435",
-      image: "/public/aeris.webp",
-      colors: ["black"]
-    },
-    {
-      id: 6,
-      name: "Aina | Modern LED Chandelier",
-      price: "₱29,995",
-      image: "/public/aina.webp",
-      colors: ["black"]
-    },
-    {
-      id: 7,
-      name: "Alabama | Table Lamp",
-      price: "₱27,995",
-      image: "/public/alab.webp",
-      colors: ["black"]
-    },
-    {
-      id: 8,
-      name: "Alphius | Surface Mounted Downlight",
-      price: "₱25,995",
-      image: "/public/alph.webp",
-      colors: ["black"]
-    },
-    {
-      id: 9,
-      name: "Altair | Modern LED Chandelier",
-      price: "₱23,995",
-      image: "/public/alta.jpg",
-      colors: ["black"]
-    },
-    {
-      id: 10,
-      name: "Amalfi | Boho Rattan Soliya Pendant Lamp",
-      price: "₱21,995",
-      image: "/public/ama.webp",
-      colors: ["black"]
-    }
-  ];
+  const allProducts = getAllProducts();
 
   // Determine productsPerPage based on screen size
   let productsPerPage = 5;
@@ -378,7 +299,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         <div className="relative w-full h-[400px] overflow-hidden z-0">
           {/* Hero Image */}
           <img 
-            src={`/public/${heroImages[currentHeroIndex].image}`}
+            src={`/public/${heroImages[currentIndex].image}`}
             alt="Hero Slide"
             className="w-full h-full object-cover object-center"
           />
@@ -390,13 +311,13 @@ const Home: React.FC<HomeProps> = ({ user }) => {
                 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4" 
                 style={{ fontFamily: "'Poppins', serif" }}
               >
-                {heroImages[currentHeroIndex].heading}
+                {heroImages[currentIndex].heading}
               </h1>
               <p 
                 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl whitespace-pre-line" 
                 style={{ fontFamily: "'Poppins', serif" }}
               >
-                {heroImages[currentHeroIndex].subheading}
+                {heroImages[currentIndex].subheading}
               </p>
             </div>
           </div>

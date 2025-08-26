@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { Session } from '@supabase/supabase-js';
 import { FetchedProduct, SyncStats, StockStatus, FilterType } from '../types/product';
@@ -8,7 +8,7 @@ import { ProductService } from '../services/productService';
 export const useStock = (session: Session | null) => {
   const [stockProducts, setStockProducts] = useState<FetchedProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [syncStats, setSyncStats] = useState<SyncStats>({ synced: 0, skipped: 0 });
+  const [syncStats] = useState<SyncStats>({ synced: 0, skipped: 0 });
   const [stockStatus, setStockStatus] = useState<StockStatus>({ needsSync: 0, total: 0 });
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +16,6 @@ export const useStock = (session: Session | null) => {
   
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Inactive'>('All');
 
-  const fetchingRef = useRef(false);
 
   const fetchStockProducts = useCallback(async () => {
     if (!session?.access_token) return;

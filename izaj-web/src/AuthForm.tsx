@@ -1,48 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
-import axios from "axios";
+// import axios from "axios";
+import { useAuthForm } from './hooks/useAuthForm';
 
 interface AuthFormProps {
   onClose?: () => void;
   onAuthSuccess?: (user: any) => void;
 }
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  general?: string;
-}
+// Using useAuthForm for state and validation
 
 const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
-  const [isLogin, setIsLogin] = useState(true);
+  const { ui, toggleMode, onChange, setRememberMe, submit, setGeneralError } = useAuthForm('login');
+  const { isLogin, state: formData, errors, rememberMe } = ui as any;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [imageError, setImageError] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [rememberMe, setRememberMe] = useState(false);
   const slides = ['slide.jpg', 'slide2.jpg', 'slide3.jpg'];
 
   useEffect(() => {
@@ -56,129 +31,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
     setImageError(true);
   };
 
-  const handleSignUpClick = () => {
-    setIsLogin(false);
-  };
+  const handleSignUpClick = () => toggleMode();
 
-  const handleSignInClick = () => {
-    setIsLogin(true);
-  };
+  const handleSignInClick = () => toggleMode();
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-    
-    if (!isLogin) {
-      if (!formData.firstName.trim()) {
-        newErrors.firstName = "First name is required";
-      }
-      if (!formData.lastName.trim()) {
-        newErrors.lastName = "Last name is required";
-      }
-      if (!formData.phoneNumber.trim()) {
-        newErrors.phoneNumber = "Phone number is required";
-      } else if (!/^[0-9]{11}$/.test(formData.phoneNumber)) {
-        newErrors.phoneNumber = "Please enter a valid 11-digit phone number";
-      }
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
-    }
-
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // Validation is handled inside useAuthForm
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }));
-    }
+    onChange(name as any, value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const response = await axios.post(`http://localhost:3001${endpoint}`, formData);
-      const { user, token } = response.data;
-
-      // Format user data to include first name and last name
-      const formattedUser = {
-        firstName: isLogin ? user.firstName : formData.firstName,
-        lastName: isLogin ? user.lastName : formData.lastName,
-        email: user.email,
-        phone: isLogin ? user.phoneNumber : formData.phoneNumber
-      };
-
-      // Store in both localStorage and sessionStorage to ensure persistence
-      if (rememberMe) {
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(formattedUser));
-        sessionStorage.setItem('user', JSON.stringify(formattedUser));
-      } else {
-        sessionStorage.setItem('authToken', token);
-        sessionStorage.setItem('user', JSON.stringify(formattedUser));
-        localStorage.setItem('user', JSON.stringify(formattedUser));
-      }
-      
-      // Call success callback if provided
-      if (onAuthSuccess) {
-        onAuthSuccess(formattedUser);
-      }
-      
-      // Close the modal
-      if (onClose) {
-        onClose();
-      }
-
-    } catch (error: any) {
-      setErrors({
-        general: error.response?.data?.error || "An error occurred. Please try again."
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    const user = await submit();
+    if (user && onAuthSuccess) onAuthSuccess(user);
+    if (user && onClose) onClose();
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    try {
-      // Implement social login logic here
-      const response = await axios.get(`/api/auth/${provider}`);
-      window.location.href = response.data.authUrl;
-    } catch (error: any) {
-      setErrors({
-        general: `Failed to initiate ${provider} login. Please try again.`
-      });
-    }
+  // Helper removed (now handled in service if necessary)
+
+  // Social login disabled (no backend)
+  const handleSocialLogin = (provider: 'google' | 'facebook') => {
+    setGeneralError(`Social login (${provider}) is not available in demo mode.`);
   };
 
   return (
@@ -463,17 +338,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose, onAuthSuccess }) => {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className={`w-full bg-black text-white py-2.5 px-4 rounded-xl font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center justify-center space-x-2 shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-black/40 text-sm ${
-                    isLoading ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                  className="w-full bg-black text-white py-2.5 px-4 rounded-xl font-medium hover:bg-gray-800 transition-colors duration-300 flex items-center justify-center space-x-2 shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-black/40 text-sm"
                 >
-                  {isLoading ? (
-                    <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Icon icon={isLogin ? "mdi:login" : "mdi:account-plus"} className="w-4 h-4" />
-                  )}
-                  <span>{isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}</span>
+                  <Icon icon={isLogin ? "mdi:login" : "mdi:account-plus"} className="w-4 h-4" />
+                  <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
                 </button>
 
                 <div className="relative my-6">
