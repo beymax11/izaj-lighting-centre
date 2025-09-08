@@ -12,7 +12,7 @@
     "tauri:build": "tauri build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "bun ./backend/nodejs/server.js"
+    "start": "node ./backend/nodejs/server.js"
   },
   "dependencies": {
     "@iconify/react": "^6.0.0",
