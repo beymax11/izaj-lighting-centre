@@ -21,6 +21,7 @@
     "@tauri-apps/plugin-dialog": "^2.3.1",
     "@tauri-apps/plugin-fs": "^2.4.1",
     "@types/react-beautiful-dnd": "^13.1.8",
+    "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
@@ -50,6 +51,7 @@
     "tsx": "^4.20.3",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.1"
+    "vite": "^6.3.1",
+    "@types/bun": "latest"
   }
 }

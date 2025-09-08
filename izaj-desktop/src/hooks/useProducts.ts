@@ -221,8 +221,6 @@ export const useProducts = (session: Session | null) => {
 }, [mediaUrlsMap]);
 
 
-
-
   return {
     publishedProducts,
     setPublishedProducts,
@@ -246,4 +244,5 @@ export const useProducts = (session: Session | null) => {
     checkStockStatus,
     mediaUrlsMap,
   };
+
 };
