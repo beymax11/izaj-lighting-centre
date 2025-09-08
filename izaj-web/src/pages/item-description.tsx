@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { Link, useParams } from 'react-router-dom';
 
 import ChatNow from '../ChatNow';
+import { getProductById } from '../services/productService';
 
 
 const ItemDescription: React.FC = () => {
@@ -18,37 +19,12 @@ const ItemDescription: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   
   useEffect(() => {
-    // Get product data from the allProducts array in Home.tsx
-    const allProducts = [
-      {
-        id: 1,
-        name: "Abednego | Chandelier/Large",
-        price: "₱32,995",
-        image: "/public/abed.webp",
-        size: "φ110*H15cm",
-        colors: ["black", "gold", "silver"]
-      },
-      {
-        id: 2,
-        name: "Aberdeen | Modern LED Chandelier",
-        price: "₱25,464",
-        image: "/public/aber.webp",
-        colors: ["black", "gold"]
-      }
-    ];
-
-    const foundProduct = allProducts.find(p => p.id === Number(id));
-    if (foundProduct) {
-      setProduct(foundProduct);
-      setMainImage(foundProduct.image);
-      // Set thumbnails based on the product image
-      const baseImage = foundProduct.image.replace('.webp', '');
-      setThumbnails([
-        foundProduct.image,
-        `${baseImage}2.webp`,
-        `${baseImage}3.webp`,
-        `${baseImage}4.webp`
-      ]);
+    const found = getProductById(Number(id));
+    if (found) {
+      setProduct(found);
+      setMainImage(found.image);
+      const baseImage = found.image.replace('.webp', '');
+      setThumbnails([found.image, `${baseImage}2.webp`, `${baseImage}3.webp`, `${baseImage}4.webp`]);
     }
   }, [id]);
 

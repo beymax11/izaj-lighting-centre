@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { Icon } from '@iconify/react';
+import { computeCheckoutTotals, CheckoutLineItem } from '../services/checkoutService';
+import { formatCurrency } from '../utils/productUtils';
 
 const Checkout = () => {
   const [deliveryMethod, setDeliveryMethod] = useState('ship');
   const [billingAddress, setBillingAddress] = useState('same');
+  const lineItems: CheckoutLineItem[] = [
+    { id: 1, name: 'Aberdeen | Modern LED Chandelier', quantity: 1, unitPrice: 15995, discount: 1000 },
+  ];
+  const shippingAmount = 2500;
+  const totals = computeCheckoutTotals(lineItems, shippingAmount);
   
   return (
     <div className="min-h-screen bg-white to-white font-sans">
@@ -228,23 +235,23 @@ const Checkout = () => {
 
               <div className="space-y-4 text-sm mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal (1 item)</span>
-                  <span className="font-medium">₱15,995.00</span>
+                  <span className="text-gray-600">Subtotal ({lineItems.reduce((s,i)=>s+i.quantity,0)} item)</span>
+                  <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">₱2,500.00</span>
+                  <span className="font-medium">{formatCurrency(totals.shipping)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between text-base">
                   <span className="font-medium text-gray-800">Total</span>
                   <div className="text-right">
-                    <span className="block font-bold text-gray-900 text-lg">₱18,495.00</span>
+                    <span className="block font-bold text-gray-900 text-lg">{formatCurrency(totals.total)}</span>
                     <span className="block text-xs text-gray-500">Including VAT</span>
                   </div>
                 </div>
                 <p className="text-sm text-green-600 font-medium flex items-center">
                   <Icon icon="mdi:check-circle" className="mr-2 text-lg" />
-                  Total savings: ₱1,000.00
+                  Total savings: {formatCurrency(totals.discount)}
                 </p>
               </div>
 

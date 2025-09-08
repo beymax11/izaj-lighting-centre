@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import { Link } from "react-router-dom";
+import { Product } from '../types/product';
+import { formatCurrency, sortProducts } from '../utils/productUtils';
+import { getAllProducts } from '../services/productService';
 
-type Product = {
-  description: string;
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviewCount: number;
-  image: string;
-  isNew?: boolean;
-  isOnSale?: boolean;
-  size?: string;
-  colors?: string[];
-};
+// moved to shared type: Product
 
 interface SalesProps {
   user?: {
@@ -118,43 +108,7 @@ const Sales: React.FC<SalesProps> = ({ user }) => {
   }, []);
 
   // Sample product data for Recently Viewed
-  const allProducts = [
-    {
-      id: 1,
-      name: "Abednego | Chandelier/Large",
-      price: "₱32,995",
-      image: "/public/abed.webp",
-      colors: ["black", "gold", "silver"]
-    },
-    {
-      id: 2,
-      name: "Aberdeen | Modern LED Chandelier",
-      price: "₱25,464",
-      image: "/public/aber.webp",
-      colors: ["black", "gold"]
-    },
-    {
-      id: 3,
-      name: "Acadia | Table Lamp",
-      price: "₱12,234",
-      image: "/public/acad.webp",
-      colors: ["black"]
-    },
-    {
-      id: 4,
-      name: "Ademar | Modern Chandelier",
-      price: "₱11,237",
-      image: "/public/mar.webp",
-      colors: ["black"]
-    },
-    {
-      id: 5,
-      name: "Aeris | Modern Pendant Light",
-      price: "₱9,435",
-      image: "/public/aeris.webp",
-      colors: ["black"]
-    }
-  ];
+  const allProducts = getAllProducts();
 
   const totalPages = Math.ceil(allProducts.length / productsPerPage);
   const currentProducts = allProducts.slice(
@@ -367,24 +321,7 @@ const Sales: React.FC<SalesProps> = ({ user }) => {
   const handleSortChange = (option: string) => {
     setSortOption(option);
     setSortModalOpen(false);
-    let sortedProducts = [...filteredProducts];
-    switch(option) {
-      case 'Alphabetical, A-Z':
-        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'Alphabetical, Z-A':
-        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'Price, Low to High':
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case 'Price, High to Low':
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        break;
-    }
-    setFilteredProducts(sortedProducts);
+    setFilteredProducts(sortProducts(filteredProducts, option));
   };
 
   // Handle view mode change
@@ -653,7 +590,7 @@ const Sales: React.FC<SalesProps> = ({ user }) => {
               />
             ))}
           </div>
-          <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">₱{product.price.toLocaleString()}</p>
+          <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">{formatCurrency(product.price)}</p>
           <p className="text-green-600 text-xs mt-1">● In stock</p>
           <Link
             to={`/item-description/${product.id}`}
@@ -685,7 +622,7 @@ const Sales: React.FC<SalesProps> = ({ user }) => {
           <div className="flex-1 pl-2 flex flex-col justify-center min-w-0"> 
             <div>
               <h3 className="font-bold text-base mb-1 text-gray-900 truncate" style={{ fontFamily: 'Poppins, sans-serif' }}>{product.name}</h3>
-              <p className="text-lg font-semibold text-gray-800 mb-1">₱{product.price.toLocaleString()}</p>
+              <p className="text-lg font-semibold text-gray-800 mb-1">{formatCurrency(product.price)}</p>
               <div className="flex items-center text-sm mb-3">
                 <span className="w-2 h-2 rounded-full bg-gray-700 mr-2 inline-block"></span>
                 <span className="text-green-600">In stock</span>
@@ -921,7 +858,7 @@ const Sales: React.FC<SalesProps> = ({ user }) => {
                     />
                   ))}
                 </div>
-                <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">{product.price}</p>
+                <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">{formatCurrency(product.price)}</p>
                 <p className="text-green-600 text-xs mt-1 mb-3">● In stock</p>
                 <Link
                   to={`/item-description/${product.id}`}

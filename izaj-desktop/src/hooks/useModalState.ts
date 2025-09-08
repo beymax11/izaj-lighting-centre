@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FetchedProduct } from '../types/product';
-import { ModalState, ProductFormData, SaleFormData } from '../types/modal';
+import { ProductFormData, SaleFormData } from '../types/modal';
 import { createPreviewUrls, revokePreviewUrls } from '../utils/fileUtils';
 import { getInitialFormData, getInitialSaleData, mapProductToFormData } from '../utils/formUtils';
 

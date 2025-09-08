@@ -1,5 +1,4 @@
 import { Session } from '@supabase/supabase-js';
-import { toast } from 'react-hot-toast';
 import API_URL from '../../config/api';
 import { SaleFormData } from '../types/modal';
 

@@ -15,7 +15,6 @@ interface AddProductModalProps {
 export const useModal = ({
   onClose,
   onSuccess, 
-  mode, 
   fetchedProducts, 
   session,
   onProductsPublished 

@@ -60,6 +60,9 @@ const App: React.FC = () => {
 
   const handleLogin = (userData: { firstName: string; lastName: string; email: string }) => {
     setUser(userData);
+    // Persist user info for session and reloads
+    localStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('user', JSON.stringify(userData));
     setIsModalOpen(false);
     setIsAccountDropdownOpen(false);
   };

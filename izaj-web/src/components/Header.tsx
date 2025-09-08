@@ -1,3 +1,7 @@
+// Capitalize first letter of each name
+function capitalize(str: string) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+}
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
@@ -206,8 +210,9 @@ const Header: React.FC<HeaderProps> = ({
                           className="font-medium text-sm text-gray-500 leading-none"
                           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
                         >
-                          Hello, {user?.firstName || 'Guest'}
+                          Hello, {user ? `${capitalize(user.firstName)}${user.lastName ? ' ' + capitalize(user.lastName) : ''}` : 'Guest'}
                         </span>
+                        {/* ...existing code... */}
                         <div className="flex items-center text-black">
                           <span
                             className="font-medium text-lg"
@@ -480,7 +485,7 @@ const Header: React.FC<HeaderProps> = ({
                   {user ? (
                     <div className="space-y-2">
                       <div className="px-4 py-2 text-sm text-gray-600">
-                        Hello, {user.firstName}
+                        Hello, {user ? `${capitalize(user.firstName)}${user.lastName ? ' ' + capitalize(user.lastName) : ''}` : 'Guest'}
                       </div>
                       <button
                         onClick={() => {

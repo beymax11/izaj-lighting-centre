@@ -3,17 +3,11 @@ import { useNavigate } from 'react-router-dom';
 
 import { Icon } from '@iconify/react';
 import "../App.css";
+import { formatCurrency } from '../utils/productUtils';
+import { CartItem } from '../types/cart';
+import { calculateShipping as svcShipping, calculateTax, calculateTotal } from '../services/cartService';
 
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  quantity: number;
-  image: string;
-  isSale: boolean;
-  isNew?: boolean; // Added isNew property
-}
+// moved to shared type CartItem
 
 // Cart Component
 const Cart: React.FC = () => {
@@ -107,29 +101,7 @@ const Cart: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const calculateShipping = () => {
-    // Simple shipping calculation based on city
-    const shippingRates = {
-      'San Pablo City': 200,
-      'Quezon': 250,
-      'Laguna': 200,
-      'Cavite': 250,
-      'Batangas': 250,
-      'Camarines Sur': 300,
-      'Sorsogon': 300,
-      'La Union': 300,
-      'default': 300
-    };
-    return shippingRates[shippingAddress.city as keyof typeof shippingRates] || shippingRates.default;
-  };
-
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.12; // 12% VAT
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() - calculateDiscount() + calculateShipping() + calculateTax();
-  };
+  const calculateShipping = () => svcShipping(shippingAddress.city);
 
   const handleQuantityChange = (id: number, newQuantity: number) => {
     setCartItems(items => items.map(item =>
@@ -229,7 +201,7 @@ const Cart: React.FC = () => {
                         >
                           <div>
                             <p className="font-bold text-base lg:text-lg text-black hover:text-orange-500 transition-colors cursor-pointer">{item.name}</p>
-                            <p className="text-gray-700 mt-1 text-sm lg:text-base">₱{item.price.toLocaleString()}{item.quantity === 10 ? '/10 pieces' : ''}</p>
+                            <p className="text-gray-700 mt-1 text-sm lg:text-base">{formatCurrency(item.price)}{item.quantity === 10 ? '/10 pieces' : ''}</p>
                             {item.isSale && (
                               <span className="inline-block bg-red-600 text-white text-xs font-bold px-2 py-1 mt-2 mr-2">
                                 SALE
@@ -270,10 +242,10 @@ const Cart: React.FC = () => {
                           style={{ minHeight: '96px' }}
                         >
                           <div>
-                            <p className="font-semibold text-base lg:text-lg text-black">₱{(item.price * item.quantity).toLocaleString()}</p>
+                            <p className="font-semibold text-base lg:text-lg text-black">{formatCurrency(item.price * item.quantity)}</p>
                             {item.originalPrice && (
                               <p className="text-sm text-gray-500 line-through">
-                                ₱{(item.originalPrice * item.quantity).toLocaleString()}
+                                {item.originalPrice !== undefined ? formatCurrency(item.originalPrice * item.quantity) : ''}
                               </p>
                             )}
                           </div>
@@ -330,23 +302,23 @@ const Cart: React.FC = () => {
                   <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
                     <div className="flex justify-between">
                       <span className="text-gray-600 font-medium text-sm lg:text-base">Subtotal</span>
-                      <span className="font-semibold text-black text-sm lg:text-base">₱{calculateSubtotal().toLocaleString()}</span>
+                      <span className="font-semibold text-black text-sm lg:text-base">{formatCurrency(calculateSubtotal())}</span>
                     </div>
                     <div className="flex justify-between text-gray-600 font-semibold text-sm lg:text-base">
                       <span>Discount</span>
-                      <span>-₱{calculateDiscount().toLocaleString()}</span>
+                      <span>-{formatCurrency(calculateDiscount())}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 font-medium text-sm lg:text-base">Shipping</span>
-                      <span className="font-semibold text-black text-sm lg:text-base">₱{calculateShipping().toLocaleString()}</span>
+                      <span className="font-semibold text-black text-sm lg:text-base">{formatCurrency(calculateShipping())}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 font-medium text-sm lg:text-base">Tax (12% VAT)</span>
-                      <span className="font-semibold text-black text-sm lg:text-base">₱{calculateTax().toLocaleString()}</span>
+                      <span className="font-semibold text-black text-sm lg:text-base">{formatCurrency(calculateTax(calculateSubtotal()))}</span>
                     </div>
                     <div className="border-t border-gray-300 pt-3 lg:pt-4 flex justify-between font-extrabold text-base lg:text-lg">
                       <span className="text-black">Total</span>
-                      <span className="text-black">₱{calculateTotal().toLocaleString()}</span>
+                      <span className="text-black">{formatCurrency(calculateTotal(cartItems, shippingAddress.city))}</span>
                     </div>
                   </div>
 
@@ -429,7 +401,7 @@ const Cart: React.FC = () => {
                           Estimated delivery: 3-5 business days
                         </p>
                         <p className="text-xs lg:text-sm text-gray-600 mt-1">
-                          Shipping cost: ₱{calculateShipping().toLocaleString()}
+                          Shipping cost: {formatCurrency(calculateShipping())}
                         </p>
                       </div>
                     </div>
@@ -445,3 +417,4 @@ const Cart: React.FC = () => {
 };
 
 export default Cart;
+                       
