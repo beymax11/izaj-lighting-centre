@@ -7,11 +7,11 @@ import {
   formatPrice, 
   getStockStatusColor, 
   getStatusBadgeClass,
-  calculateStockStats,
+//  calculateStockStats,
   getStockStatus
 } from '../utils/stockUtils';
 import { FilterType } from '../types/product';
-import { StockProduct } from '../types/stock';
+ // import { StockProduct } from '../types/stock';
 
 interface StockProps {
   onViewChange: (view: ViewType) => void;
@@ -26,7 +26,7 @@ function Stock({ onViewChange, session }: StockProps) {
     filteredProducts,
     isLoading,
     syncStats,
-    stockStatus,
+  //  stockStatus,
     searchQuery,
     setSearchQuery,
     selectedCategory,

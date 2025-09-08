@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { FetchedProductSlide } from './FetchedProductSlide';
-import { MediaDropzone } from './MediaDropZone';
+import { MediaDropzone } from './MediaDropzone';
 import { useModal } from '../hooks/useModal';
 import { AddProductModalProps } from '../types/modal';
 
