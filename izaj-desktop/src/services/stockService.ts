@@ -26,6 +26,7 @@ export class StockService {
     if (!data.success || !data.products) {
       throw new Error('Failed to fetch stock products');
     }
+    console.log('Fetched products:', data.products);
 
     return data.products;
   }

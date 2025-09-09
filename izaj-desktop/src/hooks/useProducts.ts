@@ -5,6 +5,7 @@ import { ProductService } from '../services/productService';
 import { FetchedProduct, FilterType, StockStatus, SyncStats } from '../types/product';
 import { filterProducts, mergeStockIntoProducts, generateSyncMessage } from '../utils/productUtils';
 
+
 export const useProducts = (session: Session | null) => {
   const [publishedProducts, setPublishedProducts] = useState<FetchedProduct[]>([]);
   const [pendingProducts, setPendingProducts] = useState<FetchedProduct[]>([]);
@@ -19,6 +20,7 @@ export const useProducts = (session: Session | null) => {
   const [isLoadingStock, setIsLoadingStock] = useState(true);
   const [activeStatuses, setActiveStatuses] = useState<boolean[]>([]);
   const [mediaUrlsMap, setMediaUrlsMap] = useState<Record<string, string[]>>({});
+  
 
   
   const fetchingRef = useRef(false);

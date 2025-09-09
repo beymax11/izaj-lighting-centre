@@ -10,6 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Helper function: Generate avatar URL with fallback to default profile image
 const generateAvatarUrl = (avatarPath) => {
   if (!avatarPath) {
     return '/profile.jpg';
@@ -27,6 +28,7 @@ const generateAvatarUrl = (avatarPath) => {
   }
 };
 
+// Middleware: Check if user is authenticated via Bearer token
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -49,6 +51,7 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+// Helper function: Update or create product stock quantities in database
 const updateProductStock = async (productId, inventoryQuantity) => {
   try {
     const timestamp = new Date().toISOString();
@@ -112,8 +115,11 @@ const updateProductStock = async (productId, inventoryQuantity) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// =============================================================================
+// AUTHENTICATION ROUTES
+// =============================================================================
 
-// LOGIN ROUTE
+// POST /api/admin/login - Admin user login with email and password
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -154,7 +160,36 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-// UPDATE Profile Route
+// POST /api/admin/logout - Log out current admin user and clear session
+app.post('/api/admin/logout', authenticate, async (req, res) => {
+  try {
+    await logAuditEvent(req.user.id, AuditActions.LOGOUT, {
+      success: true
+    }, req);
+
+    const result = await sessionHandler.logoutAdmin();
+    if (result.error) {
+      console.error("Logout Error:", result.error);
+      return res.status(500).json({ 
+        error: 'Logout failed',
+        details: result.error
+      });
+    }
+    res.json({ message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('Internal error during logout:', err);
+    res.status(500).json({ 
+      error: 'Request timed out or something went wrong',
+      details: err.message 
+    });
+  }
+});
+
+// =============================================================================
+// PROFILE MANAGEMENT ROUTES
+// =============================================================================
+
+// PUT /api/profile/:userId - Update user profile (name, phone, address, password, avatar)
 app.put('/api/profile/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -269,7 +304,7 @@ app.put('/api/profile/:userId', authenticate, async (req, res) => {
   }
 });
 
-// GET Profile Route
+// GET /api/profile/:userId - Get user profile by user ID
 app.get('/api/profile/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -340,7 +375,7 @@ app.get('/api/profile/:userId', authenticate, async (req, res) => {
   }
 });
 
-// GET Profile Route (without userId in URL)
+// GET /api/profile - Get current user's profile (without userId in URL)
 app.get('/api/profile', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -396,32 +431,11 @@ app.get('/api/profile', authenticate, async (req, res) => {
   }
 });
 
-// Logout Route
-app.post('/api/admin/logout', authenticate, async (req, res) => {
-  try {
-    await logAuditEvent(req.user.id, AuditActions.LOGOUT, {
-      success: true
-    }, req);
+// =============================================================================
+// USER MANAGEMENT ROUTES (Admin Only)
+// =============================================================================
 
-    const result = await sessionHandler.logoutAdmin();
-    if (result.error) {
-      console.error("Logout Error:", result.error);
-      return res.status(500).json({ 
-        error: 'Logout failed',
-        details: result.error
-      });
-    }
-    res.json({ message: 'Logged out successfully' });
-  } catch (err) {
-    console.error('Internal error during logout:', err);
-    res.status(500).json({ 
-      error: 'Request timed out or something went wrong',
-      details: err.message 
-    });
-  }
-});
-
-// ADD User Route (Only for users with role 'Admin')
+// POST /api/admin/addUsers - Create new admin desktop side user (Admin role required)
 app.post('/api/admin/addUsers', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -497,7 +511,7 @@ app.post('/api/admin/addUsers', authenticate, async (req, res) => {
   }
 });
 
-// GET all admins (Only for users with role 'Admin')
+// GET /api/admin/users - Get list of all admin desktop side users (Admin role required)
 app.get('/api/admin/users', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -577,7 +591,7 @@ app.get('/api/admin/users', authenticate, async (req, res) => {
   }
 });
 
-// EDIT user status (Only for Admins)
+// PUT /api/admin/users/:id/status - Enable/disable user account (Admin role required)
 app.put('/api/admin/users/:id/status', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -639,7 +653,7 @@ app.put('/api/admin/users/:id/status', authenticate, async (req, res) => {
   }
 });
 
-// DELETE user (Only for Admins)
+// DELETE /api/admin/users/:id - Delete user account (Admin role required)
 app.delete('/api/admin/users/:id', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -694,7 +708,11 @@ app.delete('/api/admin/users/:id', authenticate, async (req, res) => {
   }
 });
 
-// GET audit logs (Only for Admins)
+// =============================================================================
+// AUDIT LOGS ROUTES
+// =============================================================================
+
+// GET /api/admin/audit-logs - Get system audit logs with filtering (Admin role required)
 app.get('/api/admin/audit-logs', authenticate, async (req, res) => {
   try {
     const { data: adminUser, error: adminError } = await supabase
@@ -766,7 +784,11 @@ app.get('/api/admin/audit-logs', authenticate, async (req, res) => {
   }
 });
 
-// GET inventory db > client db (SYNC BUTTON)
+// =============================================================================
+// PRODUCT MANAGEMENT ROUTES
+// =============================================================================
+
+// GET /api/products - Sync products from inventory database to client database
 app.get('/api/products', authenticate, async (req, res) => {
   try {
     const { after, limit = 100, sync } = req.query;
@@ -810,6 +832,7 @@ app.get('/api/products', authenticate, async (req, res) => {
       });
     }
 
+    // Insertion of Inventory DB to  DB
     const rowsForClient = invRows.map((r) => ({
       product_id: r.id,
       product_name: r.product_name,
@@ -819,6 +842,7 @@ app.get('/api/products', authenticate, async (req, res) => {
       branch: r.branch?.location?.trim() || null,
       is_published: false,
       publish_status: false,
+      on_sale: false,
     }));
 
     const { data: upserted, error: upsertErr } = await supabase
@@ -879,7 +903,7 @@ app.get('/api/products', authenticate, async (req, res) => {
       }
   });
 
-// GET Products from Client DB for Client App
+// GET /api/client-products - Get published products for client app with pagination and filters
 app.get('/api/client-products', async (req, res) => {
   try {
     const { page = 1, limit = 100, status, category, search } = req.query;
@@ -933,16 +957,15 @@ app.get('/api/client-products', async (req, res) => {
     }
 
     const transformedProducts = products.map(product => {
-      const stock = product.product_stock?.[0] || {};
-      return {
-        ...product,
-        quantity: stock.display_quantity,
-        display_quantity: stock.display_quantity,
-        current_quantity: stock.current_quantity,
-        last_sync_at: stock.last_sync_at,
-        product_stock: undefined
-      };
-    });
+    const stock = product.product_stock || {};
+    return {
+      ...product,
+      display_quantity: stock.display_quantity ?? 0,
+      last_sync_at: stock.last_sync_at,
+      product_stock: undefined
+    };
+  });
+
 
     const { count: totalCount, error: countError } = await supabase
       .from('products')
@@ -975,7 +998,7 @@ app.get('/api/client-products', async (req, res) => {
   }
 });
 
-// UPLOAD Product Media
+// POST /api/products/:productId/media - Upload media files for a specific product
 app.post('/api/products/:productId/media', authenticate, upload.array('media', 10), async (req, res) => {
   try {
     const { productId } = req.params;
@@ -1026,7 +1049,7 @@ app.post('/api/products/:productId/media', authenticate, upload.array('media', 1
     }
 });
 
-// GET Product Media
+// GET /api/products/:productId/media - Get media files for a specific product
 app.get('/api/products/:productId/media', async (req, res) => {
   const { productId } = req.params;
 
@@ -1077,12 +1100,13 @@ app.get('/api/products/:productId/media', async (req, res) => {
   }
 });
 
-// GET Product categories from Client DB for filters
+// GET /api/client-products/categories - Get unique product categories for filters
 app.get('/api/client-products/categories', async (req, res) => {
   try {
     const { data: categories, error } = await supabase
       .from('products')
       .select('category')
+      .eq('is_published', true)
       .not('category', 'is', null)
       .order('category');
 
@@ -1114,7 +1138,47 @@ app.get('/api/client-products/categories', async (req, res) => {
   }
 });
 
-// UPDATE product description & image URL in Client DB
+// GET /api/client-products - Get all products that are active
+app.get('/api/active-client-products', async (req, res) => {
+  const { status, category } = req.query;
+  const rawStatus = status || '';
+  const normalizedStatus = rawStatus.toString().trim().toLowerCase();
+    
+  try {
+    let query = supabase.from('products').select('*');
+
+    if (normalizedStatus === 'active') {
+      query = query.eq('publish_status', true);
+    } else if (normalizedStatus === 'inactive') {
+      query = query.eq('publish_status', false);
+    } else {
+      query = query.eq('publish_status', true);
+    }
+
+    if (category && category !== 'All') {
+      query = query.eq('category', category);
+    }
+
+    const { data: products, error } = await query;
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      products: products || [],
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch products',
+      details: error.message
+    });
+  }
+});
+
+// PUT /api/client-products/:id/configure - Update product description and image URL
 app.put('/api/client-products/:id/configure', async (req, res) => {
   const { id } = req.params;
   const { description, image_url } = req.body;
@@ -1132,6 +1196,7 @@ app.put('/api/client-products/:id/configure', async (req, res) => {
   }
 });
 
+// GET /api/products/existing - Get existing published products with stock information
 app.get('/api/products/existing', authenticate, async (req, res) => {
   try {
     // Fetch products
@@ -1204,7 +1269,7 @@ app.get('/api/products/existing', authenticate, async (req, res) => {
   }
 });
 
-// Get pending products count
+// GET /api/products/pending-count - Get count of products that are not yet published
 app.get('/api/products/pending-count', authenticate, async (req, res) => {
   const { count, error } = await supabase
     .from('products')
@@ -1214,7 +1279,7 @@ app.get('/api/products/pending-count', authenticate, async (req, res) => {
   res.json({ count: count || 0 });
 });
 
-// Get pending products for modal
+// GET /api/products/pending - Get all products that are pending publication
 app.get('/api/products/pending', authenticate, async (req, res) => {
   const { data, error } = await supabase
     .from('products')
@@ -1224,7 +1289,7 @@ app.get('/api/products/pending', authenticate, async (req, res) => {
   res.json({ success: true, products: data || [] });
 });
 
-// Publish selected products
+// POST /api/products/publish - Publish selected products (make them visible to admin side)
 app.post('/api/products/publish', authenticate, async (req, res) => {
   const { productIds } = req.body;
   
@@ -1236,6 +1301,11 @@ app.post('/api/products/publish', authenticate, async (req, res) => {
   res.json({ success: !error });
 });
 
+// =============================================================================
+// STOCK MANAGEMENT ROUTES
+// =============================================================================
+
+// GET /api/products/stock-summary - Get basic stock summary for admin dashboard
 app.get('/api/products/stock-summary', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -1265,6 +1335,7 @@ app.get('/api/products/stock-summary', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/products/stock-status - Get detailed stock status with sync information
 app.get('/api/products/stock-status', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -1390,6 +1461,7 @@ app.get('/api/products/stock-status', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/products/initialize-stock - Create initial stock entries for products without stock records
 app.post('/api/products/initialize-stock', authenticate, async (req, res) => {
   try {
     // Get products without stock entries
@@ -1464,6 +1536,7 @@ app.post('/api/products/initialize-stock', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/products/sync-stock - Manually sync stock quantities for selected products
 app.post('/api/products/sync-stock', authenticate, async (req, res) => {
   try {
     const { productIds } = req.body;
@@ -1538,6 +1611,7 @@ app.post('/api/products/sync-stock', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/products/product-status - Get publish status of all published products
 app.get('/api/products/product-status', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -1564,28 +1638,31 @@ app.get('/api/products/product-status', authenticate, async (req, res) => {
   }
 });
 
+// =============================================================================
+// ERROR HANDLING MIDDLEWARE
+// =============================================================================
 
-
-
-
-
-
-
-
-
-// Error handling middleware
+// Global error handler for unhandled errors
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
   res.status(500).json({ 
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    
   });
+  console.log('🚨 CATCH-ALL ROUTE HIT:', req.method, req.originalUrl);
+  res.status(404).json({ error: 'Route not found', url: req.originalUrl });
 });
 
-// Catch-all route for 404 errors
+
+// 404 handler for routes that don't exist
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
+
+// =============================================================================
+// SERVER STARTUP
+// =============================================================================
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

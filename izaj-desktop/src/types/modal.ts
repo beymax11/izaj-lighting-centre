@@ -38,3 +38,38 @@ export interface ModalState {
   formData: ProductFormData;
   saleData: SaleFormData;
 }
+
+// Add this to your types/modal.ts file
+
+export interface Product {
+  id: string | number;
+  product_name: string;
+  price: number;
+  description?: string | null;
+  category?: string | { category_name: string } | null;
+  media_urls?: string[];
+  status: boolean | 'active' | 'inactive' | 'draft';
+  stock?: number;
+  quantity?: number;
+  sku?: string;
+  brand?: string;
+  weight?: string;
+  dimensions?: string;
+  created_at?: string;
+  updated_at?: string;
+  tags?: string[];
+  variants?: Array<{
+    name?: string;
+    variant_name?: string;
+    price?: number;
+  }>;
+  specifications?: string | object;
+}
+
+export interface ViewProductModalProps {
+  product: Product;
+  onClose: () => void;
+  onEdit?: (product: Product) => void;
+  onDelete?: (productId: string | number) => void;
+  session: Session | null; 
+}

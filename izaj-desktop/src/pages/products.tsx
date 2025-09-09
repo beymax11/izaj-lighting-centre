@@ -3,6 +3,8 @@ import { Icon } from '@iconify/react';
 import { useState, useCallback } from 'react';
 import { AddProductModal } from '../components/AddProductModal';
 import { ManageStockModal } from '../components/ManageStockModal';
+import { ViewProductModal } from '../components/ViewProductModal';
+import { Product } from '../types/modal'
 import Stock from './Stock';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -19,6 +21,7 @@ import {
   getCategoryName,
   getBranchName
 } from '../utils/productUtils';
+import { useFilter } from '../hooks/useFilter';
 
 interface ProductsProps {
   showAddProductModal: boolean;
@@ -30,6 +33,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
   const [showManageStockModal, setShowManageStockModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<ViewType>('products');
+  const [selectedProductForView, setSelectedProductForView] = useState<Product | null>(null);
 
   const {
     publishedProducts,
@@ -44,7 +48,6 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     hasLoadedFromDB,
     stockStatus,
     isLoadingStock,
-    filteredProducts,
     handleFetchProducts,
     fetchPendingProducts,
     refreshProductsData,
@@ -52,6 +55,19 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     checkStockStatus,
     mediaUrlsMap,
   } = useProducts(session);
+
+  const { 
+    filteredProducts,
+    categories,
+    selectedCategory,
+    setSearchTerm,
+    searchTerm,
+    setSelectedCategory,
+    statusFilter,
+    setStatusFilter,
+  } = useFilter(session);
+
+  console.log('Rendered products:', filteredProducts);
 
   const handleViewChange = (newView: ViewType) => {
     if (newView === 'products') {
@@ -228,38 +244,49 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
               { /* Filter and search controls */}
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-0 mb-8">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                  <button
-                    className={`text-black font-semibold border-b-2 flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${filter === 'all' ? 'border-black bg-yellow-50' : 'border-transparent hover:bg-yellow-50'}`}
-                    onClick={() => setFilter('all')}
-                  >
-                    <Icon icon="mdi:format-list-bulleted" width={18} />
-                    All
-                  </button>
-                  <button className="text-gray-500 hover:text-black flex items-center gap-1">
-                    <Icon icon="mdi:check-circle-outline" width={18} />
-                    Active
-                  </button>
-                  <button className="text-gray-500 hover:text-black flex items-center gap-1">
-                    <Icon icon="mdi:file-document-outline" width={18} />
-                    Draft
-                  </button>
-                  <button className="text-gray-500 hover:text-black flex items-center gap-1">
-                    <Icon icon="mdi:archive-outline" width={18} />
-                    Archive
-                  </button>
+                <button
+                  className={`text-black font-semibold border-b-2 flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 
+                    ${statusFilter === 'All' ? 'border-black bg-yellow-50' : 'border-transparent hover:bg-yellow-50'}`}
+                  onClick={() => setStatusFilter('All')}
+                >
+                  <Icon icon="mdi:format-list-bulleted" width={18} />
+                  All
+                </button>
+                <button
+                  className={`text-gray-500 hover:text-black 
+                    ${statusFilter === 'Active' ? 'font-semibold text-black' : ''}`}
+                  onClick={() => setStatusFilter('Active')}
+                >
+                  <Icon icon="mdi:check-circle-outline" width={18} />
+                  Active
+                </button>
+                <button
+                  className={`text-gray-500 hover:text-black 
+                    ${statusFilter === 'Inactive' ? 'font-semibold text-black' : ''}`}
+                  onClick={() => setStatusFilter('Inactive')}
+                >
+                  <Icon icon="mdi:cross-circle-outline" width={18} />
+                  Inactive
+                </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <input 
-                      type="text" 
-                      placeholder="Search products..." 
-                      className="w-full sm:w-[200px] lg:w-[300px] px-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-200 bg-white shadow-sm" 
-                    />
-                    <select className="px-3 py-2 border rounded-lg text-sm">
-                      <option>Category</option>
-                    </select>
-                    <select className="px-3 py-2 border rounded-lg text-sm">
-                      <option>Type</option>
+                  <input 
+                    type="text" 
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    placeholder="Search products..." 
+                    className="..." 
+                  />
+
+                    <select
+                      value={selectedCategory}
+                      onChange={e => setSelectedCategory(e.target.value)}
+                      className="px-3 py-2 border rounded-lg text-sm"
+                    >
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
                     </select>
                     <button className="px-3 py-2 border rounded-lg text-sm flex items-center justify-center gap-1 w-[150px]">
                       <Icon icon="mdi:tune-variant" width={16} />
@@ -292,14 +319,23 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
               {filteredProducts.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                   {filteredProducts.map((product) => (
-                    <div key={product.id} className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group">
+                    <div 
+                      key={product.id} 
+                      className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group cursor-pointer"
+                      onClick={() => setSelectedProductForView({
+                        ...product,
+                        media_urls: mediaUrlsMap[product.id] || [],
+                        status: product.publish_status,
+                        stock: product.display_quantity,
+                      })}
+                    >
                       <div className="mb-4">
                         <div className="relative mb-4">
                           <img
-                          src={mediaUrlsMap[product.id]?.[0] || '/placeholder.png'}
-                          alt={product.product_name}
-                          className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
-                        />
+                            src={mediaUrlsMap[product.id]?.[0] || '/placeholder.png'}
+                            alt={product.product_name}
+                            className="w-full h-40 sm:h-48 object-cover rounded-xl bg-gray-100 group-hover:scale-[1.02] transition-transform duration-200"
+                          />
                         </div>
                         <h3 className="font-semibold text-lg sm:text-xl mb-2 text-gray-800">{product.product_name}</h3>
                         <div className="space-y-1 mb-2">
@@ -340,7 +376,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                               style={{ width: getStockProgressWidth(product.display_quantity) }}
                             ></div>
                           </div>
-                          <div className="flex justify-between text-xs text-gray-500">
+                          <div className="flex flex-row gap-6 text-xs text-gray-500">
                             <span>Stock level</span>
                             <span>{getStockLevel(product.display_quantity)}</span>
                           </div>
@@ -352,7 +388,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
               )}
             </div>
 
-            {/* Modals */}
+            {/* Add Product Modal */}
             {showAddProductModal && (
               <AddProductModal
                 session={session}
@@ -371,6 +407,27 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
                 setPublishedProducts={setPublishedProducts}
               />
             )}
+            {/* View Product Modal */}
+            {selectedProductForView && (
+            <ViewProductModal
+              product={selectedProductForView}
+              onClose={() => setSelectedProductForView(null)}
+              onEdit={(product) => {
+                // Handle edit action - you might want to open an edit modal or navigate to edit page
+                console.log('Edit product:', product);
+                setSelectedProductForView(null);
+                // Example: setEditModalOpen(true) or navigate to edit page
+              }}
+              onDelete={(productId) => {
+                // Handle delete action
+                console.log('Delete product:', productId);
+                setSelectedProductForView(null);
+                // Add your delete logic here
+                // Example: handleDeleteProduct(productId);
+              }}
+              session={session} // Pass your session if needed
+            />
+          )}
           </>
         )}
       </main>
