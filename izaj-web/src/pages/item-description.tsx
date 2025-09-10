@@ -52,6 +52,14 @@ const ItemDescription: React.FC = () => {
 
   return (
     <div className="bg-white min-h-screen">
+      {/* Breadcrumbs */}
+      <div className="text-sm text-gray-600 mb-0 px-4 pt-4">
+        <Link to="/" className="hover:underline">Home</Link>
+        <span className="mx-1">/</span>
+        <Link to="/product-list" className="hover:underline">Products</Link>
+        <span className="mx-1">/</span>
+        <span className="text-black font-medium">Item {id ?? "Details"}</span>
+      </div>
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Product Images and Details Container */}
         <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto">
