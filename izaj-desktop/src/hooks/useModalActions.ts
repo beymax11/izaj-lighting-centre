@@ -1,7 +1,6 @@
 import { Session } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
 import { ModalService } from '../services/modalService';
-import { SaleService } from '../services/saleService';
 import { FetchedProduct } from '../types/product';
 import { SaleFormData } from '../types/modal';
 import { validateFiles } from '../utils/fileUtils';
@@ -26,7 +25,6 @@ export const useModalActions = ({
   onProductsPublished,
   selectedProduct,
   selectedFile,
-  saleData,
   setIsPublishing,
   setUploading,
   resetState,
@@ -114,30 +112,8 @@ export const useModalActions = ({
   }
 };
 
-  const handleCreateSale = async () => {
-    setIsPublishing(true);
-    
-    try {
-      const result = await SaleService.createSale(session, saleData);
-      
-      if (result.success) {
-        toast.success('Sale created successfully');
-        resetState();
-        onClose();
-      } else {
-        toast.error(result.message || 'Failed to create sale');
-      }
-    } catch (error) {
-      console.error('Error creating sale:', error);
-      toast.error('Failed to create sale');
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
   return {
     handlePublishProducts,
     handleConfirmSingleProduct,
-    handleCreateSale,
   };
 };

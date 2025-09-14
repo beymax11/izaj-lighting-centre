@@ -3,6 +3,7 @@ import { FetchedProductSlide } from './FetchedProductSlide';
 import { MediaDropzone } from './MediaDropzone';
 import { useModal } from '../hooks/useModal';
 import { AddProductModalProps } from '../types/modal';
+import { useSale } from '../hooks/useSale';
 
 export function AddProductModal({ 
   onClose,
@@ -35,7 +36,6 @@ export function AddProductModal({
     handlePrev,
     handleNext,
     handleConfirmSingleProduct,
-    handleCreateSale,
   } = useModal({
     session,
     onClose,
@@ -45,6 +45,40 @@ export function AddProductModal({
     onProductsPublished
   });
 
+  const {
+    products,
+    isLoading,
+    isCreating,
+    createSale
+  } = useSale(session);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!saleData.selectedProductId) {
+      alert("Please select a product");
+      return;
+    }
+
+    const payload = {
+      product_id: saleData.selectedProductId,
+      percentage: saleData.discountType === "percentage" ? Number(saleData.discountValue) : undefined,
+      fixed_amount: saleData.discountType === "fixed" ? Number(saleData.discountValue) : undefined,
+      start_date: saleData.startDate,
+      end_date: saleData.endDate,
+    };
+
+    try {
+      const result = await createSale(payload);
+      console.log("✅ Sale created:", result);
+      alert("Sale created successfully!");
+    } catch (err) {
+      console.error("❌ Failed to create sale:", err);
+      alert("Failed to create sale");
+    }
+  };
+
+
   const renderSaleForm = () => (
     <div className="space-y-5 sm:space-y-7">
       <div className="space-y-4 sm:space-y-5">
@@ -52,63 +86,74 @@ export function AddProductModal({
           <Icon icon="mdi:tag-outline" className="text-lg sm:text-xl text-yellow-500" />
           Sale Details
         </h3>
-        <div className="space-y-4 sm:space-y-5">
-          <select 
-            value={saleData.selectedProductId}
-            onChange={(e) => setSaleData({...saleData, selectedProductId: e.target.value})}
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-          >
-            <option value="">Select Product</option>
-            {fetchedProducts.map(product => (
-              <option key={product.id} value={product.id}>
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        <select
+          value={saleData.selectedProductId}
+          onChange={(e) => setSaleData({ ...saleData, selectedProductId: e.target.value })}
+          className="w-full px-3 sm:px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200"
+        >
+          <option value="">Select Product</option>
+          {isLoading ? (
+            <option disabled>Loading products...</option>
+          ) : (
+            products.map((product) => (
+              <option key={product.id} value={product.product_id}>
                 {product.product_name}
               </option>
-            ))}
-          </select>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Discount Type</label>
-              <select 
-                value={saleData.discountType}
-                onChange={(e) => setSaleData({...saleData, discountType: e.target.value})}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-              >
-                <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed Amount</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Discount Value</label>
-              <input
-                type="number"
-                value={saleData.discountValue}
-                onChange={(e) => setSaleData({...saleData, discountValue: e.target.value})}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-                placeholder="Enter value"
-              />
-            </div>
+            ))
+          )}
+        </select>
+
+        {/* discount type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Discount Type</label>
+            <select
+              value={saleData.discountType}
+              onChange={(e) => setSaleData({ ...saleData, discountType: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200"
+            >
+              <option value="percentage">Percentage</option>
+              <option value="fixed">Fixed Amount</option>
+            </select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Start Date</label>
-              <input
-                type="date"
-                value={saleData.startDate}
-                onChange={(e) => setSaleData({...saleData, startDate: e.target.value})}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">End Date</label>
-              <input
-                type="date"
-                value={saleData.endDate}
-                onChange={(e) => setSaleData({...saleData, endDate: e.target.value})}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-300 bg-white transition-all"
-              />
-            </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Discount Value</label>
+            <input
+              type="number"
+              value={saleData.discountValue}
+              onChange={(e) => setSaleData({ ...saleData, discountValue: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200"
+              placeholder="Enter value"
+            />
           </div>
         </div>
+
+        {/* dates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Start Date</label>
+            <input
+              type="date"
+              value={saleData.startDate}
+              onChange={(e) => setSaleData({ ...saleData, startDate: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">End Date</label>
+            <input
+              type="date"
+              value={saleData.endDate}
+              onChange={(e) => setSaleData({ ...saleData, endDate: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-yellow-200"
+            />
+          </div>
+        </div>
+
+      </form>
       </div>
     </div>
   );
@@ -269,17 +314,6 @@ export function AddProductModal({
         {/* Footer */}
         {(mode === 'sale' || fetchedProducts.length > 0) && (
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100 w-full gap-3 sm:gap-2">
-            <div className="flex flex-wrap gap-2 sm:gap-3">             
-              <button className="px-4 sm:px-5 py-2 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 rounded-xl hover:bg-gray-50 transition-colors">
-                <Icon icon="mdi:content-save-outline" className="text-lg sm:text-xl" />
-                Save as Draft
-              </button>
-              
-              <button className="px-4 sm:px-5 py-2 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 rounded-xl hover:bg-gray-50 transition-colors">
-                <Icon icon="mdi:archive-outline" className="text-lg sm:text-xl" />
-                Archive
-              </button>
-            </div>
             {/* Cancel Button */}
             <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
               <button
@@ -315,8 +349,8 @@ export function AddProductModal({
 
               {mode === 'sale' && (
                 <button 
-                  onClick={handleCreateSale}
-                  disabled={isPublishing}
+                  onClick={handleSubmit}
+                  disabled={isCreating}
                   className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-3 rounded-xl bg-black text-white font-medium border-2 border-yellow-200 hover:border-yellow-400 shadow-lg hover:shadow-xl transition-all duration-200 focus:ring-2 focus:ring-yellow-200 focus:outline-none text-sm sm:text-base disabled:opacity-50 flex items-center gap-2"
                   style={{ boxShadow: '0 4px 12px 0 rgba(0,0,0,0.12)' }}
                 >

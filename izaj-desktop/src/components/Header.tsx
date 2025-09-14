@@ -60,6 +60,7 @@ HeaderProps) => {
       }}
     >
       <div className="flex items-center justify-between gap-2 sm:gap-4">
+        {/* Menu */}
         <div className="flex items-center gap-2 sm:gap-4 flex-1">
           <button
             className="p-1.5 sm:p-2 rounded-lg bg-white hover:bg-yellow-50 border border-yellow-50 shadow transition lg:hidden"
@@ -73,15 +74,9 @@ HeaderProps) => {
           >
             <Icon icon="mdi:menu" className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
           </button>
-          <div className="relative min-w-0 flex-1 max-w-xs ml-1 sm:ml-2">
-            <Icon icon="mdi:magnify" className="w-4 h-4 sm:w-5 sm:h-5 absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 text-sm sm:text-base border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-150 focus:border-yellow-200 bg-white shadow"
-            />
-          </div>
+
         </div>
+        {/* Notification */}
         <div className="flex items-center gap-1.5 sm:gap-4">
           <div className="relative notification-container" style={{ overflow: 'visible' }}>
             <button 

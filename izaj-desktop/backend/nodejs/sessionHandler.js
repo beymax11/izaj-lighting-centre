@@ -30,7 +30,6 @@ async function logoutAdmin() {
   }
 
   savedSession = null;
-  console.log("Admin logged out successfully");
   return { message: "Logged out successfully" };
 }
 

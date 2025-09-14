@@ -86,6 +86,11 @@ export const useFilter = (session: Session | null) => {
         product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     }, [filteredProducts, searchTerm]);
+    
+    const onSaleProducts = useMemo(() => {
+    return filteredProducts.filter(product => product.on_sale === true);
+    }, [filteredProducts]);
+    
 
     useEffect(() => {
         fetchCategories();
@@ -96,6 +101,7 @@ export const useFilter = (session: Session | null) => {
 
   return {
     filteredProducts: visibleProducts,
+    onSaleProducts,
     isLoading,
     categories,
     selectedCategory,

@@ -6,6 +6,7 @@ import { ManageStockModal } from '../components/ManageStockModal';
 import { ViewProductModal } from '../components/ViewProductModal';
 import { Product } from '../types/modal'
 import Stock from './Stock';
+import Sale from './sale';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
@@ -27,13 +28,16 @@ interface ProductsProps {
   showAddProductModal: boolean;
   setShowAddProductModal: (show: boolean) => void;
   session: Session | null; 
+  onViewChange?: (view: ViewType) => void;
 }
 
-export function Products({ showAddProductModal, setShowAddProductModal, session }: ProductsProps) {
+export function Products({ showAddProductModal, setShowAddProductModal, session, onViewChange }: ProductsProps) {
   const [showManageStockModal, setShowManageStockModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<ViewType>('products');
   const [selectedProductForView, setSelectedProductForView] = useState<Product | null>(null);
+  const [showAddSaleModal, setShowAddSaleModal] = useState(false);
+  
 
   const {
     publishedProducts,
@@ -67,20 +71,23 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     setStatusFilter,
   } = useFilter(session);
 
-  console.log('Rendered products:', filteredProducts);
-
-  const handleViewChange = (newView: ViewType) => {
-    if (newView === 'products') {
-      setFilter('all');
-      setView('products');
-    } else if (newView === 'sale') {
-      setFilter('sale');
-      setView('products');
-    } else {
-      setView(newView);
-    }
-    setShowDropdown(false);
-  };
+const handleViewChange = (newView: ViewType) => {
+  if (newView === 'products') {
+    setFilter('all');
+    setView('products');
+  } else if (newView === 'sale') {
+    setView('sale');
+  } else if (newView === 'stock') {
+    setView('stock');
+  } else {
+    setView(newView);
+  }
+  setShowDropdown(false);
+  
+  if (onViewChange) {
+    onViewChange(newView);
+  }
+};
 
   const handleAddProductClick = async () => {
     await fetchPendingProducts();
@@ -111,8 +118,15 @@ export function Products({ showAddProductModal, setShowAddProductModal, session 
     <div className="flex-1 overflow-y-auto">
       <main className="flex-1 px-8 py-6">
         {view === 'stock' ? (
-          <Stock session={session} onViewChange={handleViewChange} />
-        ) : (
+        <Stock session={session} onViewChange={handleViewChange} />
+      ) : view === 'sale' ? (
+        <Sale 
+        session={session} 
+        onViewChange={handleViewChange} 
+        showAddSaleModal={showAddSaleModal} 
+        setShowAddSaleModal={setShowAddSaleModal}
+      />
+      ) : (
           <>
             {/* Header section */}
             {!showAddProductModal && (
