@@ -28,6 +28,8 @@ const MyPurchase: React.FC = () => {
     address: ''
   });
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -99,32 +101,59 @@ const MyPurchase: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingAddress) {
-      // Update existing address
-      const updatedAddresses = addresses.map(addr => 
-        addr.id === editingAddress.id 
-          ? { ...addr, ...formData }
-          : addr
-      );
-      setAddresses(updatedAddresses);
-      localStorage.setItem('addresses', JSON.stringify(updatedAddresses));
-    } else {
-      // Add new address
-      const newAddress: Address = {
-        id: Date.now().toString(),
-        ...formData
-      };
-      const updatedAddresses = [...addresses, newAddress];
-      setAddresses(updatedAddresses);
-      localStorage.setItem('addresses', JSON.stringify(updatedAddresses));
+    // Validate form data
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.address.trim()) {
+      alert('Please fill in all fields');
+      return;
     }
 
-    setIsAddingNew(false);
-    setFormData({
-      name: '',
-      phone: '',
-      address: ''
-    });
+    // Basic phone number validation
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+    if (!phoneRegex.test(formData.phone.trim())) {
+      alert('Please enter a valid phone number');
+      return;
+    }
+
+    try {
+      if (editingAddress) {
+        // Update existing address
+        const updatedAddresses = addresses.map(addr => 
+          addr.id === editingAddress.id 
+            ? { ...addr, ...formData }
+            : addr
+        );
+        setAddresses(updatedAddresses);
+        localStorage.setItem('addresses', JSON.stringify(updatedAddresses));
+        setSuccessMessage('Address updated successfully!');
+      } else {
+        // Add new address
+        const newAddress: Address = {
+          id: Date.now().toString(),
+          ...formData
+        };
+        const updatedAddresses = [...addresses, newAddress];
+        setAddresses(updatedAddresses);
+        localStorage.setItem('addresses', JSON.stringify(updatedAddresses));
+        setSuccessMessage('Address added successfully!');
+      }
+
+      // Show success message
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
+
+      setIsAddingNew(false);
+      setFormData({
+        name: '',
+        phone: '',
+        address: ''
+      });
+    } catch (error) {
+      console.error('Error saving address:', error);
+      alert('Error saving address. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -140,6 +169,13 @@ const MyPurchase: React.FC = () => {
   return (
     <RequireAuth>
     <div className="flex flex-col min-h-screen bg-white text.white font-sans">
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-slideIn">
+          <Icon icon="mdi:check-circle" className="w-5 h-5" />
+          <span>{successMessage}</span>
+        </div>
+      )}
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
       <div className="lg:hidden bg-white px-4 pt-4">
         <div

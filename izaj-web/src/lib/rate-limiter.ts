@@ -119,6 +119,34 @@ export const generalAuthLimiter = new RateLimiter({
   maxRequests: 10, // 10 requests per 15 minutes
 });
 
+// OTP-specific rate limiters
+export const otpSendLimiter = new RateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 3, // 3 OTP requests per 15 minutes
+  keyGenerator: (request) => {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+    return `otp-send:${ip}`;
+  }
+});
+
+export const otpVerifyLimiter = new RateLimiter({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  maxRequests: 5, // 5 verification attempts per 10 minutes
+  keyGenerator: (request) => {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+    return `otp-verify:${ip}`;
+  }
+});
+
+export const otpResetPasswordLimiter = new RateLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  maxRequests: 3, // 3 OTP-based password resets per hour
+  keyGenerator: (request) => {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+    return `otp-reset:${ip}`;
+  }
+});
+
 // Helper function to create rate limit response
 export function createRateLimitResponse(retryAfter: number) {
   return new Response(

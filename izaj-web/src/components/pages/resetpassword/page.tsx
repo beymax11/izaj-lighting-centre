@@ -18,6 +18,9 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('code') || searchParams.get('token');
+  const otpVerified = searchParams.get('otp_verified') === 'true';
+  const phoneNumber = searchParams.get('phone') || '';
+  const userId = searchParams.get('user_id') || '';
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -44,6 +47,13 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        // If coming from OTP verification, skip token validation
+        if (otpVerified && userId) {
+          setIsValidToken(true);
+          setTokenValidating(false);
+          return;
+        }
+
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -80,7 +90,7 @@ export default function ResetPasswordPage() {
     };
 
     checkSession();
-  }, [token]);
+  }, [token, otpVerified, userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +108,42 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
     
     try {
-      // Create Supabase client
+      // Handle OTP-based password reset
+      if (otpVerified && userId) {
+        console.log('Attempting OTP-based password reset for user:', userId);
+        
+        const response = await fetch('/api/auth/reset-password-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId,
+            phoneNumber: phoneNumber,
+            password: password,
+            confirmPassword: confirmPassword
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error('OTP reset password API error:', result.error);
+          toast.error(result.error || 'Failed to reset password. Please try again.');
+          return;
+        }
+
+        console.log('Password reset successful via OTP');
+        setResetSuccess(true);
+        toast.success('✅ Password reset successfully! You can now log in with your new password.');
+        
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+        return;
+      }
+
+      // Create Supabase client for email-based reset
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -253,7 +298,10 @@ export default function ResetPasswordPage() {
             Reset Your Password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your new password below
+            {otpVerified 
+              ? `Enter your new password below. Phone number +63${phoneNumber} has been verified.`
+              : 'Enter your new password below'
+            }
           </p>
         </div>
         
