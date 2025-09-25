@@ -238,7 +238,7 @@ const MyProfile: React.FC = () => {
                 <Link href="/addresses" className="text-black  hover:text-gray-900 text-base block transition-colors">Addresses</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                <Link href="/change-password" className="text-black hover:text-gray-900 text-base block transition-colors">Change Password</Link>
+                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors">Change Password</Link>
               </li>
             </ul>
           </div>
@@ -275,7 +275,7 @@ const MyProfile: React.FC = () => {
                     <Link href="/addresses" className="text-black hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
                   </li>
                   <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                    <Link href="/change-password" className="text-black hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
+                    <Link href="/changepassword" className="text-black hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
                   </li>
                 </ul>
               </div>
