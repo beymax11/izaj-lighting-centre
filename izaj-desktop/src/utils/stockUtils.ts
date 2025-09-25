@@ -14,6 +14,12 @@ export const getStockStatus = (display_quantity: number): string => {
   return 'High';
 };
 
+export const getStockColor = (quantity: number): string => {
+  if (quantity === 0) return 'text-red-600';
+  if (quantity < 100) return 'text-orange-500';
+  return 'text-green-600';
+};
+
 export const getStatusBadgeClass = (published_status: boolean): string => {
   return published_status
     ? 'text-green-600 bg-green-100' // Active

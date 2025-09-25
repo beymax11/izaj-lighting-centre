@@ -45,7 +45,6 @@ export const useStock = (session: Session | null) => {
     }
   }, [session]);
 
-
   useEffect(() => {
       fetchStockProducts();
       fetchStockStatus();

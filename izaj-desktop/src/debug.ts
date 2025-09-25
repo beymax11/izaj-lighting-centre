@@ -1,4 +1,3 @@
-import { ProductService } from './services/productService';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
@@ -20,7 +19,6 @@ async function main() {
     return;
   }
 
-  await ProductService.runCompleteDebug(session);
 }
 
 main();

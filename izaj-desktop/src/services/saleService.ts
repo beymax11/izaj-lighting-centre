@@ -1,6 +1,6 @@
 import { Session } from '@supabase/supabase-js';
 import API_URL from '../../config/api';
-import { SaleFormData } from '../types/modal';
+import { sale } from '../types/sale';
 
 export class SaleService {
   private static getHeaders(session: Session | null) {
@@ -12,38 +12,70 @@ export class SaleService {
     };
   }
 
-  static async createSale(
-    session: Session | null, 
-    saleData: SaleFormData
-  ): Promise<{ success: boolean; message?: string }> {
+  static async createSale(session: Session, saleData: sale) {
     if (!session?.access_token) {
-      return { success: false, message: 'Authentication required' };
+      throw new Error('Authentication required');
+    }
+      try {
+    const response = await fetch(`${API_URL}/api/sales/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(saleData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create sale");
     }
 
-    if (!saleData.selectedProductId || !saleData.discountValue || 
-        !saleData.startDate || !saleData.endDate) {
-      return { success: false, message: 'Please fill in all required fields' };
+    return await response.json();
+  } catch (err) {
+    console.error("❌ Error creating sale:", err);
+    throw err;
+  }
+  }
+
+  static async fetchProducts(session: Session | null): Promise<any[]> {
+    if (!session?.access_token) {
+      throw new Error('Authentication required');
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/sales`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/sales/products`, {
+        method: 'GET',
         headers: this.getHeaders(session),
-        body: JSON.stringify(saleData),
       });
-
       if (response.ok) {
-        return { success: true };
+        const data = await response.json();
+        return data;
       } else {
-        const errorData = await response.json();
-        return { success: false, message: errorData.error || 'Failed to create sale' };
+        throw new Error('Failed to fetch products');
       }
     } catch (error) {
-      console.error('Error creating sale:', error);
-      return { 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Failed to create sale' 
-      };
+      console.error('Error fetching products:', error);
+      throw error;
+    }
+  }
+
+  static async fetchOnSaleProducts(session: Session | null): Promise<any[]> {
+    if (!session?.access_token) {
+      throw new Error('Authentication required');
+    }
+    try {
+      const response = await fetch(`${API_URL}/api/sales/onsale/products`, {
+        method: 'GET',
+        headers: this.getHeaders(session),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else {
+        throw new Error('Failed to fetch on-sale products');
+      }} catch (error) {
+      console.error('Error fetching on-sale products:', error);
+      throw error;
     }
   }
 }

@@ -25,7 +25,7 @@ interface FetchedProductSlideProps {
 }
 
 export function FetchedProductSlide({ fetchedProducts, currentIndex, handlePrev, handleNext}: FetchedProductSlideProps) {
-  if (!fetchedProducts.length || currentIndex >= fetchedProducts.length) {return 
+  if (!fetchedProducts.length || currentIndex >= fetchedProducts.length) { 
     <p className ="text-center text-gray-500"> No unpublished products to review. </p>
   }
   const product = fetchedProducts[currentIndex];

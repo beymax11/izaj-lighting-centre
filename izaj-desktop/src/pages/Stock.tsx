@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { useStock } from '../hooks/useStock';
@@ -7,11 +7,11 @@ import {
   formatPrice, 
   getStockStatusColor, 
   getStatusBadgeClass,
-  calculateStockStats,
-  getStockStatus
+//  calculateStockStats,
 } from '../utils/stockUtils';
 import { FilterType } from '../types/product';
-import { StockProduct } from '../types/stock';
+ // import { StockProduct } from '../types/stock';
+import { useFilter } from '../hooks/useFilter';
 
 interface StockProps {
   onViewChange: (view: ViewType) => void;
@@ -23,10 +23,8 @@ function Stock({ onViewChange, session }: StockProps) {
   const [currentView] = useState<'stock' | 'restock'>('stock');
 
   const {
-    filteredProducts,
     isLoading,
     syncStats,
-    stockStatus,
     searchQuery,
     setSearchQuery,
     selectedCategory,
@@ -36,22 +34,27 @@ function Stock({ onViewChange, session }: StockProps) {
     refetch
   } = useStock(session);
 
-  const stats = useMemo(() => {
+  const {
+    fetchActiveProducts,
+    filteredProducts,
+  } = useFilter(session);
+
+    useEffect(() => {
+    fetchActiveProducts();
+  }, [fetchActiveProducts]);
+
+    const stats = useMemo(() => {
     if (filteredProducts.length === 0) {
       return {
         allProducts: 0,
         activeProducts: 0,
-        productsSold: 0
+        productsSold: 0,
       };
     }
-    
-    const activeProducts = filteredProducts.filter(p => p.status === 'Active').length;
-    const totalSold = filteredProducts.reduce((sum, p) => sum + (p.sold || 0), 0);
-    
     return {
       allProducts: filteredProducts.length,
-      activeProducts,
-      productsSold: totalSold
+      activeProducts: filteredProducts.filter(p => p.publish_status).length,
+      productsSold: filteredProducts.filter(p => p.sold).length,
     };
   }, [filteredProducts]);
 
@@ -257,10 +260,9 @@ function Stock({ onViewChange, session }: StockProps) {
                       {product.sold || 0}
                     </td>
                     <td className="py-3 sm:py-4 px-2 sm:px-4">
-                      <span className={`font-medium text-sm sm:text-base 
-                        ${getStockStatusColor(product.display_quantity)}`}>
-                          {getStockStatus(product.display_quantity)}
-                      </span>
+                    <span className={`font-medium text-sm sm:text-base ${getStockStatusColor(product.display_quantity)}`}>
+                      {product.display_quantity}
+                    </span>
                     </td>
                     <td className="py-3 sm:py-4 px-2 sm:px-4">
                       <td className="py-3 sm:py-4 px-2 sm:px-4">
