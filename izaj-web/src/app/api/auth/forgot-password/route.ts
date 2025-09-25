@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { forgotPasswordLimiter, createRateLimitResponse } from '@/lib/rate-limiter';
 
 type ForgotPasswordBody = {
     identifier: string; // email or phone
@@ -8,6 +9,12 @@ type ForgotPasswordBody = {
 
 export async function POST(request: Request) {
     try {
+        // Check rate limit
+        const rateLimit = await forgotPasswordLimiter.check(request);
+        if (!rateLimit.allowed) {
+            return createRateLimitResponse(rateLimit.retryAfter!);
+        }
+
         const body = (await request.json()) as Partial<ForgotPasswordBody>;
         const identifier = (body?.identifier || '').toString().trim();
         
@@ -121,7 +128,8 @@ export async function POST(request: Request) {
 
         const supabase = await getSupabaseServerClient();
         
-        // Send password reset email
+        // Use Supabase's built-in reset but with a custom redirect that doesn't auto-login
+        // We'll handle the token verification manually on the reset page
         const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
             redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
         });
@@ -131,10 +139,37 @@ export async function POST(request: Request) {
             // Don't reveal the error for security reasons
         }
 
+        // Log the forgot password attempt
+        try {
+            await supabaseAdmin
+                .from('audit_logs')
+                .insert({
+                    user_id: userEmail, // Store email as identifier
+                    action: 'forgot_password_request',
+                    details: { 
+                        method: isProbablyPhone ? 'phone' : 'email',
+                        identifier: identifier.substring(0, 3) + '***' // Partially mask identifier
+                    },
+                    ip_address: request.headers.get('x-forwarded-for') || 'unknown',
+                    user_agent: request.headers.get('user-agent') || 'unknown'
+                });
+        } catch (logError) {
+            console.error('Failed to log forgot password request:', logError);
+            // Don't fail the request if logging fails
+        }
+
         // Always return success message for security (don't reveal if user exists)
         return NextResponse.json({ 
-            message: 'If an account with that email or phone exists, we\'ve sent a password reset link.' 
-        }, { status: 200 });
+            message: 'If an account with that email or phone exists, we\'ve sent a password reset link.',
+            remaining: rateLimit.remaining
+        }, { 
+            status: 200,
+            headers: {
+                'X-RateLimit-Limit': '3',
+                'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+                'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString()
+            }
+        });
 
     } catch (err) {
         console.error('Forgot password error:', err);
