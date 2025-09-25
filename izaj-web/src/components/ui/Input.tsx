@@ -1,35 +1,56 @@
 import React from 'react';
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+interface InputProps {
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel';
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+  disabled?: boolean;
+  required?: boolean;
+  name?: string;
+  id?: string;
+  label?: string;
   error?: string;
-};
+}
 
-const Input: React.FC<InputProps> = ({ leftIcon, rightIcon, error, className = '', ...props }) => {
+export const Input: React.FC<InputProps> = ({
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  className = '',
+  disabled = false,
+  required = false,
+  name,
+  id,
+  label,
+  error,
+}) => {
+  const inputId = id || name;
+  
   return (
-    <div className="space-y-1.5">
-      <div className="relative">
-        {leftIcon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            {leftIcon}
-          </div>
-        )}
-        <input
-          className={`w-full ${leftIcon ? 'pl-9' : 'pl-3'} ${rightIcon ? 'pr-9' : 'pr-3'} py-2.5 border ${error ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm ${className}`}
-          {...props}
-        />
-        {rightIcon && (
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-            {rightIcon}
-          </div>
-        )}
-      </div>
-      {error && <div className="text-xs text-red-600">{error}</div>}
+    <div className="w-full">
+      {label && (
+        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      <input
+        type={type}
+        id={inputId}
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        required={required}
+        className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+      />
+      {error && (
+        <p className="mt-1 text-sm text-red-600">{error}</p>
+      )}
     </div>
   );
 };
-
-export default Input;
-
-

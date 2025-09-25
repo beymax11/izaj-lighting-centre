@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface HeroSlide {
   image: string;
@@ -6,18 +6,24 @@ export interface HeroSlide {
   subheading: string;
 }
 
-export const useHeroSlideshow = (slides: HeroSlide[], intervalMs: number = 5000) => {
+export const useHeroSlideshow = (slides: HeroSlide[], interval: number = 5000) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    if (slides.length === 0) return;
+    if (slides.length <= 1) return;
+
     const timer = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % slides.length);
-    }, intervalMs);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
+    }, interval);
+
     return () => clearInterval(timer);
-  }, [slides.length, intervalMs]);
+  }, [slides.length, interval]);
 
-  return { currentIndex };
+  return {
+    currentIndex,
+    currentSlide: slides[currentIndex],
+    goToSlide: setCurrentIndex,
+    nextSlide: () => setCurrentIndex((prev) => (prev + 1) % slides.length),
+    prevSlide: () => setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length),
+  };
 };
-
-
