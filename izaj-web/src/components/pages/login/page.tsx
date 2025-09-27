@@ -8,7 +8,8 @@ import { useUserContext } from '../../../context/UserContext';
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +33,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     // Live auto-format for phone when logging in (identifier field)
     if (name === 'email' && isPhoneLike(value)) {
       const formatted = formatAsPhoneDigitsLive(value);
@@ -43,7 +44,7 @@ const LoginPage: React.FC = () => {
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: type === 'checkbox' ? checked : value
       }));
     }
     
@@ -124,7 +125,7 @@ const LoginPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await login(formData.email, formData.password);
+      await login(formData.email, formData.password, formData.rememberMe);
       router.push('/');
     } catch (error) {
       console.error('Authentication error:', error);
@@ -169,7 +170,7 @@ const LoginPage: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">Email or Phone</label>
+                <label htmlFor="email" className="block text-sm font-medium text-black">Email or Phone</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     {isPhoneMode ? (
@@ -180,6 +181,7 @@ const LoginPage: React.FC = () => {
                   </div>
                   <input
                     type="text"
+                    id="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
@@ -197,10 +199,11 @@ const LoginPage: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-black">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
+                    id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
@@ -220,11 +223,24 @@ const LoginPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+                    Remember me
+                  </label>
+                </div>
                 <button 
                   type="button" 
                   onClick={() => router.push('/forgot-password')} 
-                  className="text-black hover:underline font-medium"
+                  className="text-sm text-black hover:underline font-medium"
                 >
                   Forgot your password?
                 </button>

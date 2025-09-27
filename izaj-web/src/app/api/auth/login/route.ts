@@ -6,6 +6,7 @@ type LoginBody = {
     identifier?: string; // email or phone
     email?: string; // legacy support
     password: string;
+    rememberMe?: boolean;
 };
 
 export async function POST(request: Request) {
@@ -145,7 +146,34 @@ export async function POST(request: Request) {
 			}
 		} catch {}
 
-		return NextResponse.json({ user: mergedUser, session: data.session, message: 'Login successful' }, { status: 200 });
+		// Set session cookie with appropriate expiration based on rememberMe
+		const response = NextResponse.json({ 
+			user: mergedUser, 
+			session: data.session, 
+			message: 'Login successful',
+			rememberMe: body.rememberMe || false
+		}, { status: 200 });
+
+		// Set session cookie with appropriate expiration
+		if (data.session) {
+			const maxAge = body.rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 1 day
+			response.cookies.set('sb-access-token', data.session.access_token, {
+				maxAge,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				path: '/'
+			});
+			response.cookies.set('sb-refresh-token', data.session.refresh_token, {
+				maxAge,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				path: '/'
+			});
+		}
+
+		return response;
 	} catch (err) {
         return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
 	}

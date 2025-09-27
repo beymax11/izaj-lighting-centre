@@ -170,12 +170,14 @@ export default function VerifyOTPPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* OTP Input */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">
+                <label htmlFor="otp-code" className="block text-sm font-medium text-black">
                   Verification Code
                 </label>
                 <input
                   ref={otpInputRef}
                   type="text"
+                  id="otp-code"
+                  name="otp"
                   value={otp}
                   onChange={handleOtpChange}
                   className="w-full px-4 py-4 text-center text-2xl font-mono border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none tracking-widest"

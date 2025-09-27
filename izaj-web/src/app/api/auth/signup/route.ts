@@ -7,6 +7,12 @@ type SignupBody = {
 	password: string;
 	name?: string;
 	phone?: string;
+	address?: {
+		province: string;
+		city: string;
+		barangay: string;
+		address: string;
+	};
 };
 
 export async function POST(request: Request) {
@@ -58,7 +64,11 @@ export async function POST(request: Request) {
 			.insert({ id: data.user.id, name: body.name ?? null, phone: normalizedPhone ?? null });
 		// Ignore profileError (table may not exist yet)
 
-		return NextResponse.json({ user: data.user, message: 'Signup successful' }, { status: 200 });
+		return NextResponse.json({ 
+			user: data.user, 
+			message: 'Signup successful',
+			address: body.address 
+		}, { status: 200 });
 	} catch (err) {
 		return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
 	}

@@ -5,6 +5,7 @@ export interface User {
   lastName: string;
   phone?: string;
   avatar?: string;
+  profilePicture?: string;
   role: 'customer' | 'admin' | 'moderator';
   isEmailVerified: boolean;
   createdAt: Date;

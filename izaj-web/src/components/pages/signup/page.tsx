@@ -22,6 +22,8 @@ const SignupPage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
   
   const router = useRouter();
@@ -91,6 +93,20 @@ const SignupPage: React.FC = () => {
     }
   };
 
+  // Password validation function
+  const validatePassword = (password: string) => {
+    const requirements = {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    
+    const isValid = Object.values(requirements).every(req => req);
+    return { requirements, isValid };
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -110,8 +126,11 @@ const SignupPage: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else {
+      const passwordValidation = validatePassword(formData.password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = 'Password does not meet requirements';
+      }
     }
 
     if (!formData.confirmPassword) {
@@ -133,12 +152,21 @@ const SignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
+      // Prepare address data if address form is filled
+      const addressData = showAddressForm && (formData.province || formData.city || formData.barangay || formData.address) ? {
+        province: formData.province,
+        city: formData.city,
+        barangay: formData.barangay,
+        address: formData.address
+      } : undefined;
+
       await register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        phone: formData.phoneNumber || undefined
+        phone: formData.phoneNumber || undefined,
+        address: addressData
       });
       router.push('/');
     } catch (error) {
@@ -258,14 +286,53 @@ const SignupPage: React.FC = () => {
               {/* Password */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-black">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
-                  placeholder="Enter password"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    placeholder="Enter password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 transition-colors"
+                  >
+                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+                
+                {/* Password Requirements */}
+                {formData.password && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+                    <div className="space-y-1">
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.minLength ? 'text-green-600' : 'text-gray-500'}`}>
+                        <Icon icon={validatePassword(formData.password).requirements.minLength ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
+                        At least 8 characters
+                      </div>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                        <Icon icon={validatePassword(formData.password).requirements.hasUppercase ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
+                        One uppercase letter
+                      </div>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                        <Icon icon={validatePassword(formData.password).requirements.hasLowercase ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
+                        One lowercase letter
+                      </div>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                        <Icon icon={validatePassword(formData.password).requirements.hasNumber ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
+                        One number
+                      </div>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                        <Icon icon={validatePassword(formData.password).requirements.hasSpecialChar ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
+                        One special character
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                 )}
@@ -274,14 +341,41 @@ const SignupPage: React.FC = () => {
               {/* Confirm Password */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-black">Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
-                  placeholder="Confirm your password"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 transition-colors"
+                  >
+                    <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+                
+                {/* Password Match Indicator */}
+                {formData.confirmPassword && (
+                  <div className="mt-2">
+                    {formData.password === formData.confirmPassword ? (
+                      <div className="flex items-center text-sm text-green-600">
+                        <Icon icon="mdi:check-circle" className="w-4 h-4 mr-2" />
+                        Passwords match
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-sm text-red-600">
+                        <Icon icon="mdi:alert-circle" className="w-4 h-4 mr-2" />
+                        Passwords do not match
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 {errors.confirmPassword && (
                   <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
                 )}

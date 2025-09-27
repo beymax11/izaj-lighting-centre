@@ -3,12 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
+import { useUserContext } from '../../../context/UserContext';
 
 const MyProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>('profile.webp');
+  const [profileImage, setProfileImage] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, uploadProfilePicture, removeProfilePicture } = useUserContext();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -140,31 +143,53 @@ const MyProfile: React.FC = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (1MB = 1048576 bytes)
-      if (file.size > 1048576) {
-        alert('File size should be less than 1MB');
+      // Check file size (5MB = 5242880 bytes)
+      if (file.size > 5242880) {
+        alert('File size should be less than 5MB');
         return;
       }
 
       // Check file type
-      if (!['image/jpeg', 'image/png'].includes(file.type)) {
-        alert('Only JPEG and PNG files are allowed');
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        alert('Only JPEG, PNG, and WebP files are allowed');
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          setProfileImage(result);
-          // Save the profile image to localStorage
-          localStorage.setItem('profileImage', result);
+      setUploading(true);
+      try {
+        // Upload to backend
+        const profilePictureUrl = await uploadProfilePicture(file);
+        setProfileImage(profilePictureUrl);
+        alert('Profile picture updated successfully!');
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('Failed to upload profile picture. Please try again.');
+      } finally {
+        setUploading(false);
+        // Clear the input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
-      };
-      reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (confirm('Are you sure you want to remove your profile picture?')) {
+      setUploading(true);
+      try {
+        await removeProfilePicture();
+        setProfileImage('');
+        alert('Profile picture removed successfully!');
+      } catch (error) {
+        console.error('Remove error:', error);
+        alert('Failed to remove profile picture. Please try again.');
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -252,8 +277,12 @@ const MyProfile: React.FC = () => {
             <div className="w-full lg:w-72 p-6 transition-all duration-300 hover:shadow-md hidden lg:block">
               <div className="flex flex-col items-center">
                 {/* Profile image and name only on desktop */}
-                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm transition-transform duration-300 hover:scale-105">
-                  <img src={profileImage} alt="User" className="w-full h-full object-cover" />
+                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm transition-transform duration-300 hover:scale-105 bg-gray-200 flex items-center justify-center">
+                  {profileImage ? (
+                    <img src={profileImage} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <Icon icon="lucide:user" className="w-8 h-8 text-gray-400" />
+                  )}
                 </div>
                 <div className="font-medium text-lg mb-6 text-center text-gray-800">
                   {`${formData.firstName} ${formData.lastName}`.trim() || 'User'}
@@ -288,27 +317,66 @@ const MyProfile: React.FC = () => {
                   <div className="flex flex-col gap-4">
                     {/* Image Upload Section - Always on top for mobile and md */}
                     <div className="flex flex-col items-center mb-2">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105">
-                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover"/>
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105 relative bg-gray-200 flex items-center justify-center">
+                        {profileImage ? (
+                          <img 
+                            src={profileImage} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Icon icon="lucide:user" className="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" />
+                        )}
+                        {uploading && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <Icon icon="mdi:loading" className="w-6 h-6 text-white animate-spin" />
+                          </div>
+                        )}
                       </div>
                       <input
                         type="file"
                         ref={fileInputRef}
                         onChange={handleImageChange}
-                        accept="image/jpeg,image/png"
-                        className="hidden"
+                        accept="image/jpeg,image/png,image/webp"
+                        style={{ 
+                          position: 'absolute',
+                          left: '-9999px',
+                          opacity: 0,
+                          pointerEvents: 'none',
+                          width: '1px',
+                          height: '1px'
+                        }}
+                        disabled={uploading}
+                        tabIndex={-1}
+                        id="profile-picture-input"
                       />
-                      <button 
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors"
-                      >
-                        Change Photo
-                      </button>
+                      <div className="flex gap-2">
+                        <label 
+                          htmlFor="profile-picture-input"
+                          className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors disabled:opacity-50 cursor-pointer"
+                          style={{ 
+                            pointerEvents: uploading ? 'none' : 'auto',
+                            opacity: uploading ? 0.5 : 1
+                          }}
+                        >
+                          {uploading ? 'Uploading...' : 'Change Photo'}
+                        </label>
+                        {profileImage && (
+                          <button 
+                            type="button"
+                            onClick={handleRemoveImage}
+                            disabled={uploading}
+                            className="text-red-600 text-xs sm:text-sm font-medium hover:text-red-700 mb-2 transition-colors disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
                       <p className="text-gray-500 text-[10px] sm:text-xs text-center">
-                        File size: maximum 1 MB<br/>
-                        File extension: JPEG, PNG
+                        File size: maximum 5 MB<br/>
+                        File extension: JPEG, PNG, WebP
                       </p>
+                      
                     </div>
                     {/* Form Fields */}
                     <div className="flex-1">

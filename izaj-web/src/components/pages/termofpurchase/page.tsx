@@ -214,6 +214,8 @@ const TermsOfPurchase = () => {
       <div className="relative flex-grow max-w-md">
         <input
           type="email"
+          id="termofpurchase-email"
+          name="email"
           placeholder="Enter your email address"
           className="px-6 py-4 rounded-full border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-gray-800 w-full placeholder-gray-500"
           value={email}
