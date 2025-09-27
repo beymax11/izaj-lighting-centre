@@ -213,9 +213,9 @@ const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors duration-200 rounded-none"
                   >
-                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-500" />
+                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-600 hover:text-black transition-colors duration-200" />
                   </button>
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-600">{errors.password}</p>

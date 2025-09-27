@@ -168,7 +168,7 @@ const SignupPage: React.FC = () => {
         phone: formData.phoneNumber || undefined,
         address: addressData
       });
-      router.push('/');
+      router.push('/login');
     } catch (error) {
       console.error('Registration error:', error);
       setErrors({ general: (error as Error).message || 'Registration failed.' });
@@ -248,18 +248,16 @@ const SignupPage: React.FC = () => {
               {/* Phone Number */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-black">Phone number (optional)</label>
-                <div className="flex">
-                  <select className="px-4 py-4 text-base border-2 border-gray-300 border-r-0 bg-white text-black focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none">
-                    <option value="+63">PH (+63)</option>
-                  </select>
+                <div className="relative">
                   <input
                     type="tel"
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className={`flex-1 px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
-                    placeholder="Enter phone number"
+                    className={`w-full pl-12 pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    placeholder="9123456789"
                   />
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-base">+63</span>
                 </div>
                 {errors.phoneNumber && (
                   <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
@@ -298,9 +296,9 @@ const SignupPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center justify-center transition-colors duration-200 rounded-none"
                   >
-                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-500" />
+                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-600 hover:text-black transition-colors duration-200" />
                   </button>
                 </div>
                 
@@ -353,9 +351,9 @@ const SignupPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center justify-center transition-colors duration-200 rounded-none"
                   >
-                    <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-500" />
+                    <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-600 hover:text-black transition-colors duration-200" />
                   </button>
                 </div>
                 
@@ -402,24 +400,14 @@ const SignupPage: React.FC = () => {
                     {/* Province */}
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-black">Province</label>
-                      <select
+                      <input
+                        type="text"
                         name="province"
                         value={formData.province}
-                        onChange={handleSelectChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
-                      >
-                        <option value="">Select Province</option>
-                        <option value="Metro Manila">Metro Manila</option>
-                        <option value="Cebu">Cebu</option>
-                        <option value="Davao">Davao</option>
-                        <option value="Laguna">Laguna</option>
-                        <option value="Cavite">Cavite</option>
-                        <option value="Rizal">Rizal</option>
-                        <option value="Bulacan">Bulacan</option>
-                        <option value="Pampanga">Pampanga</option>
-                        <option value="Batangas">Batangas</option>
-                        <option value="Other">Other</option>
-                      </select>
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
+                        placeholder="Enter your province"
+                      />
                     </div>
 
                     {/* City */}

@@ -24,12 +24,14 @@ const MyProfile: React.FC = () => {
     phone: '',
   });
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
 
   // Load user data on component mount and hydrate from server
   useEffect(() => {
     const hydrate = async () => {
       const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-      const storedProfileImage = localStorage.getItem('profileImage');
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
@@ -39,6 +41,9 @@ const MyProfile: React.FC = () => {
             email: userData.email || '',
             phone: userData.phone || ''
           });
+          // Get profile image using user ID for proper isolation
+          const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
+          console.log(`🔍 Loading profile image for user ${userData.id}:`, storedProfileImage ? 'Found' : 'Not found');
           if (storedProfileImage) setProfileImage(storedProfileImage);
         } catch {}
       } else {
@@ -162,8 +167,11 @@ const MyProfile: React.FC = () => {
       try {
         // Upload to backend
         const profilePictureUrl = await uploadProfilePicture(file);
+        console.log('📸 Uploaded profile picture URL:', profilePictureUrl);
         setProfileImage(profilePictureUrl);
-        alert('Profile picture updated successfully!');
+        setSuccessMessage('Profile picture updated successfully!');
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
       } catch (error) {
         console.error('Upload error:', error);
         alert('Failed to upload profile picture. Please try again.');
@@ -177,20 +185,29 @@ const MyProfile: React.FC = () => {
     }
   };
 
-  const handleRemoveImage = async () => {
-    if (confirm('Are you sure you want to remove your profile picture?')) {
-      setUploading(true);
-      try {
-        await removeProfilePicture();
-        setProfileImage('');
-        alert('Profile picture removed successfully!');
-      } catch (error) {
-        console.error('Remove error:', error);
-        alert('Failed to remove profile picture. Please try again.');
-      } finally {
-        setUploading(false);
-      }
+  const handleRemoveImage = () => {
+    setShowRemoveModal(true);
+  };
+
+  const confirmRemoveImage = async () => {
+    setUploading(true);
+    setShowRemoveModal(false);
+    try {
+      await removeProfilePicture();
+      setProfileImage('');
+      setSuccessMessage('Profile picture removed successfully!');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Remove error:', error);
+      alert('Failed to remove profile picture. Please try again.');
+    } finally {
+      setUploading(false);
     }
+  };
+
+  const cancelRemoveImage = () => {
+    setShowRemoveModal(false);
   };
 
   const handleEditClick = () => {
@@ -221,6 +238,52 @@ const MyProfile: React.FC = () => {
   return (
     <RequireAuth>
     <div className="flex flex-col min-h-screen bg-white text-white font-sans">
+      {/* Success Message Popup */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce">
+          <Icon icon="lucide:check-circle" className="w-5 h-5" />
+          <span className="font-medium">{successMessage}</span>
+        </div>
+      )}
+
+      {/* Remove Profile Picture Confirmation Modal */}
+      {showRemoveModal && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          onClick={cancelRemoveImage}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-lg max-w-sm w-full mx-4 border border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Content */}
+            <div className="p-6 text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                Remove Profile Picture?
+              </h3>
+              <p className="text-gray-600 mb-6 text-sm">
+                This action cannot be undone.
+              </p>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={cancelRemoveImage}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmRemoveImage}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md text-sm font-medium hover:bg-red-600 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
       <div className="lg:hidden bg-white px-4 pt-4">
         <div
@@ -323,6 +386,8 @@ const MyProfile: React.FC = () => {
                             src={profileImage} 
                             alt="Profile" 
                             className="w-full h-full object-cover"
+                            onLoad={() => console.log('✅ Profile image loaded successfully')}
+                            onError={() => console.log('❌ Profile image failed to load:', profileImage)}
                           />
                         ) : (
                           <Icon icon="lucide:user" className="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" />

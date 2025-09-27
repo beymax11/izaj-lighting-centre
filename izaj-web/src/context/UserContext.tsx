@@ -142,6 +142,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
       setUser(userData);
       
+      // Debug: Log profile images in localStorage
+      console.log('🔍 Profile images in localStorage after login:');
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('profileImage_')) {
+          console.log(`  ${key}: ${localStorage.getItem(key)?.substring(0, 50)}...`);
+        }
+      });
+      
       // Store user data based on remember me preference
       if (rememberMe) {
         localStorage.setItem('user', JSON.stringify(userData));
@@ -163,11 +171,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     try { 
       await fetch('/api/auth/logout', { method: 'POST' }); 
     } catch {}
+    
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
     sessionStorage.removeItem('user');
     localStorage.removeItem('cart'); // Clear cart on logout
+    // Note: Profile images and addresses are kept in localStorage to persist across sessions
+    // They are user-scoped by ID so no cross-account contamination
     console.log('🚪 UserContext: User logged out');
   };
 
@@ -199,10 +210,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           address: `${userData.address.address}, ${userData.address.barangay}, ${userData.address.city}, ${userData.address.province}`
         };
         
-        // Save address to localStorage
-        const existingAddresses = JSON.parse(localStorage.getItem('addresses') || '[]');
+        // Save address to localStorage with user-specific key
+        const userSpecificKey = `addresses_${result.user.id}`;
+        const existingAddresses = JSON.parse(localStorage.getItem(userSpecificKey) || '[]');
         const updatedAddresses = [...existingAddresses, newAddress];
-        localStorage.setItem('addresses', JSON.stringify(updatedAddresses));
+        localStorage.setItem(userSpecificKey, JSON.stringify(updatedAddresses));
       }
       
       // Do not auto-login after signup; user should login explicitly.
@@ -231,7 +243,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   };
 
   const uploadProfilePicture = async (file: File): Promise<string> => {
-    setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('profilePicture', file);
@@ -254,20 +265,19 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         // Update localStorage/sessionStorage
         const storage = localStorage.getItem('rememberMe') === 'true' ? localStorage : sessionStorage;
         storage.setItem('user', JSON.stringify(updatedUser));
-        localStorage.setItem('profileImage', result.profilePictureUrl);
+        // Store profile image with user ID to ensure isolation per account
+        localStorage.setItem(`profileImage_${user.id}`, result.profilePictureUrl);
+        console.log(`💾 Stored profile image for user ${user.id}: ${result.profilePictureUrl.substring(0, 50)}...`);
       }
 
       return result.profilePictureUrl;
     } catch (error) {
       console.error('Profile picture upload error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const removeProfilePicture = async (): Promise<void> => {
-    setIsLoading(true);
     try {
       const response = await fetch('/api/profile/upload-picture', {
         method: 'DELETE',
@@ -286,13 +296,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         // Update localStorage/sessionStorage
         const storage = localStorage.getItem('rememberMe') === 'true' ? localStorage : sessionStorage;
         storage.setItem('user', JSON.stringify(updatedUser));
-        localStorage.removeItem('profileImage');
+        // Remove profile image with user ID to ensure isolation per account
+        localStorage.removeItem(`profileImage_${user.id}`);
       }
     } catch (error) {
       console.error('Profile picture removal error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 

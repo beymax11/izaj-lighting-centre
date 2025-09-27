@@ -12,12 +12,11 @@ const BankandCard: React.FC = () => {
     firstName: '',
     lastName: '',
   });
-  const [profileImage, setProfileImage] = useState<string>('profile.webp');
+  const [profileImage, setProfileImage] = useState<string>('');
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-    const storedProfileImage = localStorage.getItem('profileImage');
     
     if (storedUser) {
       try {
@@ -26,13 +25,14 @@ const BankandCard: React.FC = () => {
           firstName: user.firstName || '',
           lastName: user.lastName || '',
         });
+        // Get profile image using user ID for proper isolation
+        const storedProfileImage = localStorage.getItem(`profileImage_${user.id}`);
+        if (storedProfileImage) {
+          setProfileImage(storedProfileImage);
+        }
       } catch (error) {
         console.error('Error parsing stored user data:', error);
       }
-    }
-
-    if (storedProfileImage) {
-      setProfileImage(storedProfileImage);
     }
   }, []);
 
@@ -96,8 +96,12 @@ const BankandCard: React.FC = () => {
             {/* Left Column - User Profile */}
             <div className="hidden lg:block w-full lg:w-72 bg-white rounded-xl shadow-sm p-6">
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm">
-                  <img src={profileImage} alt="User" className="w-full h-full object-cover" />
+                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm bg-gray-200 flex items-center justify-center">
+                  {profileImage ? (
+                    <img src={profileImage} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <Icon icon="lucide:user" className="w-8 h-8 text-gray-400" />
+                  )}
                 </div>
                 <div className="font-medium text-lg mb-6 text-center text-black">
                   {`${userData.firstName} ${userData.lastName}`.trim() || 'User'}
