@@ -179,13 +179,21 @@ function capitalize(str: string) {
                 {/* User Icon or Account Dropdown */}
                 {!isClient ? (
                   // Server-side rendering: always show the login button to avoid hydration mismatch
-                  <button
-                    onClick={() => setIsLoginModalOpen(true)}
-                    className="text-black hover:text-orange-500 transition-colors duration-200"
-                    aria-label="Login"
-                  >
-                    <Icon icon="lucide:user" width="28" height="28" />
-                  </button>
+                  <div className="flex items-center space-x-2" style={{ marginTop: "4px" }}>
+                    <button
+                      onClick={() => setIsLoginModalOpen(true)}
+                      className="text-black hover:text-orange-500 transition-colors duration-200"
+                      aria-label="Login"
+                    >
+                      <Icon icon="lucide:user" width="28" height="28" />
+                    </button>
+                    <button
+                      onClick={() => setIsLoginModalOpen(true)}
+                      className="hidden md:block text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors duration-200"
+                    >
+                      Hello! Log in
+                    </button>
+                  </div>
                 ) : (
                   // Client-side rendering: use mobile detection and user state
                   isMobile ? (
@@ -204,13 +212,21 @@ function capitalize(str: string) {
                     </button>
                   ) : (
                     !user ? (
-                      <button
-                        onClick={() => setIsLoginModalOpen(true)}
-                        className="text-black hover:text-orange-500 transition-colors duration-200"
-                        aria-label="Login"
-                      >
-                        <Icon icon="lucide:user" width="28" height="28" />
-                      </button>
+                      <div className="flex items-center space-x-2" style={{ marginTop: "4px" }}>
+                        <button
+                          onClick={() => setIsLoginModalOpen(true)}
+                          className="text-black hover:text-orange-500 transition-colors duration-200"
+                          aria-label="Login"
+                        >
+                          <Icon icon="lucide:user" width="28" height="28" />
+                        </button>
+                        <button
+                          onClick={() => setIsLoginModalOpen(true)}
+                          className="hidden md:block text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors duration-200"
+                        >
+                          Hello! Log in
+                        </button>
+                      </div>
                     ) : (
                       <div className="relative" ref={accountDropdownRef}>
                         <button
@@ -285,7 +301,7 @@ function capitalize(str: string) {
                 )}
   
                 {/* Heart Icon */}
-                <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                <div className="flex items-center justify-center">
                   {!isClient ? (
                     // Server-side rendering: always show the favorites dropdown to avoid hydration mismatch
                     <FavoritesDropdown 
@@ -317,9 +333,9 @@ function capitalize(str: string) {
                     )
                   )}
                 </div>
-  
+
                 {/* Notification Icon */}
-                <div className="flex items-center justify-center" style={{ marginTop: "4px" }}>
+                <div className="flex items-center justify-center">
                   <NotificationDropdown 
                     user={!isClient ? null : user} 
                     onOpenAuthModal={() => setIsLoginModalOpen(true)}
@@ -327,35 +343,9 @@ function capitalize(str: string) {
                 </div>
   
                 {/* Cart Icon */}
-                {!isClient ? (
-                  // Server-side rendering: always show the login button to avoid hydration mismatch
-                  <button
-                    onClick={() => setIsLoginModalOpen(true)}
-                    className="text-black hover:text-orange-500 transition-colors duration-200"
-                  >
-                    <Icon
-                      icon="mdi:cart-outline"
-                      width="28"
-                      height="28"
-                    />
-                  </button>
-                ) : (
-                  // Client-side rendering: use user state
-                  user ? (
-                    <Link href="/cart" className="relative" ref={cartIconRef} id="cart-icon">
-                      <Icon
-                        icon="mdi:cart-outline"
-                        className="text-black cursor-pointer hover:text-orange-500 w-7 h-7 translate-y-1"
-                        width="28"
-                        height="28"
-                      />
-                      {cart.totalItems > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                          {cart.totalItems}
-                        </span>
-                      )}
-                    </Link>
-                  ) : (
+                <div className="flex items-center justify-center">
+                  {!isClient ? (
+                    // Server-side rendering: always show the login button to avoid hydration mismatch
                     <button
                       onClick={() => setIsLoginModalOpen(true)}
                       className="text-black hover:text-orange-500 transition-colors duration-200"
@@ -366,8 +356,36 @@ function capitalize(str: string) {
                         height="28"
                       />
                     </button>
-                  )
-                )}
+                  ) : (
+                    // Client-side rendering: use user state
+                    user ? (
+                      <Link href="/cart" className="relative" ref={cartIconRef} id="cart-icon">
+                        <Icon
+                          icon="mdi:cart-outline"
+                          className="text-black cursor-pointer hover:text-orange-500"
+                          width="28"
+                          height="28"
+                        />
+                        {cart.totalItems > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                            {cart.totalItems}
+                          </span>
+                        )}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => setIsLoginModalOpen(true)}
+                        className="text-black hover:text-orange-500 transition-colors duration-200"
+                      >
+                        <Icon
+                          icon="mdi:cart-outline"
+                          width="28"
+                          height="28"
+                        />
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
             </div>
           </div>
