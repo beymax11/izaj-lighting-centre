@@ -186,15 +186,18 @@ const ChangePass: React.FC = () => {
 
   return (
     <RequireAuth>
-    <div className="flex flex-col min-h-screen bg-white text-black font-sans">
+    <div className="flex flex-col min-h-screen bg-white font-sans">
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
-      <div className="lg:hidden bg-white px-4 pt-4">
+      <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
         <div
-          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
+          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
           onClick={() => setIsAccountModalOpen(true)}
         >
-          <span>Change Password</span>
-          <Icon icon="mdi:chevron-down" className="text-black w-6 h-6 ml-1" />
+          <div className="flex items-center space-x-2">
+            <Icon icon="mdi:lock-outline" className="text-black w-5 h-5" />
+            <span>Change Password</span>
+          </div>
+          <Icon icon="mdi:chevron-down" className="text-gray-400 w-6 h-6 ml-1" />
         </div>
       </div>
       {/* My Account Modal for Mobile */}
@@ -236,41 +239,52 @@ const ChangePass: React.FC = () => {
         </div>
       )}
       {/* Main Content */}
-<main className="flex-grow bg-white py-12">
-  <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+<main className="flex-grow py-6 md:py-12">
+  <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+    <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
       {/* Left Column - User Profile */}
-      <div className="hidden lg:block w-full lg:w-72 bg-white rounded-xl shadow-sm p-6">
+      <div className="hidden lg:block w-full lg:w-80 bg-white rounded-2xl shadow-lg p-6 border border-gray-300 self-start">
         <div className="flex flex-col items-center">
-          <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm bg-gray-200 flex items-center justify-center">
+          <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-black shadow-lg bg-gray-100 flex items-center justify-center relative">
             {profileImage ? (
               <img src={profileImage} alt="User" className="w-full h-full object-cover" />
             ) : (
-              <Icon icon="lucide:user" className="w-8 h-8 text-gray-400" />
+              <Icon icon="lucide:user" className="w-10 h-10 text-gray-500" />
             )}
           </div>
-          <div className="font-medium text-lg mb-6 text-center text-black">
+          <div className="font-semibold text-xl mb-6 text-center text-gray-800">
             {`${userData.firstName} ${userData.lastName}`.trim() || 'User'}
           </div>
         
-            <ul className="w-full space-y-1">
-            <li className="flex items-center p-3 rounded-lg mb-1">
-               <Icon icon="lucide:user" className="text-black mr-2 w-5 h-5" />
-              <span className="text-black font-medium text-sm">My Account</span>
-            </li>
-            <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-              <Link href="/account#profile" className="text-black hover:text-gray-900 text-sm block transition-colors">Profile</Link>
-            </li>
-            <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-              <Link href="/payments" className="text-black hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
-            </li>
-            <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg">
-              <Link href="/addresses" className="text-black hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
-            </li>
-            <li className="pl-10 py-2 bg-gray-100 rounded-lg mb-2">
-              <a href="/changepassword" className="text-black font-semibold text-sm block">Change Password</a>
-            </li>
-           
+            <ul className="w-full space-y-2">
+              <li className="flex items-center p-3 rounded-xl mb-2 bg-gray-100">
+                <Icon icon="lucide:user" className="text-gray-600 mr-3 w-5 h-5" />
+                <span className="text-gray-700 font-medium text-sm">My Account</span>
+              </li>
+              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                <Link href="/account#profile" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                  <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                  Profile
+                </Link>
+              </li>
+              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                <Link href="/payments" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                  <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                  Payment Methods
+                </Link>
+              </li>
+              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                <Link href="/addresses" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                  <Icon icon="mdi:map-marker" className="w-4 h-4 mr-2" />
+                  Addresses
+                </Link>
+              </li>
+              <li className="pl-4 py-2 bg-black rounded-lg">
+                <a href="/changepassword" className="text-white font-semibold text-sm block flex items-center">
+                  <Icon icon="mdi:lock-outline" className="w-4 h-4 mr-2" />
+                  Change Password
+                </a>
+              </li>
             </ul>
           
         </div>
@@ -278,11 +292,21 @@ const ChangePass: React.FC = () => {
       {/* Right Column - Change Password Section */}
       <div className="w-full md:flex-1">
      
-        
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
           {/* Header */}
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-black">Update Your Password</h3>
+          <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                <Icon icon="mdi:lock-reset" className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
+                <p className="text-sm text-gray-500">Keep your account secure</p>
+              </div>
+            </div>
+            {isLoading && (
+              <Icon icon="mdi:loading" className="w-5 h-5 text-gray-400 animate-spin" />
+            )}
           </div>
 
           {/* Password Form */}
@@ -388,7 +412,7 @@ const ChangePass: React.FC = () => {
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className={`px-8 py-3 bg-black hover:bg-gray-900 text-white text-sm font-medium transition-colors shadow-sm ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                  className={`px-6 py-3 bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                 >
                   {isLoading ? (
                     <>

@@ -224,7 +224,7 @@ function capitalize(str: string) {
                           onClick={() => setIsLoginModalOpen(true)}
                           className="hidden md:block text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors duration-200"
                         >
-                          Hello! Log in
+                          Log in
                         </button>
                       </div>
                     ) : (

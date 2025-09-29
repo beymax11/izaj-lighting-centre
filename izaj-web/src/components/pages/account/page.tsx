@@ -237,7 +237,7 @@ const MyProfile: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   return (
     <RequireAuth>
-    <div className="flex flex-col min-h-screen bg-white text-white font-sans">
+    <div className="flex flex-col min-h-screen bg-white font-sans">
       {/* Success Message Popup */}
       {showSuccessMessage && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce">
@@ -285,13 +285,16 @@ const MyProfile: React.FC = () => {
         </div>
       )}
       {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
-      <div className="lg:hidden bg-white px-4 pt-4">
+      <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
         <div
-          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3"
+          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
           onClick={() => setIsAccountModalOpen(true)}
         >
-          <span>My Profile</span>
-          <Icon icon="mdi:chevron-down" className="text-black w-6 h-6 ml-1" />
+          <div className="flex items-center space-x-2">
+            <Icon icon="mdi:account-outline" className="text-black w-5 h-5" />
+            <span>My Profile</span>
+          </div>
+          <Icon icon="mdi:chevron-down" className="text-gray-400 w-6 h-6 ml-1" />
         </div>
       </div>
       {/* My Account Modal for Mobile */}
@@ -333,41 +336,51 @@ const MyProfile: React.FC = () => {
         </div>
       )}
       {/* Main Content - My Profile Section */}
-      <main className="flex-grow bg-white py-6 md:py-8 lg:py-12">
+      <main className="flex-grow py-6 md:py-12 bg-gray-50">
         <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
             {/* Left Column - User Profile (Sidebar) - Only on large screens */}
-            <div className="w-full lg:w-72 p-6 transition-all duration-300 hover:shadow-md hidden lg:block">
+            <div className="hidden lg:block w-full lg:w-80 bg-white rounded-2xl shadow-lg p-6 border border-gray-300 self-start">
               <div className="flex flex-col items-center">
                 {/* Profile image and name only on desktop */}
-                <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-sm transition-transform duration-300 hover:scale-105 bg-gray-200 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-black shadow-lg bg-gray-100 flex items-center justify-center relative">
                   {profileImage ? (
                     <img src={profileImage} alt="User" className="w-full h-full object-cover" />
                   ) : (
-                    <Icon icon="lucide:user" className="w-8 h-8 text-gray-400" />
+                    <Icon icon="lucide:user" className="w-10 h-10 text-gray-500" />
                   )}
                 </div>
-                <div className="font-medium text-lg mb-6 text-center text-gray-800">
+                <div className="font-semibold text-xl mb-6 text-center text-gray-800">
                   {`${formData.firstName} ${formData.lastName}`.trim() || 'User'}
                 </div>
-                <ul className="w-full space-y-1">
-                  {/* My Account - Not highlighted */}
-                  <li className="flex items-center p-3 rounded-lg mb-1 transition-colors duration-300">
-                    <Icon icon="lucide:user" className="text-black mr-2 w-5 h-5" />
-                    <span className="text-black font-medium text-sm">My Account</span>
+                <ul className="w-full space-y-2">
+                  <li className="flex items-center p-3 rounded-xl mb-2 bg-gray-100">
+                    <Icon icon="lucide:user" className="text-gray-600 mr-3 w-5 h-5" />
+                    <span className="text-gray-700 font-medium text-sm">My Account</span>
                   </li>
-                  {/* Submenu Items */}
-                  <li className="pl-10 py-2 bg-gray-100 rounded-lg transition-colors duration-300">
-                    <a href="#profile" className="text-black font-semibold text-sm block">Profile</a>
+                  <li className="pl-4 py-2 bg-black rounded-lg">
+                    <a href="#profile" className="text-white font-semibold text-sm block flex items-center">
+                      <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2" />
+                      Profile
+                    </a>
                   </li>
-                  <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <Link href="/payments" className="text-black hover:text-gray-900 text-sm block transition-colors">Payment Methods</Link>
+                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                    <Link href="/payments" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                      <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2" />
+                      Payment Methods
+                    </Link>
                   </li>
-                  <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                    <Link href="/addresses" className="text-black hover:text-gray-900 text-sm block transition-colors">Addresses</Link>
+                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                    <Link href="/addresses" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                      <Icon icon="mdi:map-marker" className="w-4 h-4 mr-2" />
+                      Addresses
+                    </Link>
                   </li>
-                  <li className="pl-10 py-2 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                    <Link href="/changepassword" className="text-black hover:text-gray-900 text-sm block transition-colors">Change Password</Link>
+                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg mb-2 transition-all duration-200 group">
+                    <Link href="/changepassword" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                      <Icon icon="mdi:lock-outline" className="w-4 h-4 mr-2" />
+                      Change Password
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -375,226 +388,270 @@ const MyProfile: React.FC = () => {
             
             {/* Right Column - Profile Content */}
             <div className="flex-1">
-                {/* Profile Form */}
-                <form onSubmit={handleSubmit} className="p-2 sm:p-4 md:p-6 lg:p-8">
-                  <div className="flex flex-col gap-4">
-                    {/* Image Upload Section - Always on top for mobile and md */}
-                    <div className="flex flex-col items-center mb-2">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105 relative bg-gray-200 flex items-center justify-center">
-                        {profileImage ? (
-                          <img 
-                            src={profileImage} 
-                            alt="Profile" 
-                            className="w-full h-full object-cover"
-                            onLoad={() => console.log('✅ Profile image loaded successfully')}
-                            onError={() => console.log('❌ Profile image failed to load:', profileImage)}
-                          />
-                        ) : (
-                          <Icon icon="lucide:user" className="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" />
-                        )}
-                        {uploading && (
-                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                            <Icon icon="mdi:loading" className="w-6 h-6 text-white animate-spin" />
-                          </div>
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        accept="image/jpeg,image/png,image/webp"
-                        style={{ 
-                          position: 'absolute',
-                          left: '-9999px',
-                          opacity: 0,
-                          pointerEvents: 'none',
-                          width: '1px',
-                          height: '1px'
-                        }}
-                        disabled={uploading}
-                        tabIndex={-1}
-                        id="profile-picture-input"
-                      />
-                      <div className="flex gap-2">
-                        <label 
-                          htmlFor="profile-picture-input"
-                          className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors disabled:opacity-50 cursor-pointer"
-                          style={{ 
-                            pointerEvents: uploading ? 'none' : 'auto',
-                            opacity: uploading ? 0.5 : 1
-                          }}
-                        >
-                          {uploading ? 'Uploading...' : 'Change Photo'}
-                        </label>
-                        {profileImage && (
-                          <button 
-                            type="button"
-                            onClick={handleRemoveImage}
-                            disabled={uploading}
-                            className="text-red-600 text-xs sm:text-sm font-medium hover:text-red-700 mb-2 transition-colors disabled:opacity-50"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-gray-500 text-[10px] sm:text-xs text-center">
-                        File size: maximum 5 MB<br/>
-                        File extension: JPEG, PNG, WebP
-                      </p>
-                      
+              <div id="profile" className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
+                <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                      <Icon icon="mdi:account-circle" className="w-5 h-5 text-white" />
                     </div>
-                    {/* Form Fields */}
-                    <div className="flex-1">
-                      {/* First Name Field */}
-                      <div className="mb-4 sm:mb-5">
-                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">First Name:</label>
-                        <input 
-                          type="text" 
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          disabled={!isEditMode}
-                          className={`w-full p-2 sm:p-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
-                          placeholder="Enter your first name"
-                        />
-                        {errors.firstName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.firstName}</p>}
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-xl font-bold text-gray-800">My Profile</h3>
+                      <p className="text-sm text-gray-500">Manage your account information</p>
+                    </div>
+                  </div>
+                  {(isLoading || uploading) && (
+                    <Icon icon="mdi:loading" className="w-5 h-5 text-gray-400 animate-spin" />
+                  )}
+                </div>
+                <div className="p-2 sm:p-4 md:p-6 lg:p-8">
+                  {/* Profile Form */}
+                  <form onSubmit={handleSubmit}>
+                    <div className="flex flex-col gap-4">
+                      {/* Form Fields - Now on top */}
+                      <div className="flex-1">
+                        <div className="mb-2 sm:mb-4">
+                          <h4 className="text-gray-900 font-semibold">Personal Information</h4>
+                          <p className="text-gray-500 text-xs">Make sure your details are accurate and up-to-date.</p>
+                        </div>
+                        {/* First Name Field */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="mb-4 sm:mb-5">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                            <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 text-black" />
+                            First Name
+                          </label>
+                          <input 
+                            type="text" 
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            disabled={!isEditMode}
+                            className={`w-full px-4 py-3 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-xl focus:outline-none focus:ring-2 ${isEditMode ? 'focus:ring-black' : 'focus:ring-gray-200'} focus:border-transparent transition-all duration-200 ${!isEditMode ? 'bg-gray-50' : 'bg-white'} shadow-sm text-gray-900`}
+                            placeholder="Enter your first name"
+                          />
+                          {errors.firstName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.firstName}</p>}
+                        </div>
 
-                      {/* Last Name Field */}
-                      <div className="mb-4 sm:mb-5">
-                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">Last Name:</label>
-                        <input 
-                          type="text" 
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          disabled={!isEditMode}
-                          className={`w-full p-2 sm:p-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
-                          placeholder="Enter your last name"
-                        />
-                        {errors.lastName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.lastName}</p>}
-                      </div>
+                        {/* Last Name Field */}
+                        <div className="mb-4 sm:mb-5">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                            <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 text-black" />
+                            Last Name
+                          </label>
+                          <input 
+                            type="text" 
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            disabled={!isEditMode}
+                            className={`w-full px-4 py-3 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-xl focus:outline-none focus:ring-2 ${isEditMode ? 'focus:ring-black' : 'focus:ring-gray-200'} focus:border-transparent transition-all duration-200 ${!isEditMode ? 'bg-gray-50' : 'bg-white'} shadow-sm text-gray-900`}
+                            placeholder="Enter your last name"
+                          />
+                          {errors.lastName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.lastName}</p>}
+                        </div>
+                        </div>
 
-                      {/* Email Field (always disabled) */}
-                      <div className="mb-4 sm:mb-5">
-                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">Email:</label>
-                        <input 
-                          type="email" 
-                          value={formData.email} 
-                          disabled
-                          className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-                        />
-                      </div>
+                        {/* Email and Phone */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {/* Email Field (always disabled) */}
+                          <div className="mb-4 sm:mb-5">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                              <Icon icon="mdi:email-outline" className="w-4 h-4 mr-2 text-black" />
+                              Email
+                            </label>
+                            <input 
+                              type="email" 
+                              value={formData.email} 
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-700"
+                            />
+                          </div>
 
-                      {/* Phone Number Field */}
-                      <div className="mb-4 sm:mb-5">
-                        <label className="block text-xs sm:text-sm font-medium text-black mb-2">Phone Number:</label>
-                        <input 
-                          type="tel" 
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          disabled={!isEditMode}
-                          className={`w-full p-2 sm:p-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-colors text-gray-900 ${!isEditMode ? 'bg-gray-50' : ''}`}
-                          placeholder="Enter your phone number"
-                        />
-                        {errors.phone && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.phone}</p>}
-                      </div>
+                          {/* Phone Number Field */}
+                          <div className="mb-4 sm:mb-5">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                              <Icon icon="mdi:phone-outline" className="w-4 h-4 mr-2 text-black" />
+                              Phone Number
+                            </label>
+                            <input 
+                              type="tel" 
+                              name="phone"
+                              value={formData.phone}
+                              onChange={handleInputChange}
+                              disabled={!isEditMode}
+                              className={`w-full px-4 py-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-xl focus:outline-none focus:ring-2 ${isEditMode ? 'focus:ring-black' : 'focus:ring-gray-200'} focus:border-transparent transition-all duration-200 ${!isEditMode ? 'bg-gray-50' : 'bg-white'} shadow-sm text-gray-900`}
+                              placeholder="Enter your phone number"
+                            />
+                            {errors.phone && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.phone}</p>}
+                          </div>
+                        </div>
 
-                      {/* Save and Edit Buttons - moved here */}
-                      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-2 sm:mt-4 mb-2">
-                        {isEditMode ? (
-                          <>
-                            <button 
-                              type="button"
-                              onClick={handleCancelEdit}
-                              className="px-6 sm:px-8 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors shadow-sm text-xs sm:text-base"
-                            >
-                              Cancel
-                            </button>
-                            <button 
-                              type="submit"
-                              disabled={isLoading}
-                              className={`px-6 sm:px-8 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center text-xs sm:text-base ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
-                            >
-                              {isLoading ? (
-                                <>
-                                  <Icon icon="mdi:loading" className="animate-spin mr-2" />
-                                  Saving...
-                                </>
-                              ) : (
-                                'Save'
-                              )}
-                            </button>
-                          </>
-                        ) : (
-                          <button 
-                            type="button"
-                            onClick={handleEditClick}
-                            className="px-6 sm:px-8 py-2 sm:py-3 bg-indigo-700 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors shadow-sm text-xs sm:text-base"
-                          >
-                            Edit
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Request Account Deletion and Delete Buttons */}
-                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-6 sm:mt-8 pt-4 border-t border-gray-200 gap-2 sm:gap-0">
-                        <button 
-                          type="button"
-                          className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left"
-                          onClick={() => setShowDeleteModal(true)}
-                        >
-                          Account Deletion
-                        </button>
-                        <button 
-                          type="button"
-                          className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors shadow-sm"
-                          onClick={() => setShowDeleteModal(true)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-
-                      {/* Delete Confirmation Modal */}
-                      {showDeleteModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 overflow-y-auto">
-                          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative max-h-screen overflow-y-auto">
-                            <button
-                              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-                              onClick={() => setShowDeleteModal(false)}
-                              aria-label="Close"
-                            >
-                              <Icon icon="mdi:close" />
-                            </button>
-                            <div className="text-lg font-semibold text-gray-900 mb-2">Confirm Account Deletion</div>
-                            <div className="text-gray-700 text-sm mb-6">
-                              Are you sure you want to delete your account? A confirmation link will be sent to your email <span className="font-semibold">{formData.email}</span>. Please check your inbox to proceed.
-                            </div>
-                            <div className="flex justify-end gap-2">
-                              <button
-                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
-                                onClick={() => setShowDeleteModal(false)}
+                        {/* Save and Edit Buttons - moved here */}
+                        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-2 sm:mt-4 mb-2">
+                          {isEditMode ? (
+                            <>
+                              <button 
+                                type="button"
+                                onClick={handleCancelEdit}
+                                className="px-6 sm:px-8 py-2 sm:py-3 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-all duration-200 text-xs sm:text-base"
                               >
                                 Cancel
                               </button>
-                              <button
-                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm"
-                                onClick={() => {
-                                  setShowDeleteModal(false);
-                                  // Simulate sending confirmation email here
-                                  alert(`A confirmation link has been sent to ${formData.email}`);
-                                }}
+                              <button 
+                                type="submit"
+                                disabled={isLoading}
+                                className={`px-6 sm:px-8 py-2 sm:py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center text-xs sm:text-base ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                               >
-                                Confirm
+                                {isLoading ? (
+                                  <>
+                                    <Icon icon="mdi:loading" className="animate-spin mr-2" />
+                                    Saving...
+                                  </>
+                                ) : (
+                                  'Save'
+                                )}
                               </button>
+                            </>
+                          ) : (
+                            <button 
+                              type="button"
+                              onClick={handleEditClick}
+                              className="px-6 sm:px-8 py-2 sm:py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-xs sm:text-base"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Request Account Deletion and Delete Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-6 sm:mt-8 pt-4 border-t border-gray-200 gap-2 sm:gap-0">
+                          <button 
+                            type="button"
+                            className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left"
+                            onClick={() => setShowDeleteModal(true)}
+                          >
+                            Account Deletion
+                          </button>
+                          <button 
+                            type="button"
+                            className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                            onClick={() => setShowDeleteModal(true)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+
+                        {/* Delete Confirmation Modal */}
+                        {showDeleteModal && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 overflow-y-auto">
+                            <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative max-h-screen overflow-y-auto">
+                              <button
+                                className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+                                onClick={() => setShowDeleteModal(false)}
+                                aria-label="Close"
+                              >
+                                <Icon icon="mdi:close" />
+                              </button>
+                              <div className="text-lg font-semibold text-gray-900 mb-2">Confirm Account Deletion</div>
+                              <div className="text-gray-700 text-sm mb-6">
+                                Are you sure you want to delete your account? A confirmation link will be sent to your email <span className="font-semibold">{formData.email}</span>. Please check your inbox to proceed.
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                                  onClick={() => setShowDeleteModal(false)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm"
+                                  onClick={() => {
+                                    setShowDeleteModal(false);
+                                    // Simulate sending confirmation email here
+                                    alert(`A confirmation link has been sent to ${formData.email}`);
+                                  }}
+                                >
+                                  Confirm
+                                </button>
+                              </div>
                             </div>
                           </div>
+                        )}
+
+                        {/* Image Upload Section - Now at the bottom */}
+                        <div className="border-t border-gray-100 my-4 sm:my-6" />
+                        <div className="mb-4">
+                          <h4 className="text-gray-900 font-semibold">Profile Picture</h4>
+                          <p className="text-gray-500 text-xs">Update your profile picture</p>
                         </div>
-                      )}
+                        <div className="flex flex-col items-center mb-2">
+                          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105 relative bg-gray-200 flex items-center justify-center">
+                            {profileImage ? (
+                              <img 
+                                src={profileImage} 
+                                alt="Profile" 
+                                className="w-full h-full object-cover"
+                                onLoad={() => console.log('✅ Profile image loaded successfully')}
+                                onError={() => console.log('❌ Profile image failed to load:', profileImage)}
+                              />
+                            ) : (
+                              <Icon icon="lucide:user" className="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" />
+                            )}
+                            {uploading && (
+                              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                <Icon icon="mdi:loading" className="w-6 h-6 text-white animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                            accept="image/jpeg,image/png,image/webp"
+                            style={{ 
+                              position: 'absolute',
+                              left: '-9999px',
+                              opacity: 0,
+                              pointerEvents: 'none',
+                              width: '1px',
+                              height: '1px'
+                            }}
+                            disabled={uploading}
+                            tabIndex={-1}
+                            id="profile-picture-input"
+                          />
+                          <div className="flex gap-2">
+                            <label 
+                              htmlFor="profile-picture-input"
+                              className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors disabled:opacity-50 cursor-pointer"
+                              style={{ 
+                                pointerEvents: uploading ? 'none' : 'auto',
+                                opacity: uploading ? 0.5 : 1
+                              }}
+                            >
+                              {uploading ? 'Uploading...' : 'Change Photo'}
+                            </label>
+                            {profileImage && (
+                              <button 
+                                type="button"
+                                onClick={handleRemoveImage}
+                                disabled={uploading}
+                                className="text-red-600 text-xs sm:text-sm font-medium hover:text-red-700 mb-2 transition-colors disabled:opacity-50"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-gray-500 text-[10px] sm:text-xs text-center">
+                            File size: maximum 5 MB<br/>
+                            File extension: JPEG, PNG, WebP
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </form>
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
         </div>
