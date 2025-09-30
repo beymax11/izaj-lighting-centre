@@ -10,7 +10,7 @@ export const useHeroSlideshow = (slides: HeroSlide[], interval: number = 5000) =
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || interval === 0) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);

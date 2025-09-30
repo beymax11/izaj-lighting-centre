@@ -13,7 +13,7 @@ export default function AboutUs() {
       
       <div className="max-w-[90%] sm:max-w-[80%] md:max-w-3xl mx-auto flex justify-center mt-6 sm:mt-8">
         <Link 
-          href="/aboutus" 
+          href="/static/aboutus" 
           className="text-sm sm:text-base md:text-lg font-bold text-white bg-black py-2 px-4 sm:px-5 md:px-6 rounded-md text-center hover:bg-gray-800 transition-colors duration-300 w-[150px] sm:w-[180px] md:w-[200px]" 
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
         >

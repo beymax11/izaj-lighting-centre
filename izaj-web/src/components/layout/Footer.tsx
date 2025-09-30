@@ -211,8 +211,8 @@ const Footer: React.FC = () => {
               <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">OUR COMPANY</h3>
               <ul className={`space-y-2 md:space-y-3 ${isCompanyOpen ? 'block' : 'hidden'} md:block`}>
                 <li><a href="/" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Home</a></li>
-                <li><a href="/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">About Us</a></li>
-                <li><a href="/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Contact Us</a></li>
+                <li><a href="/static/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">About Us</a></li>
+                <li><a href="/static/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Contact Us</a></li>
               </ul>
             </div>
 
