@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Products } from './pages/products';
 import Orders from './pages/orders';
 import Reports from './pages/reports';
@@ -13,12 +14,11 @@ import { Session } from '@supabase/supabase-js';
 import { ProfileData } from './pages/profile';
 import PrivateRoute from './route/PrivateRoute';
 import { useNotifications } from './utils/notificationsProvider';
+import UpdatePassword from './pages/update-password';
 import API_URL from '../config/api';
 
-function App(
-
-) {
-
+function App() {
+  const location = useLocation();
   const [session, setSession] = useState<Session | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState('DASHBOARD');
@@ -28,12 +28,12 @@ function App(
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); 
   const {
-  notifications,
-  notificationsOpen,
-  toggleNotifications,
-  handleNotificationClick,
-  markAllAsRead,
-} = useNotifications();
+    notifications,
+    notificationsOpen,
+    toggleNotifications,
+    handleNotificationClick,
+    markAllAsRead,
+  } = useNotifications();
 
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
@@ -46,31 +46,32 @@ function App(
   });
 
   useEffect(() => {
-  if (session?.user?.id) {
-    fetch(`${API_URL}/api/profile/${session.user.id}`, {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.profile) {
-          setProfile(data.profile);
-        }
-      });
-  }
+    if (session?.user?.id) {
+      fetch(`${API_URL}/api/profile/${session.user.id}`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.profile) {
+            setProfile(data.profile);
+          }
+        });
+    }
   }, [session]);
 
-    const handleLoginSuccess = (sessionData: Session) => {
+  const handleLoginSuccess = (sessionData: Session) => {
     setSession(sessionData);
     setIsLoggedIn(true);
+    // Reset to dashboard after successful login
+    setCurrentPage('DASHBOARD');
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.notification-container')) {
-      }
+      if (!target.closest('.notification-container')) { /* empty */ }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -79,7 +80,6 @@ function App(
     };
   }, []);
 
-
   const handleNavigation = (page: string) => {
     setCurrentPage(page);
   };
@@ -87,27 +87,35 @@ function App(
   const renderContent = () => {
     switch (currentPage) {
       case 'PRODUCTS':
-        return <Products  session={session}
+        return <Products  
+          session={session}
           showAddProductModal={showAddProductModal} 
           setShowAddProductModal={setShowAddProductModal} 
         />;
       case 'ORDERS':
-        return <Orders  session={session} setIsOverlayOpen={setIsOverlayOpen} />;
+        return <Orders session={session} setIsOverlayOpen={setIsOverlayOpen} />;
       case 'FEEDBACKS':
-        return <Feedbacks  session={session} setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
+        return <Feedbacks setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
       case 'PAYMENTS':
-        return <Payments  session={session} setIsOverlayOpen={setIsOverlayOpen} />;
+        return <Payments session={session} setIsOverlayOpen={setIsOverlayOpen} />;
       case 'REPORTS':
-        return <Reports  session={session} />;
+        return <Reports session={session} />;
       case 'PROFILE':
         return <Profile session={session} setProfile={setProfile} profile={profile} handleNavigation={handleNavigation} />;
       case 'SETTINGS':
-        return <Settings  session={session} handleNavigation={handleNavigation} />;
+        return <Settings session={session} handleNavigation={handleNavigation} />;
+      case 'UPDATE_PASSWORD':
+        return <UpdatePassword />;
       case 'DASHBOARD':
       default:
-        return <Dashboard session={session}/>;
+        return <Dashboard />;
     }
   };
+
+  // Handle update-password route separately
+  if (location.pathname === '/update-password') {
+    return <UpdatePassword />;
+  }
 
   return (
     <PrivateRoute isLoggedIn={isLoggedIn} onLogin={handleLoginSuccess}>

@@ -4,8 +4,15 @@ import { Session } from '@supabase/supabase-js';
 import { FetchedProduct } from '../types/filter';
 import { FilterService } from '../services/filterService';
 
-export const useFilter = (session: Session | null) => {
+
+type UseFilterOptions = {
+  enabled?: boolean;
+  initialProducts?: FetchedProduct[];
+};
+
+export const useFilter = (session: Session | null, options: UseFilterOptions = {}) => {
   const [filteredProducts, setFilteredProducts] = useState<FetchedProduct[]>([]);
+  const [onSaleProducts, setOnSaleProducts] = useState<FetchedProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -13,9 +20,26 @@ export const useFilter = (session: Session | null) => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>(''); 
   const normalizedStatus = statusFilter.toLowerCase();
+  const { enabled = true, initialProducts } = options;
+
+  // Seed with provided products when present
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      setFilteredProducts(initialProducts);
+      // Extract categories from initial products (normalize to string)
+      const productCategories = Array.from(
+        new Set(
+          initialProducts
+            .map(p => typeof p.category === 'string' ? p.category : p.category?.category_name ?? null)
+            .filter((c): c is string => Boolean(c))
+        )
+      );
+      setCategories(['All', ...productCategories]);
+    }
+  }, [initialProducts]);
 
     const fetchCategories = useCallback(async () => {
-    if (!session?.access_token) return;
+    if (!enabled || !session?.access_token) return;
     setIsLoading(true);
     try {
       const fetchedCategories = await FilterService.fetchCategories(session);
@@ -27,10 +51,10 @@ export const useFilter = (session: Session | null) => {
     } finally {
       setIsLoading(false);
     }
-    }, [session]);
+    }, [enabled, session]);
 
     const fetchFilteredProducts = useCallback(async () => {
-    if (!session?.access_token) return;
+    if (!enabled || !session?.access_token) return;
     setIsLoading(true);
     try {
         let products: FetchedProduct[] = [];
@@ -63,7 +87,7 @@ export const useFilter = (session: Session | null) => {
     } finally {
         setIsLoading(false);
     }
-    }, [session, selectedCategory, statusFilter]);
+    }, [enabled, session, selectedCategory, normalizedStatus]);
 
     const fetchActiveProducts = useCallback(async () => {
     if (!session?.access_token) return;
@@ -80,33 +104,48 @@ export const useFilter = (session: Session | null) => {
     }
     }, [session]);
 
+    const fetchOnSaleProducts = useCallback(async () => {
+      if (!enabled || !session?.access_token) return;
+      setIsLoading(true);
+      
+      try {
+        const onsale_products = await FilterService.fetchOnsale(session);
+        setOnSaleProducts(onsale_products);
+      } catch (error) {
+        console.error('Error fetching active products:', error);
+        setError('Failed to fetch active products');
+      } finally {
+        setIsLoading(false)
+      }
+      }, [enabled, session]);
+
+
     const visibleProducts = useMemo(() => {
     if (!searchTerm) return filteredProducts;
     return filteredProducts.filter(product =>
         product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     }, [filteredProducts, searchTerm]);
-    
-    const onSaleProducts = useMemo(() => {
-    return filteredProducts.filter(product => product.on_sale === true);
-    }, [filteredProducts]);
-    
 
     useEffect(() => {
-        fetchCategories();
-    }, [fetchCategories]);
+        if (enabled) fetchCategories();
+    }, [fetchCategories, enabled]);
     useEffect(() => {
-        fetchFilteredProducts();
-    }, [fetchFilteredProducts, selectedCategory, statusFilter]);
+        if (enabled) fetchFilteredProducts();
+    }, [fetchFilteredProducts, selectedCategory, statusFilter, enabled]);
+    useEffect(() => {
+      if (enabled) fetchOnSaleProducts();
+    }, [fetchOnSaleProducts, enabled])
 
   return {
-    filteredProducts: visibleProducts,
+    filteredProducts: visibleProducts, initialProducts,
     onSaleProducts,
     isLoading,
     categories,
     selectedCategory,
     searchTerm,
     fetchActiveProducts,
+    fetchOnSaleProducts,
     setSearchTerm,
     setSelectedCategory,
     statusFilter,

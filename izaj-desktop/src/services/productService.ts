@@ -135,7 +135,28 @@ export class ProductService {
   }
 
   const data = await response.json();
-  return data.mediaUrls; // this is an array
-}
+    return data.mediaUrls; // this is an array
+  }
 
+  static async updateProductStatus(session: Session | null, productId: string): Promise<void> {
+    return fetch(`${API_URL}/api/products/${productId}/status`, {
+      method: 'PUT',
+      headers: this.getHeaders(session),
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to update status for product ${productId}`);
+      }
+    });
+  }
+
+  static async deleteProduct(session: Session | null, productId: string): Promise<void> {
+    return fetch(`${API_URL}/api/products/${productId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(session),
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to delete product ${productId}`);
+      }
+    });
+  }
 }

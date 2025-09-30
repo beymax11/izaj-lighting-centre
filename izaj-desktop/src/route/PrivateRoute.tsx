@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import Login from "../pages/login";
+import ForgotPass from "../pages/forgotpass";
 
 interface PrivateRouteProps {
   isLoggedIn: boolean;
@@ -8,9 +9,19 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ isLoggedIn, onLogin, children }) => {
+  const [currentPage, setCurrentPage] = useState<'LOGIN' | 'FORGOTPASS'>('LOGIN');
+
+  const handleNavigation = (page: 'LOGIN' | 'FORGOTPASS') => {
+    setCurrentPage(page);
+  };
+
   if (!isLoggedIn) {
-    return <Login onLogin={onLogin} />;
+    if (currentPage === 'FORGOTPASS') {
+      return <ForgotPass onLogin={onLogin} handleNavigation={handleNavigation} />;
+    }
+    return <Login onLogin={onLogin} handleNavigation={handleNavigation} />;
   }
+  
   return <>{children}</>;
 };
 

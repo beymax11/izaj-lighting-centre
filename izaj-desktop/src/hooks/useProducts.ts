@@ -6,7 +6,11 @@ import { FetchedProduct, FilterType, StockStatus, SyncStats } from '../types/pro
 import { filterProducts, mergeStockIntoProducts, generateSyncMessage } from '../utils/productUtils';
 
 
-export const useProducts = (session: Session | null) => {
+type UseProductsOptions = {
+  enabled?: boolean;
+};
+
+export const useProducts = (session: Session | null, options: UseProductsOptions = {}) => {
   const [publishedProducts, setPublishedProducts] = useState<FetchedProduct[]>([]);
   const [pendingProducts, setPendingProducts] = useState<FetchedProduct[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
@@ -20,11 +24,13 @@ export const useProducts = (session: Session | null) => {
   const [isLoadingStock, setIsLoadingStock] = useState(true);
   const [activeStatuses, setActiveStatuses] = useState<boolean[]>([]);
   const [mediaUrlsMap, setMediaUrlsMap] = useState<Record<string, string[]>>({});
-  
-
+  const [publishStatus, setPublishStatus] = useState<boolean>(true);
+  const [deleteProduct, setDeleteProduct] = useState(false);
   
   const fetchingRef = useRef(false);
 
+
+  const { enabled = true } = options;
 
   const filteredProducts = useMemo(() => {
     return filterProducts(publishedProducts, filter);
@@ -39,7 +45,7 @@ export const useProducts = (session: Session | null) => {
     } catch (error) {
       console.error('Error fetching pending count:', error);
     }
-  }, [session?.access_token]);
+  }, [session]);
 
   const fetchPendingProducts = useCallback(async () => {
     if (!session?.access_token) return;
@@ -50,7 +56,7 @@ export const useProducts = (session: Session | null) => {
     } catch (error) {
       console.error('Error fetching pending products:', error);
     }
-  }, [session?.access_token]);
+  }, [session]);
 
   const mergeStockData = useCallback(async (products: FetchedProduct[]) => {
     if (!session?.access_token) return products;
@@ -64,7 +70,7 @@ export const useProducts = (session: Session | null) => {
       console.error('Failed to merge stock:', error);
       return products;
     }
-  }, [session?.access_token]);
+  }, [session]);
 
   const loadExistingProducts = useCallback(async () => {
     if (!session?.access_token) return;
@@ -80,7 +86,7 @@ export const useProducts = (session: Session | null) => {
     } finally {
       setIsFetching(false);
     }
-  }, [session?.access_token, mergeStockData]);
+  }, [session, mergeStockData]);
 
   const checkStockStatus = useCallback(async () => {
     if (!session?.access_token) return;
@@ -94,12 +100,11 @@ export const useProducts = (session: Session | null) => {
     } finally {
       setIsLoadingStock(false);
     }
-  }, [session?.access_token]);
+  }, [session]);
 
   const handleFetchProducts = useCallback(async (isManualSync: boolean = true) => {
   if (!session?.access_token || fetchingRef.current) {
-    if (fetchingRef.current) {
-    }
+    if (fetchingRef.current) { /* empty */ }
     return;
   }
 
@@ -157,10 +162,9 @@ export const useProducts = (session: Session | null) => {
     setIsFetching(false);
     fetchingRef.current = false;
   }
-}, [session?.access_token, lastFetchTime, fetchPendingCount, checkStockStatus, mergeStockData]);
+}, [session, lastFetchTime, fetchPendingCount, checkStockStatus, mergeStockData]);
 
   const refreshProductsData = useCallback(async () => {
-    console.log('Refreshing products data...');
     await Promise.all([
       loadExistingProducts(),
       fetchPendingCount(),
@@ -173,9 +177,40 @@ export const useProducts = (session: Session | null) => {
     setPublishedProducts(merged);
   }, [publishedProducts, mergeStockData]);
 
+  const updatePublishStatus = useCallback(
+    async (productId: string, status: boolean) => {
+      if (!session?.user?.id) return;
+
+      try {
+        await ProductService.updateProductStatus(session, productId);
+        setPublishStatus(status); // ✅ update state after API call
+      } catch (error) {
+        console.error('Error updating publish status:', error);
+      }
+    },
+    [session]
+  );
+
+  const removeProduct = useCallback(
+    async (productId: string) => {
+      if (!session?.user?.id) return;
+
+      try {
+        await ProductService.deleteProduct(session, productId);
+        setPublishedProducts(prev => prev.filter(p => p.id !== productId));
+        toast.success('Product deleted successfully');
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        toast.error('Failed to delete product');
+      }
+    },
+    [session]
+  );
+
+
   useEffect(() => {
+  if (!enabled) return;
   if (session?.user?.id && !hasLoadedFromDB) {
-    console.log('Loading existing published products from DB...');
     loadExistingProducts();
     fetchPendingCount();
   }
@@ -193,9 +228,10 @@ export const useProducts = (session: Session | null) => {
 
   checkStockStatus();
 
-  }, [session?.user?.id, loadExistingProducts, hasLoadedFromDB, fetchPendingCount, checkStockStatus]);
+  }, [session?.user?.id, loadExistingProducts, hasLoadedFromDB, fetchPendingCount, checkStockStatus, enabled, session]);
 
   useEffect(() => {
+    if (!enabled) return;
     const fetchAllMedia = async () => {
       if (!session || filteredProducts.length === 0) return;
 
@@ -216,16 +252,20 @@ export const useProducts = (session: Session | null) => {
     };
 
     fetchAllMedia();
-  }, [filteredProducts, session]);
+  }, [filteredProducts, session, enabled]);
 
   useEffect(() => {
-  console.log("🖼️ mediaUrlsMap", mediaUrlsMap);
 }, [mediaUrlsMap]);
 
 
   return {
     publishedProducts,
     setPublishedProducts,
+    removeProduct,
+    deleteProduct,
+    setDeleteProduct,
+    publishStatus,
+    updatePublishStatus,
     pendingProducts,
     pendingCount,
     isFetching,

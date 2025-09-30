@@ -40,9 +40,6 @@ HeaderProps) => {
   } = useNotifications();
 
   const unreadCount = notifications.filter(n => !n.read).length;
-
-  console.log('Header notifications:', notifications);
-
   return (
     <header
       className={`bg-white shadow-2xl border border-white

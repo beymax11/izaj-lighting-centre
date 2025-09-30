@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ViewType } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { useStock } from '../hooks/useStock';
@@ -11,7 +11,6 @@ import {
 } from '../utils/stockUtils';
 import { FilterType } from '../types/product';
  // import { StockProduct } from '../types/stock';
-import { useFilter } from '../hooks/useFilter';
 
 interface StockProps {
   onViewChange: (view: ViewType) => void;
@@ -31,17 +30,9 @@ function Stock({ onViewChange, session }: StockProps) {
     setSelectedCategory,
     statusFilter,
     setStatusFilter,
+    filteredProducts,
     refetch
   } = useStock(session);
-
-  const {
-    fetchActiveProducts,
-    filteredProducts,
-  } = useFilter(session);
-
-    useEffect(() => {
-    fetchActiveProducts();
-  }, [fetchActiveProducts]);
 
     const stats = useMemo(() => {
     if (filteredProducts.length === 0) {

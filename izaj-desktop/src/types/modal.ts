@@ -50,6 +50,7 @@ export interface Product {
   media_urls?: string[];
   status: boolean | 'active' | 'inactive' | 'draft';
   stock?: number;
+  publish_status?: boolean;
   quantity?: number;
   sku?: string;
   brand?: string;

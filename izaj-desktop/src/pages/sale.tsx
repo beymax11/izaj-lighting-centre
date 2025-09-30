@@ -1,7 +1,6 @@
 import { Icon } from "@iconify/react";
 import { useState, useCallback } from "react";
 import { AddProductModal } from "../components/AddProductModal";
-import { ViewProductModal } from "../components/ViewProductModal";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "react-hot-toast";
 import { useProducts } from "../hooks/useProducts";
@@ -27,7 +26,7 @@ export default function Sale({
   onViewChange,
 }: SaleProps) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedSaleForView, setSelectedSaleForView] = useState<any | null>(
+  const [, setSelectedSaleForView] = useState<unknown | null>( //Fix the type problem
     null
   );
 
@@ -36,17 +35,13 @@ export default function Sale({
     fetchPendingProducts,
     refreshProductsData,
     mediaUrlsMap,
-  } = useProducts(session);
-
+  } = useProducts(session, { enabled: false });
 
   const {
-    categories,
     selectedCategory,
     setSearchTerm,
     searchTerm,
     setSelectedCategory,
-    statusFilter,
-    setStatusFilter,
     onSaleProducts,
   } = useFilter(session);
 
@@ -64,7 +59,18 @@ export default function Sale({
         toast.success("Sales updated successfully!");
       }
     },
-    [refreshProductsData]
+    [refreshProductsData, setShowAddSaleModal]
+  );
+
+  const saleCategories = [
+    'All',
+    ...Array.from(new Set(onSaleProducts.map((p) => p.category))),
+  ];
+
+  const filteredSales = onSaleProducts.filter(
+    sale =>
+      (selectedCategory === 'All' || sale.category === selectedCategory) &&
+      sale.product_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -127,35 +133,6 @@ export default function Sale({
 
         {/* Filters + Search */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
-          <div className="flex gap-3">
-            <button
-              className={`px-3 py-2 border-b-2 ${
-                statusFilter === "All"
-                  ? "border-black font-semibold"
-                  : "border-transparent"
-              }`}
-              onClick={() => setStatusFilter("All")}
-            >
-              All
-            </button>
-            <button
-              className={`px-3 py-2 ${
-                statusFilter === "Active" ? "text-black font-semibold" : ""
-              }`}
-              onClick={() => setStatusFilter("Active")}
-            >
-              Active
-            </button>
-            <button
-              className={`px-3 py-2 ${
-                statusFilter === "Inactive" ? "text-black font-semibold" : ""
-              }`}
-              onClick={() => setStatusFilter("Inactive")}
-            >
-              Inactive
-            </button>
-          </div>
-
           <div className="flex gap-2">
             <input
               type="text"
@@ -169,9 +146,12 @@ export default function Sale({
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-3 py-2 border rounded-lg text-sm"
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {saleCategories.map((cat) => (
+                <option
+                  key={typeof cat === "string" ? cat : cat?.category_name ?? ""}
+                  value={typeof cat === "string" ? cat : cat?.category_name ?? ""}
+                >
+                  {typeof cat === "string" ? cat : cat?.category_name ?? ""}
                 </option>
               ))}
             </select>
@@ -179,9 +159,9 @@ export default function Sale({
         </div>
 
         {/* Sales grid */}
-        {onSaleProducts.length > 0 ? (
+        {filteredSales.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {onSaleProducts.map((sale) => (
+            {filteredSales.map((sale) => (
               <div
                 key={sale.id}
                 className="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-yellow-200 hover:border-yellow-400 transition cursor-pointer"
@@ -232,15 +212,6 @@ export default function Sale({
             onSuccess={() => handleAddSaleModalClose(true)}
             mode="sale"
             fetchedProducts={pendingSales}
-          />
-        )}
-
-        {/* View Sale Modal */}
-        {selectedSaleForView && (
-          <ViewProductModal
-            product={selectedSaleForView}
-            onClose={() => setSelectedSaleForView(null)}
-            session={session}
           />
         )}
       </main>

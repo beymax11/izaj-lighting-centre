@@ -577,4 +577,48 @@ router.post('/products/publish', authenticate, async (req, res) => {
   res.json({ success: !error });
 });
 
+//PUT - Update Publish Status of a Product (Make it visible to client app)
+router.put('/products/:id/status', authenticate, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ publish_status: true })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true, product: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/products/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Supabase delete error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    console.error("Unexpected delete error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 export default router;

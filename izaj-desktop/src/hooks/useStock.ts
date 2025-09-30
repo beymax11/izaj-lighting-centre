@@ -81,6 +81,8 @@ export const useStock = (session: Session | null) => {
     setStatusFilter,
 
     // actions
-    refetch: fetchStockProducts, fetchStockStatus,
+    refetch: async () => {
+      await Promise.all([fetchStockProducts(), fetchStockStatus()]);
+    },
   };
 };

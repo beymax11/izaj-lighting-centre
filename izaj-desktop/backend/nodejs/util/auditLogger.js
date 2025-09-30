@@ -11,7 +11,9 @@ export const AuditActions = {
   VIEW_PROFILE: 'VIEW_PROFILE',
   VIEW_USERS: 'VIEW_USERS',
   VIEW_AUDIT_LOGS: 'VIEW_AUDIT_LOGS',
-  VIEW_STOCK_SUMMARY: 'VIEW_STOCK_SUMMARY'
+  VIEW_STOCK_SUMMARY: 'VIEW_STOCK_SUMMARY',
+  PASSWORD_RESET_REQUEST: 'PASSWORD_RESET_REQUEST',
+  PASSWORD_RESET_COMPLETE: 'PASSWORD_RESET_COMPLETE'
 };
 
 export async function logAuditEvent(userId, action, details, req) {
@@ -28,7 +30,7 @@ export async function logAuditEvent(userId, action, details, req) {
         user_id: userId,
         user_name: user?.name || 'Unknown',
         action,
-        timestamp: new Date().toISOString()
+        timecreated: new Date().toISOString()
       }]);
 
     if (error) {
