@@ -13,7 +13,7 @@ export default function FreeDesignConsultation() {
       
       <div className="max-w-[90%] md:max-w-[80%] lg:max-w-4xl mx-auto flex justify-center">
         <Link 
-          href="/contactus" 
+          href="/static/contactus" 
           className="text-sm md:text-base lg:text-lg font-bold text-white bg-black py-2 px-4 md:px-5 lg:px-6 rounded-md text-center hover:bg-gray-800 transition-colors duration-300 w-[150px] md:w-[180px] lg:w-[200px]" 
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
         >

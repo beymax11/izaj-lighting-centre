@@ -24,9 +24,39 @@ const SignupPage: React.FC = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const emailInputRef = useRef<HTMLInputElement>(null);
   
   const router = useRouter();
+  
+  // Product showcase data
+  const featuredProducts = [
+    {
+      name: "Elegant Chandeliers",
+      image: "/chadelier.jpg",
+      description: "Transform your space with luxury"
+    },
+    {
+      name: "Modern Pendant Lights",
+      image: "/pendant.jpg",
+      description: "Contemporary style for any room"
+    },
+    {
+      name: "Ceiling Fixtures",
+      image: "/ceiling.jpg",
+      description: "Bright and beautiful illumination"
+    },
+    {
+      name: "Floor Lamps",
+      image: "/floor.jpg",
+      description: "Perfect ambient lighting"
+    },
+    {
+      name: "Cluster Lights",
+      image: "/cluster.jpg",
+      description: "Creative lighting solutions"
+    }
+  ];
   
   // Add error handling for UserContext
   let register;
@@ -60,6 +90,17 @@ const SignupPage: React.FC = () => {
       emailInputRef.current.focus();
     }
   }, []);
+
+  // Auto-rotate product showcase
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentProductIndex((prevIndex) => 
+        (prevIndex + 1) % featuredProducts.length
+      );
+    }, 4000); // Change every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [featuredProducts.length]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -198,6 +239,121 @@ const SignupPage: React.FC = () => {
                 Log in here
               </button>
             </p>
+
+            {/* Product Showcase */}
+            <div className="relative mt-12 overflow-hidden rounded-2xl shadow-2xl group">
+              {/* Background Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/60 z-10 pointer-events-none" />
+              
+              {/* Product Images with Transition */}
+              <div className="relative h-[400px] w-full">
+                {featuredProducts.map((product, index) => (
+                  <div
+                    key={index}
+                    className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                      index === currentProductIndex 
+                        ? 'opacity-100 scale-100' 
+                        : 'opacity-0 scale-105'
+                    }`}
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Product Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
+                <div className="transform transition-all duration-700">
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    {featuredProducts[currentProductIndex].name}
+                  </h3>
+                  <p className="text-gray-200 text-base">
+                    {featuredProducts[currentProductIndex].description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Navigation Dots */}
+              <div className="absolute bottom-6 right-6 flex space-x-2 z-30">
+                {featuredProducts.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentProductIndex(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      index === currentProductIndex
+                        ? 'bg-white w-8'
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    aria-label={`View product ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              {/* Decorative Corner Elements */}
+              <div className="absolute top-4 left-4 w-12 h-12 border-l-2 border-t-2 border-white/30 z-20" />
+              <div className="absolute top-4 right-4 w-12 h-12 border-r-2 border-t-2 border-white/30 z-20" />
+              <div className="absolute bottom-4 left-4 w-12 h-12 border-l-2 border-b-2 border-white/30 z-20" />
+              <div className="absolute bottom-4 right-4 w-12 h-12 border-r-2 border-b-2 border-white/30 z-20" />
+            </div>
+
+            {/* Additional Info */}
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-600" />
+                <span>Premium Quality</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Icon icon="mdi:truck-fast" className="w-5 h-5 text-blue-600" />
+                <span>Fast Delivery</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Icon icon="mdi:shield-check" className="w-5 h-5 text-purple-600" />
+                <span>Secure Shopping</span>
+              </div>
+            </div>
+
+            {/* Stats Counter */}
+            <div className="mt-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+              <div className="grid grid-cols-3 gap-6">
+                {/* Happy Customers */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Icon icon="mdi:account-group" className="w-6 h-6 text-blue-600 mr-2" />
+                  </div>
+                  <div className="text-3xl font-bold text-black mb-1">10,000+</div>
+                  <div className="text-sm text-gray-600 font-medium">Happy Customers</div>
+                </div>
+
+                {/* Products */}
+                <div className="text-center border-x border-gray-300">
+                  <div className="flex items-center justify-center mb-2">
+                    <Icon icon="mdi:lightbulb-on" className="w-6 h-6 text-yellow-500 mr-2" />
+                  </div>
+                  <div className="text-3xl font-bold text-black mb-1">500+</div>
+                  <div className="text-sm text-gray-600 font-medium">Quality Products</div>
+                </div>
+
+                {/* Rating */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Icon icon="mdi:star" className="w-6 h-6 text-yellow-400 mr-2" />
+                  </div>
+                  <div className="text-3xl font-bold text-black mb-1">5.0★</div>
+                  <div className="text-sm text-gray-600 font-medium">Customer Rating</div>
+                </div>
+              </div>
+
+              {/* Bottom tagline */}
+              <div className="mt-6 pt-6 border-t border-gray-300 text-center">
+                <p className="text-sm text-gray-700 font-medium">
+                  Join thousands of Filipinos lighting up their homes with IZAJ
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Right Section - Form */}

@@ -47,6 +47,10 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Supabase Storage
+    console.log('📤 Uploading file to path:', filePath);
+    console.log('📤 File size:', buffer.length, 'bytes');
+    console.log('📤 Content type:', file.type);
+    
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from('user-uploads')
       .upload(filePath, buffer, {
@@ -55,11 +59,19 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('❌ Upload error:', uploadError);
+      console.error('❌ Upload error details:', {
+        message: uploadError.message,
+        name: uploadError.name,
+        cause: uploadError.cause
+      });
       return NextResponse.json({ 
-        error: 'Failed to upload image' 
+        error: 'Failed to upload image',
+        details: uploadError.message 
       }, { status: 500 });
     }
+
+    console.log('✅ Upload successful:', uploadData);
 
     // Get public URL
     const { data: urlData } = supabaseAdmin.storage
@@ -67,8 +79,10 @@ export async function POST(request: Request) {
       .getPublicUrl(filePath);
 
     const profilePictureUrl = urlData.publicUrl;
+    console.log('🔗 Generated public URL:', profilePictureUrl);
 
     // Update user profile with the new picture URL
+    console.log('💾 Updating profile for user:', user.id);
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .upsert({
@@ -78,11 +92,20 @@ export async function POST(request: Request) {
       });
 
     if (updateError) {
-      console.error('Profile update error:', updateError);
+      console.error('❌ Profile update error:', updateError);
+      console.error('❌ Profile update error details:', {
+        message: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint
+      });
       return NextResponse.json({ 
-        error: 'Failed to update profile' 
+        error: 'Failed to update profile',
+        details: updateError.message 
       }, { status: 500 });
     }
+
+    console.log('✅ Profile updated successfully');
 
     return NextResponse.json({
       success: true,
@@ -124,15 +147,25 @@ export async function DELETE(request: Request) {
 
     // Delete from storage if exists
     if (profile.profile_picture) {
-      const url = new URL(profile.profile_picture);
-      const filePath = url.pathname.split('/').slice(-2).join('/'); // Get 'user-uploads/profile-pictures/filename'
-      
-      const { error: deleteError } = await supabaseAdmin.storage
-        .from('user-uploads')
-        .remove([filePath]);
+      try {
+        const url = new URL(profile.profile_picture);
+        // Extract the correct file path from the URL
+        // URL format: https://xxx.supabase.co/storage/v1/object/public/user-uploads/profile-pictures/filename
+        const pathParts = url.pathname.split('/');
+        const bucketIndex = pathParts.findIndex(part => part === 'user-uploads');
+        if (bucketIndex !== -1 && bucketIndex + 1 < pathParts.length) {
+          const filePath = pathParts.slice(bucketIndex + 1).join('/'); // Get 'profile-pictures/filename'
+          
+          const { error: deleteError } = await supabaseAdmin.storage
+            .from('user-uploads')
+            .remove([filePath]);
 
-      if (deleteError) {
-        console.error('Storage delete error:', deleteError);
+          if (deleteError) {
+            console.error('Storage delete error:', deleteError);
+          }
+        }
+      } catch (urlError) {
+        console.error('URL parsing error:', urlError);
       }
     }
 
