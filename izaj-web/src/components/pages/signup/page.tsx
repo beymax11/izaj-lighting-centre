@@ -134,6 +134,7 @@ const SignupPage: React.FC = () => {
     }
   };
 
+
   // Password validation function
   const validatePassword = (password: string) => {
     const requirements = {
@@ -201,7 +202,7 @@ const SignupPage: React.FC = () => {
         address: formData.address
       } : undefined;
 
-      await register({
+      const result = await register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
@@ -209,6 +210,9 @@ const SignupPage: React.FC = () => {
         phone: formData.phoneNumber || undefined,
         address: addressData
       });
+      
+      // Show success message and redirect to login
+      alert('Account created successfully! Please check your email to confirm your account before logging in.');
       router.push('/login');
     } catch (error) {
       console.error('Registration error:', error);

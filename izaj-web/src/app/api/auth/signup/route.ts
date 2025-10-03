@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { emailService } from '@/lib/email-service';
+import { randomBytes } from 'crypto';
 
 type SignupBody = {
 	email: string;
@@ -16,8 +18,10 @@ type SignupBody = {
 };
 
 export async function POST(request: Request) {
+	let body: Partial<SignupBody> = {};
 	try {
-		const body = (await request.json()) as Partial<SignupBody>;
+		body = (await request.json()) as Partial<SignupBody>;
+		
 		if (!body?.email || !body?.password) {
 			return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
 		}
@@ -43,34 +47,103 @@ export async function POST(request: Request) {
 				metadata.phone = canonical;
 			}
 		}
-		const { data, error } = await supabase.auth.signUp({
+		// Check if user already exists
+		const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
+			page: 1,
+			perPage: 1000
+		});
+		
+		const existingUser = existingUsers?.users?.find(user => user.email === body.email);
+		
+		if (existingUser) {
+			return NextResponse.json({ 
+				error: 'User with this email already exists',
+				code: 'user_exists'
+			}, { status: 400 });
+		}
+
+		// Create user without email confirmation
+		// Use admin API to create user directly without triggering email confirmation
+		const { data, error } = await supabaseAdmin.auth.admin.createUser({
 			email: body.email,
 			password: body.password,
-			options: {
-				data: Object.keys(metadata).length ? metadata : undefined,
-				emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
-					? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
-					: undefined,
-			},
+			email_confirm: true, // Set to true to skip email confirmation
 		});
 
 		if (error || !data?.user) {
-			return NextResponse.json({ error: error?.message || 'Signup failed' }, { status: 400 });
+			return NextResponse.json({ 
+				error: error?.message || 'Signup failed'
+			}, { status: 400 });
 		}
 
-		// Create a profile row so data is visible immediately (uses service role)
-		const { error: profileError } = await supabaseAdmin
+		// Update user with metadata if we have any
+		if (Object.keys(metadata).length > 0) {
+			await supabaseAdmin.auth.admin.updateUserById(
+				data.user.id,
+				{
+					user_metadata: metadata
+				}
+			);
+		}
+
+		// Generate confirmation token
+		const confirmationToken = randomBytes(32).toString('hex');
+		const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+
+		// Store confirmation token in database
+		await supabaseAdmin.auth.admin.updateUserById(
+			data.user.id,
+			{
+				user_metadata: {
+					...metadata,
+					confirmationToken,
+					tokenExpiry: tokenExpiry.toISOString(),
+					emailConfirmed: false,
+				}
+			}
+		);
+
+		// Create a profile row so data is visible immediately
+		await supabaseAdmin
 			.from('profiles')
 			.insert({ id: data.user.id, name: body.name ?? null, phone: normalizedPhone ?? null });
-		// Ignore profileError (table may not exist yet)
+
+		// If address was provided during signup, create it in the database
+		if (body.address && body.address.province && body.address.city && body.address.barangay && body.address.address) {
+			const composedAddress = `${body.address.address.trim()}, ${body.address.barangay.trim()}, ${body.address.city.trim()}, ${body.address.province.trim()}`.replace(/,\s*,/g, ', ').trim();
+			
+			await supabaseAdmin
+				.from('user_addresses')
+				.insert([{
+					user_id: data.user.id,
+					name: body.name || 'User',
+					phone: normalizedPhone || '',
+					address: composedAddress,
+					is_default: true // Set as default since it's the first address
+				}]);
+		}
+
+		// Send confirmation email
+		try {
+			await emailService.sendConfirmationEmail(
+				body.email,
+				confirmationToken,
+				body.name || 'User'
+			);
+		} catch (emailError) {
+			// Don't fail the signup if email fails
+		}
 
 		return NextResponse.json({ 
 			user: data.user, 
-			message: 'Signup successful',
-			address: body.address 
+			message: 'Signup successful. Please check your email to confirm your account.',
+			address: body.address,
+			emailSent: true
 		}, { status: 200 });
 	} catch (err) {
-		return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+		return NextResponse.json({ 
+			error: 'Signup failed'
+		}, { status: 500 });
 	}
 }
 
