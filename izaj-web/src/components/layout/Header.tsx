@@ -579,7 +579,7 @@ function capitalize(str: string) {
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:heart-outline" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
-                                My Wishlist
+                                My Favorites
                               </Link>
                               
                               <hr className="border-gray-200 my-1" />

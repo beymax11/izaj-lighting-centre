@@ -1,125 +1,379 @@
 "use client";
 
 import { useState } from 'react';
+import { Icon } from '@iconify/react';
 
 const PrivacyPolicy = () => {
 
     const [email, setEmail] = useState('');
-  
+    const [isSubmitting, setIsSubmitting] = useState(false);
       
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         // Handle subscription logic here
         alert(`Thank you for subscribing with ${email}!`);
         setEmail('');
+        setIsSubmitting(false);
     };
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <main className="flex-grow bg:white w-full">
-          <div className="max-w-4xl mx-auto px-4 sm:px-8 md:px-12 py-12 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Privacy Statement</h1>
-            <section className="prose prose-gray max-w-none text-gray-800 text-left">
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 1 - WHAT DO WE DO WITH YOUR INFORMATION?</h2>
-              <p className="mb-4">When you purchase something from our store, as part of the buying and selling process, we collect the personal information you give us such as your name, address and email address.</p>
-              <p className="mb-4">When you browse our store, we also automatically receive your computer's internet protocol (IP) address in order to provide us with information that helps us learn about your browser and operating system.</p>
-              <p className="mb-4">Email marketing (if applicable): With your permission, we may send you emails about our store, new products and other updates.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 2 - CONSENT</h2>
-              <h3 className="text-xl font-semibold mt-4 mb-2">How do you get my consent?</h3>
-              <p className="mb-4">When you provide us with personal information to complete a transaction, verify your credit card, place an order, arrange for a delivery or return a purchase, we imply that you consent to our collecting it and using it for that specific reason only.</p>
-              <p className="mb-4">If we ask for your personal information for a secondary reason, like marketing, we will either ask you directly for your expressed consent, or provide you with an opportunity to say no.</p>
-
-              <h3 className="text-xl font-semibold mt-4 mb-2">How do I withdraw my consent?</h3>
-              <p className="mb-4">If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at anytime, by contacting us at izajph@gmail.com</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 3 - DISCLOSURE</h2>
-              <p className="mb-4">We may disclose your personal information if we are required by law to do so or if you violate our Terms of Service.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 4 - SHOPIFY</h2>
-              <p className="mb-4">Our store is hosted on Shopify Inc. They provide us with the online e-commerce platform that allows us to sell our products and services to you.</p>
-              <p className="mb-4">Your data is stored through Shopify's data storage, databases and the general Shopify application. They store your data on a secure server behind a firewall.</p>
-
-              <h3 className="text-xl font-semibold mt-4 mb-2">Payment:</h3>
-              <p className="mb-4">If you choose a direct payment gateway to complete your purchase, then Shopify stores your credit card data. It is encrypted through the Payment Card Industry Data Security Standard (PCI-DSS). Your purchase transaction data is stored only as long as is necessary to complete your purchase transaction. After that is complete, your purchase transaction information is deleted.</p>
-              <p className="mb-4">All direct payment gateways adhere to the standards set by PCI-DSS as managed by the PCI Security Standards Council, which is a joint effort of brands like Visa, Mastercard, American Express and Discover.</p>
-              <p className="mb-4">PCI-DSS requirements help ensure the secure handling of credit card information by our store and its service providers.</p>
-              <p className="mb-4">For more insight, you may also want to read Shopify's <a href="https://www.shopify.com/legal/terms" className="text-blue-600 hover:underline">Terms of Service</a> or <a href="https://www.shopify.com/legal/privacy" className="text-blue-600 hover:underline">Privacy Statement</a>.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 5 - THIRD-PARTY SERVICES</h2>
-              <p className="mb-4">In general, the third-party providers used by us will only collect, use and disclose your information to the extent necessary to allow them to perform the services they provide to us.</p>
-              <p className="mb-4">However, certain third-party service providers, such as payment gateways and other payment transaction processors, have their own privacy policies in respect to the information we are required to provide to them for your purchase-related transactions.</p>
-              <p className="mb-4">For these providers, we recommend that you read their privacy policies so you can understand the manner in which your personal information will be handled by these providers.</p>
-              <p className="mb-4">In particular, remember that certain providers may be located in or have facilities that are located a different jurisdiction than either you or us. So if you elect to proceed with a transaction that involves the services of a third-party service provider, then your information may become subject to the laws of the jurisdiction(s) in which that service provider or its facilities are located.</p>
-              <p className="mb-4">As an example, if you are located in Canada and your transaction is processed by a payment gateway located in the United States, then your personal information used in completing that transaction may be subject to disclosure under United States legislation, including the Patriot Act.</p>
-              <p className="mb-4">Once you leave our store's website or are redirected to a third-party website or application, you are no longer governed by this Privacy Policy or our website's Terms of Service.</p>
-
-              <h3 className="text-xl font-semibold mt-4 mb-2">Links</h3>
-              <p className="mb-4">When you click on links on our store, they may direct you away from our site. We are not responsible for the privacy practices of other sites and encourage you to read their privacy statements.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 6 - SECURITY</h2>
-              <p className="mb-4">To protect your personal information, we take reasonable precautions and follow industry best practices to make sure it is not inappropriately lost, misused, accessed, disclosed, altered or destroyed.</p>
-              <p className="mb-4">If you provide us with your credit card information, the information is encrypted using secure socket layer technology (SSL) and stored with a AES-256 encryption. Although no method of transmission over the Internet or electronic storage is 100% secure, we follow all PCI-DSS requirements and implement additional generally accepted industry standards.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 7 - COOKIES</h2>
-              <p className="mb-4">Here is a list of cookies that we use. We've listed them here so you that you can choose if you want to opt-out of cookies or not.</p>
-              <ul className="list-disc pl-6 mb-4">
-                <li>_session_id, unique token, sessional, Allows Shopify to store information about your session (referrer, landing page, etc).</li>
-                <li>_shopify_visit, no data held, Persistent for 30 minutes from the last visit, Used by our website provider's internal stats tracker to record the number of visits</li>
-                <li>_shopify_uniq, no data held, expires midnight (relative to the visitor) of the next day, Counts the number of visits to a store by a single customer.</li>
-                <li>cart, unique token, persistent for 2 weeks, Stores information about the contents of your cart.</li>
-                <li>_secure_session_id, unique token, sessional</li>
-                <li>storefront_digest, unique token, indefinite If the shop has a password, this is used to determine if the current visitor has access.</li>
-              </ul>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 8 - AGE OF CONSENT</h2>
-              <p className="mb-4">By using this site, you represent that you are at least the age of majority in your state or province of residence, or that you are the age of majority in your state or province of residence and you have given us your consent to allow any of your minor dependents to use this site.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">SECTION 9 - CHANGES TO THIS PRIVACY POLICY</h2>
-              <p className="mb-4">We reserve the right to modify this privacy policy at any time, so please review it frequently. Changes and clarifications will take effect immediately upon their posting on the website. If we make material changes to this policy, we will notify you here that it has been updated, so that you are aware of what information we collect, how we use it, and under what circumstances, if any, we use and/or disclose it.</p>
-              <p className="mb-4">If our store is acquired or merged with another company, your information may be transferred to the new owners so that we may continue to sell products to you.</p>
-
-              <h2 className="text-xl font-bold mt-8 mb-4">QUESTIONS AND CONTACT INFORMATION</h2>
-              <p className="mb-4">If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact our Privacy Compliance Officer at izajph@gmail.com or by mail at</p>
-              <p className="mb-4">
-                Izaj Lighting Centre<br />
-                [Re: Privacy Compliance Officer]
-              </p>
-            </section>
+      <div className="min-h-screen bg-white">
+        {/* Hero Section */}
+        <section className="relative bg-black text-white overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+            }}></div>
           </div>
+          
+          <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-32">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20">
+                <Icon icon="mdi:shield-account" className="text-white" width="20" height="20" />
+                <span className="text-sm font-medium">Your Privacy Matters</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+                Privacy <span className="text-white">Policy</span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12">
+                We are committed to protecting your privacy and ensuring the security of your personal information
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <div className="flex items-center gap-2 text-white">
+                  <Icon icon="mdi:shield-check" width="20" height="20" />
+                  <span className="font-medium">Secure Data</span>
+                </div>
+                <div className="hidden sm:block w-px h-6 bg-gray-600"></div>
+                <div className="flex items-center gap-2 text-white">
+                  <Icon icon="mdi:lock" width="20" height="20" />
+                  <span className="font-medium">Protected Information</span>
+                </div>
+                <div className="hidden sm:block w-px h-6 bg-gray-600"></div>
+                <div className="flex items-center gap-2 text-white">
+                  <Icon icon="mdi:account-check" width="20" height="20" />
+                  <span className="font-medium">Your Rights</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content */}
+        <main className="relative">
+          {/* Information Collection Section */}
+          <section className="py-20 bg-gray-50">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 rounded-full px-4 py-2 mb-6">
+                  <Icon icon="mdi:information" width="20" height="20" />
+                  <span className="text-sm font-semibold">Information Collection</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  What We <span className="text-black">Collect</span>
+                </h2>
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                  We collect information to provide you with the best possible service
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                        <Icon icon="mdi:account" className="text-white" width="24" height="24" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">Personal Information</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      When you purchase from our store, we collect personal information such as your name, address, and email address as part of the buying and selling process.
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
+                        <Icon icon="mdi:web" className="text-white" width="24" height="24" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">Technical Information</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      When you browse our store, we automatically receive your computer's internet protocol (IP) address to help us learn about your browser and operating system.
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                        <Icon icon="mdi:email" className="text-white" width="24" height="24" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">Marketing Communications</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      With your permission, we may send you emails about our store, new products, and other updates to keep you informed about our latest offerings.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                    <img 
+                      src="/aber.webp" 
+                      alt="Privacy Protection" 
+                      className="w-full h-96 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <h4 className="text-white text-xl font-bold mb-2">Your Privacy is Protected</h4>
+                      <p className="text-gray-200 text-sm">
+                        We use industry-standard security measures to protect your data
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Floating Stats */}
+                  <div className="absolute -top-6 -right-6 bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-black mb-1">SSL</div>
+                      <div className="text-sm text-gray-600 font-medium">Encrypted</div>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-800 mb-1">AES-256</div>
+                      <div className="text-sm text-gray-600 font-medium">Security</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Privacy Rights Section */}
+          <section className="py-20 bg-white">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 rounded-full px-4 py-2 mb-6">
+                  <Icon icon="mdi:account-check" width="20" height="20" />
+                  <span className="text-sm font-semibold">Your Rights</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  Your Privacy <span className="text-black">Rights</span>
+                </h2>
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                  You have control over your personal information and how it's used
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                      <Icon icon="mdi:check-circle" className="text-white" width="24" height="24" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Consent</h3>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    When you provide personal information for a transaction, we imply consent for that specific reason only. For marketing purposes, we ask for your explicit consent.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
+                      <Icon icon="mdi:cancel" className="text-white" width="24" height="24" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Withdraw Consent</h3>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    You may withdraw your consent at any time by contacting us at izajph@gmail.com. We will stop using your information for marketing purposes immediately.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                      <Icon icon="mdi:eye" className="text-white" width="24" height="24" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Access Information</h3>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    You have the right to access, correct, amend, or delete any personal information we have about you. Contact our Privacy Compliance Officer for assistance.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
+                      <Icon icon="mdi:security" className="text-white" width="24" height="24" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Data Security</h3>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    We use SSL encryption and AES-256 security standards to protect your information. Credit card data is encrypted and stored securely.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Third Party Services Section */}
+          <section className="py-20 bg-gray-50">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 rounded-full px-4 py-2 mb-6">
+                  <Icon icon="mdi:store" width="20" height="20" />
+                  <span className="text-sm font-semibold">Third Party Services</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  <span className="text-black">Shopify</span> Platform
+                </h2>
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                  Our store is hosted on Shopify with industry-leading security standards
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                        <Icon icon="mdi:shield" className="text-white" width="24" height="24" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">Secure Hosting</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      Your data is stored through Shopify's secure data storage and databases on protected servers behind firewalls.
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
+                        <Icon icon="mdi:credit-card" className="text-white" width="24" height="24" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">Payment Security</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      Credit card data is encrypted through PCI-DSS standards. Transaction data is stored only as long as necessary to complete your purchase.
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                        <Icon icon="mdi:link" className="text-white" width="24" height="24" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">Third Party Links</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      Links on our store may direct you to external sites. We are not responsible for the privacy practices of other sites.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                    <img 
+                      src="/aber2.webp" 
+                      alt="Secure Platform" 
+                      className="w-full h-96 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <h4 className="text-white text-xl font-bold mb-2">PCI-DSS Compliant</h4>
+                      <p className="text-gray-200 text-sm">
+                        Industry-standard security for all transactions
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Floating Stats */}
+                  <div className="absolute -top-6 -right-6 bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-black mb-1">PCI</div>
+                      <div className="text-sm text-gray-600 font-medium">Compliant</div>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-800 mb-1">24/7</div>
+                      <div className="text-sm text-gray-600 font-medium">Monitoring</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          
         </main>
-        {/* Subscription Section */}
-        <section className="bg-black py-20 px-6 w-full">
-        <div className="w-full max-w-[100vw] mx-auto text-center">
-    <h2 className="text-4xl font-bold mb-4 text-white leading-tight">
-      Join Our Lighting Community
-    </h2>
-    <p className="text-gray-300 mb-8 text-lg">
-      Get exclusive access to new collections, special offers, and lighting design tips.
-    </p>
-    <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-      <div className="relative flex-grow max-w-md">
-        <input
-          type="email"
-          placeholder="Enter your email address"
-          className="px-6 py-4 rounded-full border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-gray-800 w-full placeholder-gray-500"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        {email && !email.includes('@') && (
-          <p className="absolute -bottom-6 left-4 text-red-400 text-sm">Please enter a valid email address</p>
-        )}
-      </div>
-      <button
-        type="submit"
-        className="bg-orange-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-orange-400 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-orange-400 min-w-[180px]"
-      >
-        Subscribe Now
-      </button>
-    </form>
-    <p className="text-sm text-gray-400 mt-8 italic">Join 10,000+ lighting enthusiasts. Unsubscribe anytime.</p>
-  </div>
-</section>
+        {/* Newsletter Subscription Section */}
+        <section className="w-full py-20 bg-black text-white relative overflow-hidden">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="absolute inset-0" style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                        }}></div>
+                    </div>
+                    
+                    <div className="relative max-w-4xl mx-auto px-6 text-center">
+                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20">
+                            <Icon icon="mdi:email" className="text-white" width="20" height="20" />
+                            <span className="text-sm font-medium">Stay Connected</span>
+                        </div>
+                        
+                        <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                            Join Our <span className="text-white">Lighting Community</span>
+                        </h2>
+                        
+                        <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                            Get exclusive access to new collections, special offers, and lighting design tips delivered straight to your inbox.
+                        </p>
+                        
+                        <form onSubmit={handleSubscribe} className="max-w-2xl mx-auto">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="relative flex-grow">
+                                    <input
+                                        type="email"
+                                        placeholder="Enter your email address"
+                                        className="w-full px-6 py-4 rounded-2xl border-2 border-white/20 focus:outline-none focus:ring-2 focus:ring-white bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 text-lg"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                    {email && !email.includes('@') && (
+                                        <p className="absolute -bottom-6 left-4 text-red-400 text-sm">Please enter a valid email address</p>
+                                    )}
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-white min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                                            <span>Subscribing...</span>
+                                        </div>
+                                    ) : (
+                                        'Subscribe Now'
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <p className="text-sm text-gray-400 mt-8 italic">
+                            Join 10,000+ lighting enthusiasts. Unsubscribe anytime.
+                        </p>
+                    </div>
+                </section>
       </div>
     );
   };

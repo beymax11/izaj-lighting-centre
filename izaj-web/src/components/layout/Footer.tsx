@@ -210,9 +210,9 @@ const Footer: React.FC = () => {
               </button>
               <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">OUR COMPANY</h3>
               <ul className={`space-y-2 md:space-y-3 ${isCompanyOpen ? 'block' : 'hidden'} md:block`}>
-                <li><a href="/" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Home</a></li>
-                <li><a href="/static/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">About Us</a></li>
-                <li><a href="/static/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Contact Us</a></li>
+                <li><Link href="/" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Home</Link></li>
+                <li><Link href="/static/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">About Us</Link></li>
+                <li><Link href="/static/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Contact Us</Link></li>
               </ul>
             </div>
 
@@ -232,13 +232,13 @@ const Footer: React.FC = () => {
               </button>
               <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">MORE INFO</h3>
               <ul className={`space-y-2 md:space-y-3 ${isMoreInfoOpen ? 'block' : 'hidden'} md:block`}>
-                <li><a href="/delivery" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Delivery & Installation</a></li>
-                <li><a href="/privacypolicy" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Privacy Policy</a></li>
-                <li><a href="/return" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Returns & Refunds</a></li>
-                <li><a href="/help" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Help & FAQs</a></li>
-                <li><a href="/terms" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Terms & Conditions</a></li>
-                <li><a href="/warranty" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Warranty Terms</a></li>
-                <li><a href="/careers" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Careers</a></li>
+                <li><Link href="/delivery" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Delivery & Installation</Link></li>
+                <li><Link href="/static/privacypolicy" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Privacy Policy</Link></li>
+                <li><Link href="/static/return" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Returns & Refunds</Link></li>
+                <li><Link href="/static/help" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Help & FAQs</Link></li>
+                <li><Link href="/static/terms" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Terms & Conditions</Link></li>
+                <li><Link href="/static/warranty" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Warranty Terms</Link></li>
+                <li><Link href="/static/careers" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Careers</Link></li>
               </ul>
             </div>
 
