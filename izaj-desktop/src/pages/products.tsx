@@ -1,10 +1,8 @@
-
 import { Icon } from '@iconify/react';
 import { useState, useCallback } from 'react';
 import { AddProductModal } from '../components/AddProductModal';
 import { ManageStockModal } from '../components/ManageStockModal';
 import { ViewProductModal } from '../components/ViewProductModal';
-import { Product } from '../types/modal'
 import Stock from './Stock';
 import Sale from './sale';
 import { ViewType } from '../types';
@@ -23,6 +21,7 @@ import {
   getBranchName
 } from '../utils/productUtils';
 import { useFilter } from '../hooks/useFilter';
+import { FetchedProduct } from '../types/product';
 
 interface ProductsProps {
   showAddProductModal: boolean;
@@ -35,7 +34,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session,
   const [showManageStockModal, setShowManageStockModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [view, setView] = useState<ViewType>('products');
-  const [selectedProductForView, setSelectedProductForView] = useState<Product | null>(null);
+  const [selectedProductForView, setSelectedProductForView] = useState<FetchedProduct | null>(null);
   const [showAddSaleModal, setShowAddSaleModal] = useState(false);
   
 
@@ -58,6 +57,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session,
     updatePublishedProducts,
     checkStockStatus,
     mediaUrlsMap,
+    removeProduct,
   } = useProducts(session);
 
   const { 
@@ -69,7 +69,7 @@ export function Products({ showAddProductModal, setShowAddProductModal, session,
     setSelectedCategory,
     statusFilter,
     setStatusFilter,
-  } = useFilter(session);
+  } = useFilter(session, { enabled: true, initialProducts: publishedProducts });
 
 const handleViewChange = (newView: ViewType) => {
   if (newView === 'products') {
@@ -98,11 +98,10 @@ const handleViewChange = (newView: ViewType) => {
     setShowAddProductModal(false);
     
     if (shouldRefresh) {
-      console.log('Product published, refreshing data...');
       await refreshProductsData();
       toast.success('Products updated successfully!');
     }
-  }, [refreshProductsData]);
+  }, [refreshProductsData, setShowAddProductModal]);
 
   const handleManageStockModalClose = useCallback(async (shouldRefresh: boolean = false) => {
     setShowManageStockModal(false);
@@ -267,16 +266,16 @@ const handleViewChange = (newView: ViewType) => {
                   All
                 </button>
                 <button
-                  className={`text-gray-500 hover:text-black 
-                    ${statusFilter === 'Active' ? 'font-semibold text-black' : ''}`}
+                  className={`text-black font-semibold border-b-2 flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 
+                    ${statusFilter === 'Active' ? 'border-black bg-yellow-50' : 'border-transparent hover:bg-yellow-50'}`}
                   onClick={() => setStatusFilter('Active')}
                 >
                   <Icon icon="mdi:check-circle-outline" width={18} />
                   Active
                 </button>
                 <button
-                  className={`text-gray-500 hover:text-black 
-                    ${statusFilter === 'Inactive' ? 'font-semibold text-black' : ''}`}
+                  className={`text-black font-semibold border-b-2 flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 
+                    ${statusFilter === 'Inactive' ? 'border-black bg-yellow-50' : 'border-transparent hover:bg-yellow-50'}`}
                   onClick={() => setStatusFilter('Inactive')}
                 >
                   <Icon icon="mdi:cross-circle-outline" width={18} />
@@ -337,11 +336,10 @@ const handleViewChange = (newView: ViewType) => {
                       key={product.id} 
                       className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl border-l-4 border-yellow-200 hover:border-yellow-400 transition-all duration-200 flex flex-col justify-between group cursor-pointer"
                       onClick={() => setSelectedProductForView({
-                        ...product,
-                        media_urls: mediaUrlsMap[product.id] || [],
-                        status: product.publish_status,
-                        stock: product.display_quantity,
-                      })}
+                      ...product,
+                      mediaUrl: mediaUrlsMap[product.id] || [],
+                      status: String(product.publish_status),
+                    })}
                     >
                       <div className="mb-4">
                         <div className="relative mb-4">
@@ -426,20 +424,15 @@ const handleViewChange = (newView: ViewType) => {
             <ViewProductModal
               product={selectedProductForView}
               onClose={() => setSelectedProductForView(null)}
-              onEdit={(product) => {
-                // Handle edit action - you might want to open an edit modal or navigate to edit page
-                console.log('Edit product:', product);
+              onDelete={async (productId) => {
+                // Remove from DB
+                await removeProduct(String(productId));
+                // Remove from local state
+                setPublishedProducts(prev => prev.filter(p => p.id !== productId));
                 setSelectedProductForView(null);
-                // Example: setEditModalOpen(true) or navigate to edit page
+                toast.success('Product deleted successfully');
               }}
-              onDelete={(productId) => {
-                // Handle delete action
-                console.log('Delete product:', productId);
-                setSelectedProductForView(null);
-                // Add your delete logic here
-                // Example: handleDeleteProduct(productId);
-              }}
-              session={session} // Pass your session if needed
+              session={session}
             />
           )}
           </>

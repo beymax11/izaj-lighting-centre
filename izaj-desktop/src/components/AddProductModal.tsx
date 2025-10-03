@@ -87,6 +87,7 @@ export function AddProductModal({
           Sale Details
         </h3>
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        {/* Select */}
         <select
           value={saleData.selectedProductId}
           onChange={(e) => setSaleData({ ...saleData, selectedProductId: e.target.value })}
@@ -290,6 +291,7 @@ export function AddProductModal({
     );
   };
 
+  {/* Buttons */}
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm z-50 p-4 sm:p-6 overflow-y-auto" onClick={onClose}>
       <div

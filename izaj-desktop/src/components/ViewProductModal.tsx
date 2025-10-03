@@ -1,21 +1,31 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import { ViewProductModalProps } from '../types/modal';
+import { useProducts } from '../hooks/useProducts';
+import { Session } from '@supabase/supabase-js';
+import { FetchedProduct } from '../types/product';
+
+interface ViewProductModalProps {
+  session: Session | null;
+  product: FetchedProduct;
+  onClose: () => void;
+  onDelete?: (productId: string | number) => void;
+  // onEdit?: (product: ViewProductModalProps['product']) => void; // Uncomment if edit functionality is added
+}
 
 export function ViewProductModal({ 
-  product,
-  onClose,
-  onEdit,
-  onDelete,
-  session
+  session,
+  product, 
+  onClose, 
+  onDelete
 }: ViewProductModalProps) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Handle media array - could be images, videos, or mixed
-  const mediaUrls = product.media_urls || [];
+  const mediaUrls = product.mediaUrl || [];
   const hasMultipleMedia = mediaUrls.length > 1;
 
+  const { updatePublishStatus, setDeleteProduct } = useProducts(session);
+  
   const handlePrevMedia = () => {
     setCurrentMediaIndex((prev) => (prev - 1 + mediaUrls.length) % mediaUrls.length);
   };
@@ -24,9 +34,11 @@ export function ViewProductModal({
     setCurrentMediaIndex((prev) => (prev + 1) % mediaUrls.length);
   };
 
-  const handleDeleteConfirm = () => {
-    onDelete?.(product.id);
-    onClose();
+  const handleDeleteConfirm = async () => {
+    if (onDelete) {
+      await onDelete(product.id);
+    }
+    // No need to call onClose here, parent will handle it
   };
 
   const formatDate = (dateString: string) => {
@@ -35,19 +47,6 @@ export function ViewProductModal({
       month: 'long',
       day: 'numeric'
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'text-green-600 bg-green-50';
-      case 'inactive':
-        return 'text-red-600 bg-red-50';
-      case 'draft':
-        return 'text-yellow-600 bg-yellow-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
-    }
   };
 
   if (showDeleteConfirm) {
@@ -65,7 +64,7 @@ export function ViewProductModal({
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => setDeleteProduct(false)}
                 className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
               >
                 Cancel
@@ -107,9 +106,6 @@ export function ViewProductModal({
               <Icon icon="mdi:eye-outline" className="text-2xl sm:text-3xl text-yellow-500" />
               Product Details
             </h2>
-            <div className={`px-3 py-1.5 rounded-full text-sm font-medium`}>
-              {product.status || 'Active'}
-            </div>
           </div>
 
           {/* Main Product Information */}
@@ -194,7 +190,7 @@ export function ViewProductModal({
                   {/* Stock/Quantity */}
                   <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
                     <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Stock</span>
-                    <span className="text-lg sm:text-xl font-bold text-gray-800">{product.stock || product.quantity || 'N/A'}</span>
+                    <span className="text-lg sm:text-xl font-bold text-gray-800">{product.display_quantity || product.stock_quantity || 'N/A'}</span>
                   </div>
                   
                   {/* Category */}
@@ -206,14 +202,6 @@ export function ViewProductModal({
                         : product.category?.category_name ?? 'Uncategorized'}
                     </span>
                   </div>
-
-                  {/* SKU if available */}
-                  {product.sku && (
-                    <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
-                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">SKU</span>
-                      <span className="text-base font-mono text-gray-800">{product.sku}</span>
-                    </div>
-                  )}
                   
                   {/* Created Date */}
                   {product.created_at && (
@@ -223,14 +211,15 @@ export function ViewProductModal({
                     </div>
                   )}
 
-                  {/* Updated Date */}
+                  {/* Updated Date 
                   {product.updated_at && (
                     <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
                       <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Last Updated</span>
                       <span className="text-sm text-gray-700">{formatDate(product.updated_at)}</span>
                     </div>
                   )}
-                  
+                  */}
+
                   {/* Description */}
                   <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100 sm:col-span-2">
                     <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2 block">Description</span>
@@ -239,97 +228,15 @@ export function ViewProductModal({
                     </div>
                   </div>
 
-                  {/* Additional fields if they exist */}
-                  {product.brand && (
-                    <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
-                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Brand</span>
-                      <span className="text-base text-gray-800">{product.brand}</span>
-                    </div>
-                  )}
-
-                  {product.weight && (
-                    <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
-                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Weight</span>
-                      <span className="text-base text-gray-800">{product.weight}</span>
-                    </div>
-                  )}
-
-                  {product.dimensions && (
-                    <div className="bg-white/80 rounded-xl p-3 sm:p-5 shadow-sm border border-yellow-100">
-                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1 block">Dimensions</span>
-                      <span className="text-base text-gray-800">{product.dimensions}</span>
-                    </div>
-                  )}
+                  
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Additional Information Section */}
-          {(product.tags || product.variants || product.specifications) && (
-            <div className="space-y-4 sm:space-y-6">
-              {/* Tags */}
-              {product.tags && product.tags.length > 0 && (
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Tags</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Variants */}
-              {product.variants && product.variants.length > 0 && (
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Variants</h4>
-                  <div className="space-y-2">
-                    {product.variants.map((variant, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                        <span className="text-gray-800">{variant.name || variant.variant_name}</span>
-                        <span className="text-gray-600">₱{variant.price?.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Specifications */}
-              {product.specifications && (
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Specifications</h4>
-                  <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                    {typeof product.specifications === 'string' 
-                      ? product.specifications 
-                      : JSON.stringify(product.specifications, null, 2)
-                    }
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100 w-full gap-3 sm:gap-2">
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <button className="px-4 sm:px-5 py-2 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 rounded-xl hover:bg-gray-50 transition-colors">
-              <Icon icon="mdi:share-variant" className="text-lg sm:text-xl" />
-              Share
-            </button>
-            
-            <button className="px-4 sm:px-5 py-2 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 rounded-xl hover:bg-gray-50 transition-colors">
-              <Icon icon="mdi:content-duplicate" className="text-lg sm:text-xl" />
-              Duplicate
-            </button>
-          </div>
-
+        <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100 w-full gap-3 sm:gap-2">
           <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
             {/* Delete Button */}
             {onDelete && (
@@ -342,22 +249,26 @@ export function ViewProductModal({
               </button>
             )}
 
-            {/* Edit Button */}
-            {onEdit && (
-              <button
-                onClick={() => onEdit(product)}
-                className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold shadow hover:from-yellow-500 hover:to-yellow-400 transition-colors text-sm sm:text-base tracking-wide rounded-xl flex items-center justify-center gap-2"
-              >
-                <Icon icon="mdi:pencil" className="text-lg" />
-                Edit Product
-              </button>
-            )}
+            {/* Publish Button */}
+            <button 
+            onClick={() => updatePublishStatus(String(product.id), true)}
+            className='flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-green-200 text-green-600 font-medium hover:bg-green-50 hover:border-green-300 transition-colors text-sm sm:text-base flex items-center justify-center gap-2'
+            >
+              Publish
+            </button>
+            <button 
+            onClick={() => updatePublishStatus(String(product.id), false)}
+            className='flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors text-sm sm:text-base flex items-center justify-center gap-2'
+            >
+              Unpublish
+            </button>
 
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base"
+              className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors text-sm sm:text-base flex items-center justify-center gap-2"
             >
+              <Icon icon="mdi:close-circle-outline" className="text-lg" />
               Close
             </button>
           </div>

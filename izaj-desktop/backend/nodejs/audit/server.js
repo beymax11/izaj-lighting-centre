@@ -26,10 +26,10 @@ router.get("/audit-logs", authenticate, async (req, res) => {
     let query = supabase
       .from("audit_logs")
       .select("*")
-      .order("timestamp", { ascending: false });
+      .order("created_at", { ascending: false });
 
-    if (fromDate) query = query.gte("timestamp", fromDate);
-    if (toDate) query = query.lte("timestamp", toDate);
+    if (fromDate) query = query.gte("created_at", fromDate);
+    if (toDate) query = query.lte("created_at", toDate);
     if (action) query = query.eq("action", action);
     if (userId) query = query.eq("user_id", userId);
 

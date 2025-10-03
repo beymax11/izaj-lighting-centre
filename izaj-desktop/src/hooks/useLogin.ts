@@ -11,6 +11,7 @@ export const useLogin = ({ onLogin }: UseLoginProps) => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [rememberedAccounts, setRememberedAccounts] = useState<
     { email: string; password: string }[]
   >([]);
@@ -37,6 +38,7 @@ export const useLogin = ({ onLogin }: UseLoginProps) => {
     try {
       const data = await authService.login({ email, password });
       setError('');
+      setSuccess('');
 
       if (rememberMe) {
         const updated = [
@@ -58,6 +60,19 @@ export const useLogin = ({ onLogin }: UseLoginProps) => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setError('');
+      setSuccess('');
+      await authService.forgotPassword(email);
+      setSuccess('The link has been sent to your email, follow the instructions in order to proceed');
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    }
+  };
+
   return {
     email,
     setEmail,
@@ -66,7 +81,9 @@ export const useLogin = ({ onLogin }: UseLoginProps) => {
     rememberMe,
     setRememberMe,
     error,
+    success,
     handleSubmit,
+    handleForgotPassword,
     rememberedAccounts,
   };
 };

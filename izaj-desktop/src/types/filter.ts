@@ -29,7 +29,7 @@ export interface FetchedProduct {
   sold?: number;
   on_sale: boolean;
   stock_quantity: number;
-  mediaUrl?: string;
+  mediaUrl?: string[];
 }
 
 export interface ApiResponse {

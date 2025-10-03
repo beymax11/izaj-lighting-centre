@@ -1,22 +1,33 @@
 import { Icon } from '@iconify/react';
+import { useState } from 'react';
 import { useLogin } from '../hooks/useLogin';
 
-interface LoginProps {
-  onLogin: (session: any) => void;
+interface ForgotPassProps {
+  onLogin: (session: unknown) => void;
   handleNavigation: (page: 'LOGIN' | 'FORGOTPASS') => void;
 }
 
-export default function Login({ onLogin, handleNavigation }: LoginProps) {
+export default function ForgotPass({ onLogin, handleNavigation }: ForgotPassProps) {
   const {
     email,
     setEmail,
-    password,
-    setPassword,
-    rememberMe,
-    setRememberMe,
     error,
-    handleSubmit,
+    success,
+    handleForgotPassword,
   } = useLogin({ onLogin });
+
+  const [loading, setLoading] = useState(false);
+
+  // Wrap handleForgotPassword to add loading state
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await handleForgotPassword(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-100">
@@ -45,13 +56,20 @@ export default function Login({ onLogin, handleNavigation }: LoginProps) {
           <span className="text-yellow-500 font-semibold tracking-widest text-xs mb-2">ADMIN PANEL</span>
         </div>
 
-        <div className="text-gray-500 mb-6 text-sm">Sign in to your account</div>
+        <div className="text-gray-500 mb-6 text-sm">Forgot Your Password?</div>
 
-        <form onSubmit={handleSubmit} className="w-full space-y-5">
+        <form onSubmit={onSubmit} className="w-full space-y-5">
           {error && (
             <div className="mb-2 text-red-500 text-sm text-center bg-red-50 rounded-lg py-2 px-3 border border-red-100">
               <Icon icon="mdi:alert-circle-outline" className="inline mr-1" />
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-2 text-green-500 text-sm text-center bg-green-50 rounded-lg py-2 px-3 border border-green-100">
+              <Icon icon="mdi:check-circle-outline" className="inline mr-1" />
+              {success}
             </div>
           )}
 
@@ -60,7 +78,7 @@ export default function Login({ onLogin, handleNavigation }: LoginProps) {
             <div className="relative">
               <Icon icon="mdi:account-outline" className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400" />
               <input
-                type="text"
+                type="email"
                 className="w-full pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-200 bg-yellow-50 shadow"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -70,55 +88,32 @@ export default function Login({ onLogin, handleNavigation }: LoginProps) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Password</label>
-            <div className="relative">
-              <Icon icon="mdi:lock-outline" className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400" />
-              <input
-                type="password"
-                className="w-full pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-200 bg-yellow-50 shadow"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Enter your password"
-              />
-            </div>
-          </div>
-
-          <div className ="flex flex-row justify-between items-center">
-          <div className="flex items-center">
-            <input
-              id="remember"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={e => setRememberMe(e.target.checked)}
-              className="mr-2"
-            />
-            <label htmlFor="remember" className="text-sm text-gray-600">
-              Remember Me
-            </label>
-          </div>
-          <div className="text-right text-sm">
-            <a 
-            onClick={e => {
-              e.preventDefault();
-              handleNavigation('FORGOTPASS');
-            }}
-            className="text-yellow-400 hover:underline">
-              Forgot Password?
-            </a>
-          </div>
-          </div>
-
           <button
             type="submit"
-            className="w-full bg-yellow-400 text-gray-900 py-2 rounded-xl font-semibold hover:bg-yellow-500 transition shadow-lg mt-2"
+            className={`w-full bg-yellow-400 text-gray-900 py-2 rounded-xl font-semibold hover:bg-yellow-500 transition shadow-lg mt-2 flex items-center justify-center ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
+            disabled={loading}
           >
-            <Icon icon="mdi:login" className="inline mr-2" />
-            Login
+            {loading ? (
+              <Icon icon="mdi:loading" className="inline mr-2 animate-spin" />
+            ) : (
+              <Icon icon="mdi:email-send" className="inline mr-2" />
+            )}
+            {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
 
-        <div className="mt-6 text-xs text-gray-400 text-center">
+        <div className="mt-6 text-center">
+          <a 
+            onClick={e => {
+              e.preventDefault();
+              handleNavigation('LOGIN');
+            }}
+            className="text-yellow-400 hover:underline text-sm cursor-pointer">
+            ← Back to Login
+          </a>
+        </div>
+
+        <div className="mt-4 text-xs text-gray-400 text-center">
           © {new Date().getFullYear()} IZAJ. All rights reserved.
         </div>
       </div>

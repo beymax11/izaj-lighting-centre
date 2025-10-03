@@ -1,15 +1,9 @@
 import { Icon } from '@iconify/react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useState } from 'react';
-import { Session } from '@supabase/supabase-js';
 
-interface DashboardProps {
-  session: Session | null;
-}
 
-const Dashboard = ({session}: DashboardProps ) => {
-
-  console.log('Dashboard session:', session?.user.id);
+const Dashboard = () => {
   
   const [salesExpanded, setSalesExpanded] = useState(false);
   const [cardOrder, setCardOrder] = useState(['customer', 'order', 'earning']);

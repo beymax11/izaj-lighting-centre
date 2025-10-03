@@ -27,8 +27,9 @@ export interface FetchedProduct {
   is_published?: boolean;
   publish_status: boolean;
   sold?: number;
+  on_sale: boolean;
   stock_quantity: number;
-  mediaUrl?: string;
+  mediaUrl?: string[];
 }
 
 export interface ApiResponse {

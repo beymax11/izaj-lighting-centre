@@ -73,4 +73,87 @@ router.post('/logout', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/admin/forgot-password - Send password reset email
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Send password reset email using Supabase
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Use custom desktop deep link scheme handled by Tauri
+      redirectTo: 'izaj://update-password',
+    });
+
+    if (error) {
+      await logAuditEvent(null, AuditActions.PASSWORD_RESET_REQUEST, {
+        email,
+        success: false,
+        error: error.message
+      }, req);
+      
+      return res.status(400).json({ error: error.message });
+    }
+
+    await logAuditEvent(null, AuditActions.PASSWORD_RESET_REQUEST, {
+      email,
+      success: true
+    }, req);
+
+    res.json({ 
+      message: 'Password reset email sent successfully',
+      success: true 
+    });
+  } catch (err) {
+    console.error('Internal error during password reset:', err);
+    return res.status(500).json({ 
+      error: 'Request timed out or something went wrong',
+      details: err.message 
+    });
+  }
+});
+
+// POST /api/admin/update-password - Update password with token
+router.post('/update-password', async (req, res) => {
+  const { password, access_token, refresh_token } = req.body;
+
+  try {
+    if (!password || !access_token || !refresh_token) {
+      return res.status(400).json({ error: 'Password and tokens are required' });
+    }
+
+    // Update password using Supabase
+    const { data, error } = await supabase.auth.updateUser({
+      password: password
+    });
+
+    if (error) {
+      await logAuditEvent(null, AuditActions.PASSWORD_RESET_COMPLETE, {
+        success: false,
+        error: error.message
+      }, req);
+      
+      return res.status(400).json({ error: error.message });
+    }
+
+    await logAuditEvent(data.user?.id, AuditActions.PASSWORD_RESET_COMPLETE, {
+      success: true
+    }, req);
+
+    res.json({ 
+      message: 'Password updated successfully',
+      success: true 
+    });
+  } catch (err) {
+    console.error('Internal error during password update:', err);
+    return res.status(500).json({ 
+      error: 'Request timed out or something went wrong',
+      details: err.message 
+    });
+  }
+});
+
 export default router;
