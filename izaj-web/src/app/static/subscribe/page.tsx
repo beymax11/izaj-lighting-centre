@@ -1,7 +1,5 @@
-"use client";
+import SubscribePage from '@/components/pages/subscribe/page';
 
-import Subscribe from '@/components/pages/subscribe/page';
-
-export default function Page() {
-  return <Subscribe />;
+export default function Subscribe() {
+  return <SubscribePage />;
 }

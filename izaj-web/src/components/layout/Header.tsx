@@ -80,9 +80,10 @@ function capitalize(str: string) {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   const [cartBadgePulse, setCartBadgePulse] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState(0);
+  const [productsDropdownPosition, setProductsDropdownPosition] = useState(0);
   const [ripples, setRipples] = useState<Array<{x: number; y: number; id: number}>>([]);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [accountDropdownPosition, setAccountDropdownPosition] = useState<'right' | 'left' | 'center'>('center');
   
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLLIElement>(null);
@@ -152,7 +153,7 @@ function capitalize(str: string) {
       const updatePosition = () => {
         if (productsDropdownRef.current) {
           const rect = productsDropdownRef.current.getBoundingClientRect();
-          setDropdownPosition(rect.bottom);
+          setProductsDropdownPosition(rect.bottom);
         }
       };
       
@@ -165,6 +166,44 @@ function capitalize(str: string) {
         window.removeEventListener('resize', updatePosition);
       };
     }, []);
+
+    // Update account dropdown position based on viewport
+    useEffect(() => {
+      const updateAccountDropdownPosition = () => {
+        if (accountDropdownRef.current && !isMobile) {
+          const rect = accountDropdownRef.current.getBoundingClientRect();
+          const dropdownWidth = 256; // w-64 = 256px
+          const viewportWidth = window.innerWidth;
+          const padding = 16; // Safe margin from edges
+          
+          // Check if dropdown would overflow when centered
+          const dropdownLeft = rect.left + (rect.width / 2) - (dropdownWidth / 2);
+          const dropdownRight = dropdownLeft + dropdownWidth;
+          
+          if (dropdownLeft < padding) {
+            // If it would overflow on the left, position it to the left
+            setAccountDropdownPosition('left');
+          } else if (dropdownRight > (viewportWidth - padding)) {
+            // If it would overflow on the right, position it to the right
+            setAccountDropdownPosition('right');
+          } else {
+            // Center it
+            setAccountDropdownPosition('center');
+          }
+        }
+      };
+      
+      // Update position when dropdown opens
+      if (isAccountDropdownOpen) {
+        updateAccountDropdownPosition();
+      }
+      
+      window.addEventListener('resize', updateAccountDropdownPosition);
+      
+      return () => {
+        window.removeEventListener('resize', updateAccountDropdownPosition);
+      };
+    }, [isAccountDropdownOpen, isMobile]);
 
     // Filter search suggestions
     const searchSuggestions = searchQuery.trim()
@@ -423,14 +462,14 @@ function capitalize(str: string) {
               </button>
   
               {/* Login/Signup Section with Icons */}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 {/* User Icon or Account Dropdown */}
                 {!isClient ? (
                   // Server-side rendering: always show the login button to avoid hydration mismatch
-                  <div className="flex items-center space-x-2 group">
+                  <div className="flex items-center justify-center relative group">
                     <button
                       onClick={() => setIsLoginModalOpen(true)}
-                      className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-105"
+                      className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       aria-label="Login"
                     >
                       <Icon icon="lucide:user" width="28" height="28" />
@@ -442,7 +481,7 @@ function capitalize(str: string) {
                 ) : (
                   // Client-side rendering: use mobile detection and user state
                   isMobile ? (
-                    <div className="relative group">
+                    <div className="flex items-center justify-center relative group">
                     <button
                       onClick={() => {
                         if (user) {
@@ -451,7 +490,7 @@ function capitalize(str: string) {
                           setIsLoginModalOpen(true);
                         }
                       }}
-                        className="text-black hover:text-orange-500 transition-all duration-200 hover:scale-110"
+                        className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       aria-label="User"
                     >
                         {user && user.profilePicture ? (
@@ -471,10 +510,10 @@ function capitalize(str: string) {
                     </div>
                   ) : (
                     !user ? (
-                      <div className="flex items-center space-x-2 group">
+                      <div className="flex items-center justify-center relative group">
                         <button
                           onClick={() => setIsLoginModalOpen(true)}
-                          className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-105"
+                          className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                           aria-label="Login"
                         >
                           <Icon icon="lucide:user" width="28" height="28" />
@@ -484,10 +523,10 @@ function capitalize(str: string) {
                         </button>
                       </div>
                     ) : (
-                      <div className="relative" ref={accountDropdownRef}>
+                      <div className="flex items-center justify-center relative group" ref={accountDropdownRef}>
                         <button
                           onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                          className="flex items-center transition-all duration-300 hover:scale-105"
+                          className="flex items-center transition-all duration-300 hover:scale-110"
                           aria-haspopup="true"
                           aria-expanded={isAccountDropdownOpen}
                         >
@@ -495,10 +534,10 @@ function capitalize(str: string) {
                             <img 
                               src={user.profilePicture} 
                               alt="Profile" 
-                              className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
+                              className="w-7 h-7 rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-sm font-bold hover:shadow-lg transition-all duration-200">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold hover:shadow-lg transition-all duration-200">
                               {getInitials(user.firstName, user.lastName)}
                             </div>
                           )}
@@ -530,7 +569,12 @@ function capitalize(str: string) {
   
                         {/* Account Dropdown - Enhanced */}
                         {isAccountDropdownOpen && (
-                          <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100 transform origin-top-right animate-scale-in">
+                          <div className={`absolute ${isMobile ? 'left-4 right-4 origin-top' : 
+                            accountDropdownPosition === 'center' ? 'left-1/2 transform -translate-x-1/2 origin-top' :
+                            accountDropdownPosition === 'right' ? 'right-0 origin-top-right' :
+                            'left-0 origin-top-left'} mt-80 w-64 ${isMobile ? '!w-auto max-w-none' : ''} bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100 animate-scale-in`} style={{
+                            maxWidth: isMobile ? 'none' : 'calc(100vw - 2rem)'
+                          }}>
                             {/* User Info Header */}
                             <div className="px-4 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                               <div className="flex items-center space-x-3">
@@ -659,7 +703,7 @@ function capitalize(str: string) {
                     <>
                     <button
                       onClick={() => setIsLoginModalOpen(true)}
-                        className="text-black hover:text-orange-500 transition-all duration-200 hover:scale-110"
+                        className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                     >
                       <Icon
                         icon="mdi:cart-outline"
@@ -676,7 +720,7 @@ function capitalize(str: string) {
                       <>
                         <Link 
                           href="/cart" 
-                          className="relative text-black hover:text-orange-500 transition-all duration-200 hover:scale-110" 
+                          className="relative text-black hover:text-gray-600 transition-all duration-200 hover:scale-110" 
                           ref={cartIconRef} 
                           id="cart-icon"
                           onMouseEnter={() => !isMobile && setIsCartPreviewOpen(true)}
@@ -732,7 +776,7 @@ function capitalize(str: string) {
                       <>
                       <button
                         onClick={() => setIsLoginModalOpen(true)}
-                          className="text-black hover:text-orange-500 transition-all duration-200 hover:scale-110"
+                          className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       >
                         <Icon
                           icon="mdi:cart-outline"
@@ -1158,7 +1202,7 @@ function capitalize(str: string) {
                     ref={productsDropdownContentRef}
                     className="fixed left-0 right-0 bg-white text-black shadow-2xl z-50 border-t-4 border-black dropdown-content animate-slide-down"
                     style={{ 
-                      top: `${dropdownPosition}px`
+                      top: `${productsDropdownPosition}px`
                     }}
                     onMouseEnter={() => {
                       if (dropdownCloseTimer.current) {

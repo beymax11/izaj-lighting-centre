@@ -377,6 +377,9 @@ const Footer: React.FC = () => {
                 <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
                   <img src="/paypal2.png" alt="PayPal" className="h-5 md:h-6" />
                 </div>
+                <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
+                  <img src="/grab.png" alt="GrabPay" className="h-5 md:h-6" />
+                </div>
               </div>
             </div>
 
