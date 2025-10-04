@@ -1,88 +1,146 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Icon } from '@iconify/react';
 
-const Warranty = () => {
-    const [email, setEmail] = useState('');
-  
-      
-    const handleSubscribe = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Handle subscription logic here
-        alert(`Thank you for subscribing with ${email}!`);
-        setEmail('');
-    };
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <main className="flex-grow bg-white w-full">
-          <div className="max-w-4xl mx-auto px-4 sm:px-8 md:px-12 py-12 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">WARRANTY TERMS</h1>
-            <section className="prose prose-gray max-w-none text-gray-800 text-left">
-              <h2 className="text-xl font-bold mt-8 mb-4">Limited Warranty</h2>
-              <p className="mb-4">IZAJ warrants all of its products that they are to be free from defects in material and workmanship for a period of ONE (1) year from the date of shipment, unless otherwise stated below.</p>
+const Warranty: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-              <h2 className="text-xl font-bold mt-8 mb-4">IZAJ's Limited Warranty does not apply if:</h2>
-              <ul className="list-disc pl-6 mb-4">
-                <li>The original bill of sale, delivery date, or product number cannot be verified</li>
-                <li>The parts claimed to be defective are not returned for inspection if so requested by IZAJ</li>
-                <li>The product is not in possession of the original end use purchaser.</li>
-                <li>Warranty does not apply: (i) used in Commercial Applications or 24 hour use, unless otherwise granted by IZAJ (ii) used for purposes for which they are not designed or intended (iii) damaged by abuse, misuse, accident, modifications, alterations, neglect or mishandling (iv) improperly installed, stored, maintained, or operated (v) used in violation of written instructions by IZAJ.</li>
-                <li>Additionally this warranty does not cover scratches, abrasions, or deterioration due to the use of paints, solvents, chemicals or abrasive cleaning techniques.</li>
-                <li>With regard to outdoor lighting products, such products will weather over time, adding to their character and modifying their appearance. Differences in grain, character and color, and product weathering are naturally occurring variations and not within the control of IZAJ nor considered defects under this limited warranty.</li>
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise((r) => setTimeout(r, 700));
+    alert(`Thank you for subscribing with ${email}!`);
+    setEmail('');
+    setIsSubmitting(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero */}
+      <section className="relative bg-black text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-6">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20 mx-auto">
+            <Icon icon="mdi:shield-check" className="text-white" width="20" height="20" />
+            <span className="text-sm font-medium">Warranty</span>
+          </div>
+
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">Warranty & Returns</h1>
+          <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
+            We stand behind our products. Read the warranty terms below for coverage details and how to request service.
+          </p>
+        </div>
+      </section>
+
+      <main className="relative">
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-gray-900">Limited Warranty Overview</h2>
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto mt-4">IZAJ warrants its products against defects in material and workmanship for a period of one (1) year from shipment unless otherwise stated.</p>
+            </div>
+
+            <div className="prose prose-gray max-w-none text-gray-800">
+              <h3>Coverage</h3>
+              <p>
+                IZAJ warrants its products to be free from defects in materials and workmanship under normal use during the warranty period. If a defect arises and a valid claim is received within the Warranty Period, at its option IZAJ will (1) repair the product at no charge, using new or refurbished parts, (2) exchange the product with a product that is new or refurbished and is at least functionally equivalent to the original product, or (3) refund the purchase price for the product.
+              </p>
+
+              <h3>What Is Not Covered</h3>
+              <ul>
+                <li>Damage from misuse, abuse, improper installation, alteration, accident, or neglect.</li>
+                <li>Normal wear and tear, cosmetic damage, or damage caused by exposure to outdoor elements.</li>
+                <li>Products used in commercial or 24/7 applications unless otherwise specified.</li>
+                <li>Scratches, abrasions, or deterioration due to paints, solvents, chemicals, or abrasive cleaning.</li>
               </ul>
 
-              <p className="mb-4">To obtain warranty service contact IZAJ either by writing us an email or contacting us at +63 2 500 3729.</p>
+              <h3>How to Obtain Warranty Service</h3>
+              <p>
+                To obtain warranty service, contact us at <a href="mailto:izajph@gmail.com" className="text-black font-semibold">izajph@gmail.com</a> or call +63 2 500 3729. Please be prepared to provide proof of purchase, product details, and a description of the defect.
+              </p>
 
-              <h2 className="text-xl font-bold mt-8 mb-4">DISCLAIMER OF IMPLIED WARRANTY</h2>
-              <p className="mb-4">IMPLIED WARRANTIES INCLUDING THAT OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY LIMITED IN DURATION TO THE DURATION OF THIS WARRANTY. IZAJ AND/OR SELLER DISCLAIMS ANY LIABILITY FOR SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES.</p>
+              <h3>Limitation of Liability</h3>
+              <p>
+                To the maximum extent permitted by law, IZAJ's liability for any claim related to the product shall be limited to the remedies set forth above. IZAJ is not responsible for incidental, special, or consequential damages.
+              </p>
 
-              <p className="mb-4">Some states/provinces do not allow limitations on how long an implied warranty lasts, or the exclusion or limitation of special, incidental or consequential damages, so these limitations and exclusions may not apply to you. This warranty gives you specific legal rights. You may also have other rights which vary from state/province to state/province.</p>
-            </section>
+              <p>
+                These terms give you specific legal rights, and you may also have other rights which vary by jurisdiction.
+              </p>
+            </div>
           </div>
-        </main>
+        </section>
 
-        
-      
-      {/* Subscription Section */}
-      <section className="bg-black py-20 px-6 w-full">
-      <div className="w-full max-w-[100vw] mx-auto text-center">
-    <h2 className="text-4xl font-bold mb-4 text-white leading-tight">
-      Join Our Lighting Community
-    </h2>
-    <p className="text-gray-300 mb-8 text-lg">
-      Get exclusive access to new collections, special offers, and lighting design tips.
-    </p>
-    <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-      <div className="relative flex-grow max-w-md">
-        <input
-          type="email"
-          id="warranty-email"
-          name="email"
-          placeholder="Enter your email address"
-          className="px-6 py-4 rounded-full border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-gray-800 w-full placeholder-gray-500"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        {email && !email.includes('@') && (
-          <p className="absolute -bottom-6 left-4 text-red-400 text-sm">Please enter a valid email address</p>
-        )}
-      </div>
-      <button
-        type="submit"
-        className="bg-orange-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-orange-400 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-orange-400 min-w-[180px]"
-      >
-        Subscribe Now
-      </button>
-    </form>
-    <p className="text-sm text-gray-400 mt-8 italic">Join 10,000+ lighting enthusiasts. Unsubscribe anytime.</p>
-  </div>
-</section>
-      </div>
-      
-    );
-  };
-  
-  export default Warranty;
-  
+        <section className="py-20 bg-black text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-5">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              }}
+            />
+          </div>
+
+          <div className="relative max-w-4xl mx-auto px-6 text-center">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20">
+              <Icon icon="mdi:email" className="text-white" width="20" height="20" />
+              <span className="text-sm font-medium">Stay Updated</span>
+            </div>
+
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Join Our <span className="text-white">Lighting Community</span></h2>
+
+            <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">Get exclusive access to new collections, special offers, and lighting design tips delivered straight to your inbox.</p>
+
+            <form onSubmit={handleSubscribe} className="max-w-2xl mx-auto">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-grow">
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    className="w-full px-6 py-4 rounded-2xl border-2 border-white/20 focus:outline-none focus:ring-2 focus:ring-white bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 text-lg"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  {email && !email.includes('@') && (
+                    <p className="absolute -bottom-6 left-4 text-red-400 text-sm">Please enter a valid email address</p>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-white min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                      <span>Subscribing...</span>
+                    </div>
+                  ) : (
+                    'Subscribe Now'
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <p className="text-sm text-gray-400 mt-8 italic">Join 10,000+ lighting enthusiasts. Unsubscribe anytime.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default Warranty;
+
 

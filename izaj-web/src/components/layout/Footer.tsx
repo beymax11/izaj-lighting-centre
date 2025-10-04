@@ -426,10 +426,10 @@ const Footer: React.FC = () => {
               IZAJ (PHILIPPINES), INC. (Registration No. 123456789)
             </div>
             <div className="flex flex-wrap gap-4 md:gap-6 text-gray-700 text-xs md:text-sm">
-              <a href="/cookiepolicy" className="hover:underline">Cookie policy</a>
-              <a href="#" className="hover:underline" onClick={handleCookieSettingsClick}>Cookie settings</a>
-              <a href="/termofuse" className="hover:underline">Terms of use</a>
-              <a href="/termofpurchase" className="hover:underline">Terms of purchase</a>
+              <Link href="/static/cookiepolicy" className="hover:underline">Cookie policy</Link>
+              <button onClick={handleCookieSettingsClick} className="hover:underline">Cookie settings</button>
+              <Link href="/static/termofuse" className="hover:underline">Terms of use</Link>
+              <Link href="/static/termofpurchase" className="hover:underline">Terms of purchase</Link>
             </div>
           </div>
         </div>
