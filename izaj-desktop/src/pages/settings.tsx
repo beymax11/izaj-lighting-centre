@@ -1,49 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { Session } from "@supabase/supabase-js";
 import API_URL from "../../config/api";
-
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  status: 'active' | 'inactive';
-}
-
-interface CustomerAccount {
-  id: string;
-  name: string;
-  email: string;
-  status: 'active' | 'blocked';
-  lastLogin: string;
-}
-
-interface AuditLog {
-  ip_address?: string;
-  id: string;
-  userId: string;
-  userName: string;
-  action: string;
-  timestamp: string;
-}
-
-interface SettingsState {
-  general: {
-    websiteName: string;
-    logo: string;
-    favicon: string;
-    timezone: string;
-    language: string;
-    currency: string;
-    storeAddress: string;
-  };
-  userManagement: {
-    adminUsers: AdminUser[];
-    customerAccounts: CustomerAccount[];
-  };
-  auditLogs: AuditLog[];
-}
+import { AdminUser,  SettingsState, Users } from "../types/index";
+import * as XLSX from 'xlsx';
 
 interface SettingsProps {
   handleNavigation?: (page: string) => void;
@@ -51,8 +11,6 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
-
-  console.log("Settings Session",  session?.user.id);
   
   const [isMobileView, setIsMobileView] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
@@ -61,6 +19,9 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   const [filterAction, setFilterAction] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [downloadRange, setDownloadRange] = useState({ from: '', to: '' });
 
   const [newAdmin, setNewAdmin] = useState({
     email: '',
@@ -84,8 +45,15 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     },
     auditLogs: [],
   });
- 
-  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
+  
+  function formatDateForFileName(dateStr: string) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${mm}-${dd}-${yyyy}`;
+  }
 
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
@@ -94,7 +62,8 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     newStatus?: boolean;
   }>({ open: false, action: null, user: null });
 
-  const fetchAdminUsers = async () => {
+  // Wrap fetchAdminUsers in useCallback
+  const fetchAdminUsers = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/admin/users`, {
         headers: {
@@ -107,12 +76,12 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
           ...prev,
           userManagement: {
             ...prev.userManagement,
-            adminUsers: result.users.map((user: any) => ({
-              id: user.user_id,
+            adminUsers: result.users.map((user: AdminUser) => ({
+              id: user.id,
               name: user.name,
               email: user.email,
               role: user.role,
-              status: user.status === true ? 'active' : 'inactive', // use backend value
+              status: user.status === true ? 'active' : 'inactive',
             })),
           }
         }));
@@ -120,7 +89,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     } catch (error) {
       console.error('Failed to fetch admin users:', error);
     }
-  };
+  }, [session?.access_token]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -135,7 +104,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   useEffect(() => {
     if (!session?.access_token) return;
     fetchAdminUsers();
-  }, [session]);
+  }, [fetchAdminUsers, session]);
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'mdi:cog' },
@@ -176,7 +145,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
         name: result.user.name,
         email: result.user.email,
         role: result.user.role,
-        status: 'active',
+        status: true,
       };
 
       setSettings(prevSettings => ({
@@ -214,7 +183,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
         alert(result.error || 'Failed to update status');
       }
     } catch (error) {
-      alert('Error updating status');
+      alert(error);
     }
   };
 
@@ -240,11 +209,47 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
         alert(result.error || 'Failed to delete user');
       }
     } catch (error) {
-      alert('Error deleting user');
+      alert(error);
     }
   };
 
-  const fetchAuditLogs = async () => {
+  const handleDownloadAuditLogs = async (from: string, to: string) => {
+    const params = new URLSearchParams();
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+
+    const response = await fetch(`${API_URL}/api/admin/export?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${session?.access_token}` }
+    });
+    const result = await response.json();
+    if (!result.success) {
+      alert("Failed to fetch audit logs");
+      return;
+    }
+
+    const data = result.logs.map((log: Users) => ({
+      Time: new Date(log.created_at).toLocaleString(),
+      User: log.user_name,
+      UserID: log.user_id ,
+      Action: log.action,
+      IP: log.ip_address || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Audit Logs");
+
+    const fromStr = formatDateForFileName(from);
+    const toStr = formatDateForFileName(to);
+    const fileName = fromStr && toStr
+      ? `Audit-Logs(${fromStr} - ${toStr}).xlsx`
+      : "Audit-Logs.xlsx";
+
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // Wrap fetchAuditLogs in useCallback
+  const fetchAuditLogs = useCallback(async () => {
   try {
     const response = await fetch(`${API_URL}/api/admin/audit-logs`, {
       headers: {
@@ -257,13 +262,13 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
     if (result.success) {
       setSettings(prev => ({
         ...prev,
-        auditLogs: result.logs.map((log: any) => ({
+        auditLogs: result.logs.map((log: Users) => ({
           id: log.id,
           userId: log.user_id,
           userName: log.user_name,
           action: log.action,
           details: log.details,
-          timestamp: log.timestamp,
+          created_at: new Date(log.created_at),
           ip_address: log.ip_address,
           user_agent: log.user_agent
         }))
@@ -274,7 +279,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   } catch (error) {
     console.error('Failed to fetch audit logs:', error);
   }
-  };
+  }, [session?.access_token]);
 
   useEffect(() => {
   if (!session?.access_token) return;
@@ -282,7 +287,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   if (activeTab === 'auditLogs') {
     fetchAuditLogs();
   }
-  }, [session, activeTab]);
+  }, [session, activeTab, fetchAdminUsers, fetchAuditLogs]);
 
   const getActionColor = (action: string) => {
   switch (action) {
@@ -305,15 +310,18 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
   
   const getFilteredLogs = () => {
     return settings.auditLogs.filter(log => {
-      const matchesSearch = 
-        log.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.action.toLowerCase().includes(searchTerm.toLowerCase());
-        
-      const matchesAction = filterAction ? log.action === filterAction : true;
-      
-      const matchesDate = dateRange.from && dateRange.to ? 
-        new Date(log.timestamp) >= new Date(dateRange.from) &&
-        new Date(log.timestamp) <= new Date(dateRange.to) : true;
+      const userName = log.userName || '';
+      const action = log.action || '';
+      const matchesSearch =
+        userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        action.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesAction = filterAction ? action === filterAction : true;
+
+      const matchesDate = dateRange.from && dateRange.to
+        ? new Date(log.created_at) >= new Date(dateRange.from) &&
+          new Date(log.created_at) <= new Date(dateRange.to)
+        : true;
 
       return matchesSearch && matchesAction && matchesDate;
     });
@@ -644,7 +652,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                                 </td>
                                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    user.status === true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                   }`}>
                                     {user.status}
                                   </span>
@@ -656,11 +664,11 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                                         open: true,
                                         action: 'edit',
                                         user,
-                                        newStatus: user.status === 'active' ? false : true,
+                                        newStatus: user.status === true ? false : true,
                                       })
                                     }
                                     className="text-yellow-600 hover:text-yellow-900 mr-3"
-                                    title={user.status === 'active' ? 'Deactivate' : 'Activate'}
+                                    title={user.status === true ? 'Deactivate' : 'Activate'}
                                   >
                                     <Icon icon="mdi:pencil" />
                                   </button>
@@ -676,82 +684,6 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                                     title="Delete"
                                   >
                                     <Icon icon="mdi:delete" />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Customer Accounts Section */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
-                          <Icon icon="mdi:account-group" className="text-yellow-400" />
-                          Customer Accounts
-                        </h3>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="Search customers..."
-                              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400"
-                            />
-                            <Icon icon="mdi:magnify" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                          </div>
-                          <button className="px-3 sm:px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center justify-center gap-2">
-                            <Icon icon="mdi:filter" className="w-4 h-4 sm:w-5 sm:h-5" />
-                            Filter
-                          </button>
-                        </div>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead>
-                            <tr>
-                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
-                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {settings.userManagement.customerAccounts.map((customer) => (
-                              <tr key={customer.id}>
-                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
-                                      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <Icon icon="mdi:account" className="w-4 h-4 sm:w-6 sm:h-6 text-gray-500" />
-                                      </div>
-                                    </div>
-                                    <div className="ml-3 sm:ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{customer.email}</div>
-                                </td>
-                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{customer.lastLogin}</div>
-                                </td>
-                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    customer.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    {customer.status}
-                                  </span>
-                                </td>
-                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                  <button className="text-yellow-600 hover:text-yellow-900 mr-3">
-                                    <Icon icon="mdi:pencil" className="w-4 h-4 sm:w-5 sm:h-5" />
-                                  </button>
-                                  <button className="text-red-600 hover:text-red-900">
-                                    <Icon icon="mdi:delete" className="w-4 h-4 sm:w-5 sm:h-5" />
                                   </button>
                                 </td>
                               </tr>
@@ -785,6 +717,14 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
                           />
                         </div>
+                        <button
+                          onClick={() => setIsDownloadModalOpen(true)}
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2"
+                          title="Download as Excel"
+                        >
+                          <Icon icon="mdi:file-excel" />
+                          Download Excel
+                        </button>
                         <button 
                           onClick={() => setIsFilterModalOpen(true)}
                           className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 flex items-center gap-2"
@@ -878,6 +818,62 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                       </div>
                     )}
 
+                    {/* Download Confirmation Modal */}
+                      {isDownloadModalOpen && (
+                      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Download Audit Logs</h3>
+                            <button 
+                              onClick={() => setIsDownloadModalOpen(false)}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <Icon icon="mdi:close" className="w-6 h-6" />
+                            </button>
+                          </div>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Date Range
+                              </label>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="date"
+                                  value={downloadRange.from}
+                                  onChange={e => setDownloadRange(r => ({ ...r, from: e.target.value }))}
+                                  className="border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                                <input
+                                  type="date"
+                                  value={downloadRange.to}
+                                  onChange={e => setDownloadRange(r => ({ ...r, to: e.target.value }))}
+                                  className="border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6">
+                              <button
+                                onClick={() => setIsDownloadModalOpen(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  await handleDownloadAuditLogs(downloadRange.from, downloadRange.to);
+                                  setIsDownloadModalOpen(false);
+                                }}
+                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                disabled={!downloadRange.from || !downloadRange.to}
+                              >
+                                Download
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
@@ -893,7 +889,7 @@ const Settings: React.FC<SettingsProps> = ({ handleNavigation, session }) => {
                               getFilteredLogs().map((log) => (
                                 <tr key={log.id} className="hover:bg-gray-50">
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {new Date(log.timestamp).toLocaleString()}
+                                    {new Date(log.created_at).toLocaleString()}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">

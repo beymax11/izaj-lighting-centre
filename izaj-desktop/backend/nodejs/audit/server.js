@@ -5,6 +5,26 @@ import authenticate from "../util/middlerware.js";
 const router = express.Router();
 
 // AUDIT LOGS ROUTES
+function getEndOfDay(dateStr) {
+  // Returns 'YYYY-MM-DDT23:59:59.999Z'
+  const d = new Date(dateStr);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+}
+
+async function getAuditLogs(from, to) {
+  let query = supabase
+    .from('audit_logs')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (from) query = query.gte('created_at', from);
+  if (to) query = query.lte('created_at', getEndOfDay(to));
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
 
 // GET /api/admin/audit-logs
 router.get("/audit-logs", authenticate, async (req, res) => {
@@ -59,6 +79,16 @@ router.get("/audit-logs", authenticate, async (req, res) => {
       error: "Internal server error",
       details: error.message,
     });
+  }
+});
+
+router.get('/export', authenticate, async (req, res) => {
+  const { from, to } = req.query;
+  try {
+    const logs = await getAuditLogs(from, to);
+    res.json({ success: true, logs });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
