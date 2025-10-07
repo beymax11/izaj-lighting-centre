@@ -10,7 +10,7 @@ import SalesSortModal from './SalesSortModal';
 import SalesFilterDrawer from './SalesFilterDrawer';
  
 
-type Product = {
+type SalesProduct = {
   description: string;
   id: number;
   name: string;
@@ -23,6 +23,7 @@ type Product = {
   isOnSale?: boolean;
   size?: string;
   colors?: string[];
+  category?: string;
 };
 
 interface SalesProps {
@@ -37,13 +38,16 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<SalesProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<SalesProduct[]>([]);
+  const [displayedProducts, setDisplayedProducts] = useState<SalesProduct[]>([]);
+  const [currentMainPage, setCurrentMainPage] = useState(1);
+  const [productsPerMainPage] = useState(12);
   const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
   const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
   const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
   const [fansDropdownOpen, setFansDropdownOpen] = useState(false);
-  const [] = useState(0);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
   
   // New state variables for Recently Viewed section
@@ -51,7 +55,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   const [productsPerPage, setProductsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
-  const [, setSlideDirection] = useState<'left' | 'right'>('right');
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isHoveringProducts, setIsHoveringProducts] = useState(false);
@@ -126,46 +130,51 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   }, []);
 
   // Sample product data for Recently Viewed
-  const allProducts = [
+  const recentlyViewedProducts = [
     {
       id: 1,
       name: "Abednego | Chandelier/Large",
       price: "₱32,995",
       image: "/abed.webp",
-      colors: ["black", "gold", "silver"]
+      colors: ["black", "gold", "silver"],
+      isOnSale: true
     },
     {
       id: 2,
       name: "Aberdeen | Modern LED Chandelier",
       price: "₱25,464",
       image: "/aber.webp",
-      colors: ["black", "gold"]
+      colors: ["black", "gold"],
+      isOnSale: true
     },
     {
       id: 3,
       name: "Acadia | Table Lamp",
       price: "₱12,234",
       image: "/acad.webp",
-      colors: ["black"]
+      colors: ["black"],
+      isOnSale: true
     },
     {
       id: 4,
       name: "Ademar | Modern Chandelier",
       price: "₱11,237",
       image: "/mar.webp",
-      colors: ["black"]
+      colors: ["black"],
+      isOnSale: true
     },
     {
       id: 5,
       name: "Aeris | Modern Pendant Light",
       price: "₱9,435",
       image: "/aeris.webp",
-      colors: ["black"]
+      colors: ["black"],
+      isOnSale: true
     }
   ];
 
-  const totalPages = Math.ceil(allProducts.length / productsPerPage);
-  const currentProducts = allProducts.slice(
+  const totalPages = Math.ceil(recentlyViewedProducts.length / productsPerPage);
+  const currentProducts = recentlyViewedProducts.slice(
     currentPage * productsPerPage,
     (currentPage + 1) * productsPerPage
   );
@@ -244,132 +253,176 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
 
   // Mock product data - in a real app, this would come from an API
   useEffect(() => {
-    const mockProducts: Product[] = [
+    const mockProducts: SalesProduct[] = [
       {
         id: 1,
         name: "Abednego | Chandelier/Large",
         description: "A stunning large chandelier that adds elegance to any space.",
-        price: 32995,
+        price: 29695,
+        originalPrice: 32995,
         rating: 4,
         reviewCount: 18,
         image: "/abed.webp",
         colors: ["black", "gold", "silver"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Chandelier"
       },
       {
         id: 2,
         name: "Aberdeen | Modern LED Chandelier",
         description: "Modern LED chandelier with contemporary design.",
-        price: 25464,
+        price: 22917,
+        originalPrice: 25464,
         rating: 4,
         reviewCount: 15,
         image: "/aber.webp",
         colors: ["black", "gold"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Chandelier"
       },
       {
         id: 3,
         name: "Acadia | Table Lamp",
         description: "Elegant table lamp perfect for any room.",
-        price: 12234,
+        price: 11010,
+        originalPrice: 12234,
         rating: 4,
         reviewCount: 12,
         image: "/acad.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Table Lamps"
       },
       {
         id: 4,
         name: "Ademar | Modern Chandelier",
         description: "Modern chandelier with unique design elements.",
-        price: 11237,
+        price: 10113,
+        originalPrice: 11237,
         rating: 4,
         reviewCount: 10,
         image: "/mar.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Chandelier"
       },
       {
         id: 5,
         name: "Aeris | Modern Pendant Light",
         description: "Contemporary pendant light for modern spaces.",
-        price: 9435,
+        price: 8491,
+        originalPrice: 9435,
         rating: 4,
         reviewCount: 8,
         image: "/aeris.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Pendant Lights"
       },
       {
         id: 6,
         name: "Aina | Modern LED Chandelier",
         description: "Stunning LED chandelier with modern aesthetics.",
-        price: 29995,
+        price: 26995,
+        originalPrice: 29995,
         rating: 4,
         reviewCount: 20,
         image: "/aina.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Chandelier"
       },
       {
         id: 7,
         name: "Alabama | Table Lamp",
         description: "Classic table lamp with modern touches.",
-        price: 27995,
+        price: 25195,
+        originalPrice: 27995,
         rating: 4,
         reviewCount: 16,
         image: "/alab.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Table Lamps"
       },
       {
         id: 8,
         name: "Alphius | Surface Mounted Downlight",
         description: "Efficient surface mounted downlight for any space.",
-        price: 25995,
+        price: 23395,
+        originalPrice: 25995,
         rating: 4,
         reviewCount: 14,
         image: "/alph.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Recessed Lights"
       },
       {
         id: 9,
         name: "Altair | Modern LED Chandelier",
         description: "Contemporary LED chandelier with unique design.",
-        price: 23995,
+        price: 21595,
+        originalPrice: 23995,
         rating: 4,
         reviewCount: 13,
         image: "/alta.jpg",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Chandelier"
       },
       {
         id: 10,
         name: "Amalfi | Boho Rattan Soliya Pendant Lamp",
         description: "Bohemian style pendant lamp with rattan details.",
-        price: 21995,
+        price: 19795,
+        originalPrice: 21995,
         rating: 4,
         reviewCount: 11,
         image: "/ama.webp",
         colors: ["black"],
-        isOnSale: false,
-        isNew: true
+        isOnSale: true,
+        isNew: false,
+        category: "Pendant Lights"
       }
     ];
     
-    setProducts(mockProducts);
+    setAllProducts(mockProducts);
     setFilteredProducts(mockProducts);
   }, []);
+
+  // Handle category selection
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  // Filter products based on selected categories
+  useEffect(() => {
+    if (selectedCategories.length === 0) {
+      setFilteredProducts(allProducts);
+    } else {
+      const filtered = allProducts.filter(product => 
+        selectedCategories.includes(product.category || '')
+      );
+      setFilteredProducts(filtered);
+    }
+    setCurrentMainPage(1); // Reset to first page when filtering
+  }, [selectedCategories, allProducts]);
 
   // Handle sort change
   const handleSortChange = (option: string) => {
@@ -393,11 +446,27 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         break;
     }
     setFilteredProducts(sortedProducts);
+    setCurrentMainPage(1); // Reset to first page when sorting
   };
 
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
+  };
+
+  // Update displayed products for pagination
+  useEffect(() => {
+    const startIndex = (currentMainPage - 1) * productsPerMainPage;
+    const endIndex = startIndex + productsPerMainPage;
+    setDisplayedProducts(filteredProducts.slice(startIndex, endIndex));
+  }, [filteredProducts, currentMainPage, productsPerMainPage]);
+
+  // Calculate total pages for main product list
+  const totalMainPages = Math.ceil(filteredProducts.length / productsPerMainPage);
+
+  // Handle main page change
+  const handleMainPageChange = (page: number) => {
+    setCurrentMainPage(page);
   };
 
   return (
@@ -467,11 +536,13 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
           setMirrorsDropdownOpen={setMirrorsDropdownOpen}
           fansDropdownOpen={fansDropdownOpen}
           setFansDropdownOpen={setFansDropdownOpen}
+          selectedCategories={selectedCategories}
+          handleCategorySelect={handleCategorySelect}
         />
 
         {/* Product List */}
         <SalesProductList
-          filteredProducts={filteredProducts}
+          filteredProducts={displayedProducts}
           viewMode={viewMode}
           selectedColors={selectedColors}
           isCarousel={isCarousel}
@@ -481,6 +552,9 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
           handleSortChange={handleSortChange}
           setSortModalOpen={setSortModalOpen}
           setFilterDrawerOpen={setFilterDrawerOpen}
+          currentPage={currentMainPage}
+          totalPages={totalMainPages}
+          handlePageChange={handleMainPageChange}
         />
       </div>
       </div>
@@ -495,7 +569,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         selectedColors={selectedColors}
         totalPages={totalPages}
         currentProducts={currentProducts}
-        allProducts={allProducts}
+        allProducts={recentlyViewedProducts}
         isHoveringProducts={isHoveringProducts}
         setIsHoveringProducts={setIsHoveringProducts}
         handleColorSelect={handleColorSelect}
@@ -504,6 +578,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        slideDirection={slideDirection}
       />
 
       <SalesSortModal
@@ -526,6 +601,8 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         setFansDropdownOpen={setFansDropdownOpen}
         selectCategoryOpen={selectCategoryOpen}
         setSelectCategoryOpen={setSelectCategoryOpen}
+        selectedCategories={selectedCategories}
+        handleCategorySelect={handleCategorySelect}
       />
     </div>
     );

@@ -9,6 +9,7 @@ type RecentlyViewedProduct = {
   price: number | string;
   image: string;
   colors?: string[];
+  isOnSale?: boolean;
 };
 
 interface SalesRecentlyViewedProps {
@@ -26,6 +27,7 @@ interface SalesRecentlyViewedProps {
   onTouchStart: (e: React.TouchEvent) => void;
   onTouchMove: (e: React.TouchEvent) => void;
   onTouchEnd: () => void;
+  slideDirection: 'left' | 'right';
 }
 
 const SalesRecentlyViewed: React.FC<SalesRecentlyViewedProps> = ({
@@ -43,6 +45,7 @@ const SalesRecentlyViewed: React.FC<SalesRecentlyViewedProps> = ({
   onTouchStart,
   onTouchMove,
   onTouchEnd,
+  slideDirection,
 }) => {
   return (
     <section className="container mx-auto px-1 sm:px-2 md:px-4 lg:px-6 py-8 max-w-[98%] relative">
@@ -98,7 +101,7 @@ const SalesRecentlyViewed: React.FC<SalesRecentlyViewedProps> = ({
           onTouchEnd={onTouchEnd}
         >
           {isCarousel ? (
-            <div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1 hide-scrollbar">
+            <div className={`slide-container flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1 hide-scrollbar transition-all duration-300 ease-out ${slideDirection === 'left' ? 'animate-slideInLeft' : 'animate-slideInRight'}`}>
               {allProducts.map((product) => {
                 // Card width: 48vw for <=640px, 32vw for 641-1024px
                 let cardWidth = '48vw';
@@ -111,6 +114,9 @@ const SalesRecentlyViewed: React.FC<SalesRecentlyViewedProps> = ({
                   >
                     <div className="relative flex-shrink-0 h-[280px]">
                       <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
+                      <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
+                        SALE
+                      </div>
                     </div>
                     <div className="p-3 flex flex-col flex-1">
                       <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
@@ -142,12 +148,15 @@ const SalesRecentlyViewed: React.FC<SalesRecentlyViewedProps> = ({
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out">
+            <div className={`slide-container grid grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out ${slideDirection === 'left' ? 'animate-slideInLeft' : 'animate-slideInRight'}`}>
               {currentProducts.map((product) => (
                 <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[420px] rounded-lg">
                   <div className="relative flex-grow h-[280px]">
                     <div className="w-full h-full bg-white flex items-center justify-center">
                       <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
+                    </div>
+                    <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
+                      SALE
                     </div>
                   </div>
                   <div className="p-3 sm:p-4 flex flex-col flex-grow">

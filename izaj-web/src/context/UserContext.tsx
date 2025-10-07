@@ -91,7 +91,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           lastName: lastName || '',
           phone,
           role: 'customer',
-          isEmailVerified: Boolean(supabaseUser.email_confirmed_at),
+          isEmailVerified: Boolean(supabaseUser.email_confirmed_at) || Boolean(supabaseUser.user_metadata?.emailConfirmed),
           createdAt: new Date(supabaseUser.created_at || Date.now()),
           updatedAt: new Date(),
         };
@@ -135,7 +135,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         lastName: lastName || '',
         phone,
         role: 'customer',
-        isEmailVerified: Boolean(supabaseUser.email_confirmed_at),
+        isEmailVerified: Boolean(supabaseUser.email_confirmed_at) || Boolean(supabaseUser.user_metadata?.emailConfirmed),
         createdAt: new Date(supabaseUser.created_at || Date.now()),
         updatedAt: new Date(),
       };
@@ -201,21 +201,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         throw new Error(result?.error || 'Signup failed');
       }
       
-      // If address was provided, save it to localStorage for the new user
-      if (userData.address && result.user?.id) {
-        const newAddress = {
-          id: Date.now().toString(),
-          name: `${userData.firstName} ${userData.lastName}`.trim(),
-          phone: userData.phone || '',
-          address: `${userData.address.address}, ${userData.address.barangay}, ${userData.address.city}, ${userData.address.province}`
-        };
-        
-        // Save address to localStorage with user-specific key
-        const userSpecificKey = `addresses_${result.user.id}`;
-        const existingAddresses = JSON.parse(localStorage.getItem(userSpecificKey) || '[]');
-        const updatedAddresses = [...existingAddresses, newAddress];
-        localStorage.setItem(userSpecificKey, JSON.stringify(updatedAddresses));
-      }
+      // Address is now automatically saved to the database during signup
+      // No need to save to localStorage since it will be fetched from the database
       
       // Do not auto-login after signup; user should login explicitly.
     } catch (error) {

@@ -210,9 +210,9 @@ const Footer: React.FC = () => {
               </button>
               <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">OUR COMPANY</h3>
               <ul className={`space-y-2 md:space-y-3 ${isCompanyOpen ? 'block' : 'hidden'} md:block`}>
-                <li><a href="/" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Home</a></li>
-                <li><a href="/static/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">About Us</a></li>
-                <li><a href="/static/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Contact Us</a></li>
+                <li><Link href="/" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Home</Link></li>
+                <li><Link href="/static/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">About Us</Link></li>
+                <li><Link href="/static/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Contact Us</Link></li>
               </ul>
             </div>
 
@@ -232,13 +232,13 @@ const Footer: React.FC = () => {
               </button>
               <h3 className="font-bold text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block">MORE INFO</h3>
               <ul className={`space-y-2 md:space-y-3 ${isMoreInfoOpen ? 'block' : 'hidden'} md:block`}>
-                <li><a href="/delivery" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Delivery & Installation</a></li>
-                <li><a href="/privacypolicy" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Privacy Policy</a></li>
-                <li><a href="/return" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Returns & Refunds</a></li>
-                <li><a href="/help" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Help & FAQs</a></li>
-                <li><a href="/terms" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Terms & Conditions</a></li>
-                <li><a href="/warranty" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Warranty Terms</a></li>
-                <li><a href="/careers" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Careers</a></li>
+                <li><Link href="/delivery" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Delivery & Installation</Link></li>
+                <li><Link href="/static/privacypolicy" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Privacy Policy</Link></li>
+                <li><Link href="/static/return" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Returns & Refunds</Link></li>
+                <li><Link href="/static/help" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Help & FAQs</Link></li>
+                <li><Link href="/static/terms" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Terms & Conditions</Link></li>
+                <li><Link href="/static/warranty" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Warranty Terms</Link></li>
+                <li><Link href="/static/careers" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700">Careers</Link></li>
               </ul>
             </div>
 
@@ -377,6 +377,9 @@ const Footer: React.FC = () => {
                 <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
                   <img src="/paypal2.png" alt="PayPal" className="h-5 md:h-6" />
                 </div>
+                <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
+                  <img src="/grab.png" alt="GrabPay" className="h-5 md:h-6" />
+                </div>
               </div>
             </div>
 
@@ -426,10 +429,10 @@ const Footer: React.FC = () => {
               IZAJ (PHILIPPINES), INC. (Registration No. 123456789)
             </div>
             <div className="flex flex-wrap gap-4 md:gap-6 text-gray-700 text-xs md:text-sm">
-              <a href="/cookiepolicy" className="hover:underline">Cookie policy</a>
-              <a href="#" className="hover:underline" onClick={handleCookieSettingsClick}>Cookie settings</a>
-              <a href="/termofuse" className="hover:underline">Terms of use</a>
-              <a href="/termofpurchase" className="hover:underline">Terms of purchase</a>
+              <Link href="/static/cookiepolicy" className="hover:underline">Cookie policy</Link>
+              <button onClick={handleCookieSettingsClick} className="hover:underline">Cookie settings</button>
+              <Link href="/static/termofuse" className="hover:underline">Terms of use</Link>
+              <Link href="/static/termofpurchase" className="hover:underline">Terms of purchase</Link>
             </div>
           </div>
         </div>

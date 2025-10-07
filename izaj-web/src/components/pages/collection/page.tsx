@@ -18,12 +18,14 @@ type CollectionProduct = {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   rating: number;
   reviewCount: number;
   image: string;
   colors?: string[];
   isOnSale?: boolean;
   isNew?: boolean;
+  category?: string;
 };
 
 // Local sort helper for this page
@@ -57,8 +59,11 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [, setProducts] = useState<CollectionProduct[]>([]);
+  const [allProducts, setAllProducts] = useState<CollectionProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<CollectionProduct[]>([]);
+  const [displayedProducts, setDisplayedProducts] = useState<CollectionProduct[]>([]);
+  const [currentMainPage, setCurrentMainPage] = useState(1);
+  const [productsPerMainPage] = useState(12);
   const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
   const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
   const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
@@ -70,14 +75,15 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   const [isCarousel, setIsCarousel] = useState(false);
   const [productsPerPage, setProductsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedColors, setSelectedColors] = useState<Record<number, string>>({});
-  // removed slideDirection: animations not using direction
+  const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isHoveringProducts, setIsHoveringProducts] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -98,9 +104,11 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe && currentPage < totalPages - 1) {
+      setSlideDirection('left');
       setCurrentPage(prev => prev + 1);
     }
     if (isRightSwipe && currentPage > 0) {
+      setSlideDirection('right');
       setCurrentPage(prev => prev - 1);
     }
   };
@@ -114,20 +122,21 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
+      setSlideDirection('right');
       setCurrentPage(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages - 1) {
+      setSlideDirection('left');
       setCurrentPage(currentPage + 1);
     }
   };
 
-  // Check for mobile view
+  // Responsive products per page for Recently Viewed
   useEffect(() => {
-    const checkDevice = () => {
-      setIsCarousel(window.innerWidth <= 1024);
+    const updateProductsPerPage = () => {
       if (window.innerWidth <= 640) {
         setProductsPerPage(2);
       } else if (window.innerWidth <= 1024) {
@@ -136,16 +145,67 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         setProductsPerPage(5);
       }
     };
+    updateProductsPerPage();
+    window.addEventListener('resize', updateProductsPerPage);
+    return () => window.removeEventListener('resize', updateProductsPerPage);
+  }, []);
+
+  // Check for mobile view
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsCarousel(window.innerWidth <= 1024);
+    };
     checkDevice();
     window.addEventListener('resize', checkDevice);
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
   // Sample product data for Recently Viewed
-  const allProducts: ServiceProduct[] = getAllProducts();
+  const recentlyViewedProducts = [
+    {
+      id: 1,
+      name: "Abednego | Chandelier/Large",
+      price: "₱32,995",
+      image: "/abed.webp",
+      colors: ["black", "gold", "silver"],
+      isNew: true
+    },
+    {
+      id: 2,
+      name: "Aberdeen | Modern LED Chandelier",
+      price: "₱25,464",
+      image: "/aber.webp",
+      colors: ["black", "gold"],
+      isNew: true
+    },
+    {
+      id: 3,
+      name: "Acadia | Table Lamp",
+      price: "₱12,234",
+      image: "/acad.webp",
+      colors: ["black"],
+      isNew: true
+    },
+    {
+      id: 4,
+      name: "Ademar | Modern Chandelier",
+      price: "₱11,237",
+      image: "/mar.webp",
+      colors: ["black"],
+      isNew: true
+    },
+    {
+      id: 5,
+      name: "Aeris | Modern Pendant Light",
+      price: "₱9,435",
+      image: "/aeris.webp",
+      colors: ["black"],
+      isNew: true
+    }
+  ];
 
-  const totalPages = Math.ceil(allProducts.length / productsPerPage);
-  const currentProducts = allProducts.slice(
+  const totalPages = Math.ceil(recentlyViewedProducts.length / productsPerPage);
+  const currentProducts = recentlyViewedProducts.slice(
     currentPage * productsPerPage,
     (currentPage + 1) * productsPerPage
   );
@@ -235,7 +295,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/abed.webp",
         colors: ["black", "gold", "silver"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Chandelier"
       },
       {
         id: 2,
@@ -247,7 +308,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/aber.webp",
         colors: ["black", "gold"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Chandelier"
       },
       {
         id: 3,
@@ -259,7 +321,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/acad.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Table Lamps"
       },
       {
         id: 4,
@@ -271,7 +334,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/mar.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Chandelier"
       },
       {
         id: 5,
@@ -283,7 +347,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/aeris.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Pendant Lights"
       },
       {
         id: 6,
@@ -295,7 +360,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/aina.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Chandelier"
       },
       {
         id: 7,
@@ -307,7 +373,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/alab.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Table Lamps"
       },
       {
         id: 8,
@@ -319,7 +386,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/alph.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Recessed Lights"
       },
       {
         id: 9,
@@ -331,7 +399,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/alta.jpg",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Chandelier"
       },
       {
         id: 10,
@@ -343,11 +412,12 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         image: "/ama.webp",
         colors: ["black"],
         isOnSale: false,
-        isNew: true
+        isNew: true,
+        category: "Pendant Lights"
       }
     ];
     
-    setProducts(mockProducts);
+    setAllProducts(mockProducts);
     setFilteredProducts(mockProducts);
   }, []);
 
@@ -355,12 +425,72 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   const handleSortChange = (option: string) => {
     setSortOption(option);
     setSortModalOpen(false);
-    setFilteredProducts(sortProducts(filteredProducts, option));
+    let sortedProducts = [...filteredProducts];
+    switch(option) {
+      case 'Alphabetical, A-Z':
+        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'Alphabetical, Z-A':
+        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'Price, Low to High':
+        sortedProducts.sort((a, b) => a.price - b.price);
+        break;
+      case 'Price, High to Low':
+        sortedProducts.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        break;
+    }
+    setFilteredProducts(sortedProducts);
+    setCurrentMainPage(1); // Reset to first page when sorting changes
   };
 
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        // Remove category if already selected
+        return prev.filter(cat => cat !== category);
+      } else {
+        // Add category if not selected
+        return [...prev, category];
+      }
+    });
+  };
+
+  // Filter products based on selected categories
+  useEffect(() => {
+    if (selectedCategories.length === 0) {
+      setFilteredProducts(allProducts);
+    } else {
+      const filtered = allProducts.filter(product => 
+        product.category && selectedCategories.includes(product.category)
+      );
+      setFilteredProducts(filtered);
+    }
+    setCurrentMainPage(1); // Reset to first page when filters change
+  }, [selectedCategories, allProducts]);
+
+  // Update displayed products based on current page
+  useEffect(() => {
+    const startIndex = (currentMainPage - 1) * productsPerMainPage;
+    const endIndex = startIndex + productsPerMainPage;
+    setDisplayedProducts(filteredProducts.slice(startIndex, endIndex));
+  }, [filteredProducts, currentMainPage, productsPerMainPage]);
+
+  // Calculate total pages
+  const totalMainPages = Math.ceil(filteredProducts.length / productsPerMainPage);
+
+  // Handle page change
+  const handleMainPageChange = (page: number) => {
+    setCurrentMainPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   {/* Main Content */}
@@ -418,8 +548,9 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       <div className="hidden lg:block text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6">
         <a href="/" className="hover:underline">Home</a>
         <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
-        <span>New </span>
+        <span>Collection</span>
       </div>
+      
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <Sidebar
@@ -431,11 +562,13 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           setMirrorsDropdownOpen={setMirrorsDropdownOpen}
           fansDropdownOpen={fansDropdownOpen}
           setFansDropdownOpen={setFansDropdownOpen}
+          selectedCategories={selectedCategories}
+          handleCategorySelect={handleCategorySelect}
         />
 
         {/* Product List */}
         <ProductList
-          filteredProducts={filteredProducts}
+          filteredProducts={displayedProducts}
           viewMode={viewMode}
           selectedColors={selectedColors}
           isCarousel={isCarousel}
@@ -445,8 +578,10 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           handleSortChange={handleSortChange}
           setSortModalOpen={setSortModalOpen}
           setFilterDrawerOpen={setFilterDrawerOpen}
+          currentPage={currentMainPage}
+          totalPages={totalMainPages}
+          handlePageChange={handleMainPageChange}
         />
-        {/* end content container */}
       </div>
 
 
@@ -456,13 +591,13 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       {/* Recently Viewed */}
       <RecentlyViewed
         isCarousel={isCarousel}
-        productsPerPage={productsPerPage}
         currentPage={currentPage}
         selectedColors={selectedColors}
         totalPages={totalPages}
         currentProducts={currentProducts}
-        allProducts={allProducts}
+        allProducts={recentlyViewedProducts}
         isHoveringProducts={isHoveringProducts}
+        slideDirection={slideDirection}
         setIsHoveringProducts={setIsHoveringProducts}
         handleColorSelect={handleColorSelect}
         handlePrevPage={handlePrevPage}
@@ -492,6 +627,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           setFansDropdownOpen={setFansDropdownOpen}
           selectCategoryOpen={selectCategoryOpen}
           setSelectCategoryOpen={setSelectCategoryOpen}
+          selectedCategories={selectedCategories}
+          handleCategorySelect={handleCategorySelect}
         />
       </main>
     </div>

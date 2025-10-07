@@ -17,7 +17,11 @@ const ProductRatings: React.FC = () => {
                 <h4 className="text-3xl md:text-4xl font-bold text:black">4.5</h4>
                 <div className="flex items-center justify-center my-2">
                   {[...Array(5)].map((_, i) => (
-                    <Icon key={i} icon="mdi:star" className={`w-4 md:w-5 h-4 md:h-5 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                    <Icon 
+                      key={i} 
+                      icon={i < 4 ? "mdi:star" : "mdi:star-half"} 
+                      className={`w-4 md:w-5 h-4 md:h-5 ${i < 4 ? 'text-yellow-500' : 'text-yellow-500'}`} 
+                    />
                   ))}
                 </div>
                 <p className="text-gray-600 text-xs md:text-sm">Based on 7.3K reviews</p>
@@ -33,7 +37,7 @@ const ProductRatings: React.FC = () => {
                   <span className="text-xs md:text-sm text-gray-600 w-6 md:w-8">{rating}★</span>
                   <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-yellow-400 rounded-full"
+                      className="h-full bg-yellow-500 rounded-full"
                       style={{ width: `${(rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 5 : rating === 2 ? 3 : 2)}%` }}
                     />
                   </div>
@@ -80,7 +84,11 @@ const ProductRatings: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <Icon key={i} icon="mdi:star" className={`w-3 h-3 md:w-4 md:h-4 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        <Icon 
+                          key={i} 
+                          icon="mdi:star" 
+                          className={`w-3 h-3 md:w-4 md:h-4 ${i < 4 ? 'text-yellow-500' : 'text-gray-300'}`} 
+                        />
                       ))}
                     </div>
                     <span className="text-gray-500 text-xs md:text-sm">2025-03-14</span>
@@ -113,21 +121,21 @@ const ProductRatings: React.FC = () => {
                 <div>
                   <p className="text-xs md:text-sm text-gray-600">Performance</p>
                   <div className="flex items-center gap-1">
-                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
+                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="text-xs md:text-sm font-medium">Excellent</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-xs md:text-sm text-gray-600">Durability</p>
                   <div className="flex items-center gap-1">
-                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
+                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="text-xs md:text-sm font-medium">Good</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-xs md:text-sm text-gray-600">Quality</p>
                   <div className="flex items-center gap-1">
-                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
+                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="text-xs md:text-sm font-medium">Excellent</span>
                   </div>
                 </div>
@@ -168,7 +176,11 @@ const ProductRatings: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <Icon key={i} icon="mdi:star" className={`w-3 h-3 md:w-4 md:h-4 ${i < 5 ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        <Icon 
+                          key={i} 
+                          icon="mdi:star" 
+                          className={`w-3 h-3 md:w-4 md:h-4 ${i < 5 ? 'text-yellow-500' : 'text-gray-300'}`} 
+                        />
                       ))}
                     </div>
                     <span className="text-gray-500 text-xs md:text-sm">2025-03-13</span>
@@ -187,21 +199,21 @@ const ProductRatings: React.FC = () => {
                 <div>
                   <p className="text-xs md:text-sm text-gray-600">Performance</p>
                   <div className="flex items-center gap-1">
-                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
+                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="text-xs md:text-sm font-medium">Excellent</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-xs md:text-sm text-gray-600">Durability</p>
                   <div className="flex items-center gap-1">
-                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
+                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="text-xs md:text-sm font-medium">Excellent</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-xs md:text-sm text-gray-600">Quality</p>
                   <div className="flex items-center gap-1">
-                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
+                    <Icon icon="mdi:star" className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="text-xs md:text-sm font-medium">Excellent</span>
                   </div>
                 </div>

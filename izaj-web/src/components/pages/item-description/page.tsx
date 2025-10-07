@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 
 import ChatNow from '../../common/ChatNow';
+import ProductRatings from './ProductRatings';
 import { getProductById } from '../../../services/productService';
 import { useCartContext } from '../../../context/CartContext';
 import { useFavoritesContext } from '../../../context/FavoritesContext';
@@ -234,11 +235,14 @@ Add to Favorites
               <div className="flex items-center mb-4 gap-2">
                 <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
                 <div className="flex items-center">
-                  <span className="mr-1 text-black">4.5</span>
-                  {[...Array(4)].map((_, i) => (
-                    <Icon key={i} icon="mdi:star" className="text-yellow-500 text-lg" />
+                  <span className="mr-1 text-black font-semibold">4.5</span>
+                  {[...Array(5)].map((_, i) => (
+                    <Icon 
+                      key={i} 
+                      icon={i < 4 ? "mdi:star" : "mdi:star-half"} 
+                      className={`text-lg ${i < 4 ? 'text-yellow-500' : 'text-yellow-500'}`} 
+                    />
                   ))}
-                  <Icon icon="mdi:star-half" className="text-yellow-500 text-lg" />
                 </div>
                 <span className="text-gray-500 text-sm">7.3K Ratings | 10K+ Sold</span>
               </div>
@@ -440,11 +444,14 @@ Add to Favorites
               <div className="flex items-center mb-4 gap-2">
                 <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
                 <div className="flex items-center">
-                  <span className="mr-1 text-black">4.5</span>
-                  {[...Array(4)].map((_, i) => (
-                    <Icon key={i} icon="mdi:star" className="text-yellow-500 text-lg" />
+                  <span className="mr-1 text-black font-semibold">4.5</span>
+                  {[...Array(5)].map((_, i) => (
+                    <Icon 
+                      key={i} 
+                      icon={i < 4 ? "mdi:star" : "mdi:star-half"} 
+                      className={`text-lg ${i < 4 ? 'text-yellow-500' : 'text-yellow-500'}`} 
+                    />
                   ))}
-                  <Icon icon="mdi:star-half" className="text-yellow-500 text-lg" />
                 </div>
                 <span className="text-gray-500 text-sm">7.3K Ratings | 10K+ Sold</span>
               </div>
@@ -605,6 +612,8 @@ Add to Favorites
         </div>
       </div>
 
+      {/* Product Ratings & Reviews Section */}
+      <ProductRatings />
         
        {/* Chat Modal */}
       {isChatModalOpen && (

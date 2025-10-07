@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { forgotPasswordLimiter, createRateLimitResponse } from '@/lib/rate-limiter';
+import { emailService } from '@/lib/email-service';
+import { randomBytes } from 'crypto';
 
 type ForgotPasswordBody = {
     identifier: string; // email or phone
@@ -126,17 +128,156 @@ export async function POST(request: Request) {
             userEmail = identifier; // treat as email
         }
 
-        const supabase = await getSupabaseServerClient();
-        
-        // Use Supabase's built-in reset but with a custom redirect that doesn't auto-login
-        // We'll handle the token verification manually on the reset page
-        const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
-        });
+        // Generate password reset token
+        const resetToken = randomBytes(32).toString('hex');
+        const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
-        if (error) {
-            console.error('Password reset error:', error);
+        // Find the user and update their metadata with reset token
+        const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        
+        if (listError) {
+            console.error('Error listing users:', listError);
             // Don't reveal the error for security reasons
+        } else {
+            const user = users.users.find(u => u.email === userEmail);
+            
+            if (user) {
+                // Update user metadata with reset token
+                const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+                    user.id,
+                    {
+                        user_metadata: {
+                            ...user.user_metadata,
+                            resetToken,
+                            resetTokenExpiry: tokenExpiry.toISOString(),
+                        }
+                    }
+                );
+
+                if (!updateError) {
+                    // Send password reset email via Gmail
+                    try {
+                        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+                        
+                        const html = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="utf-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>Password Reset - IZAJ Trading</title>
+                                <style>
+                                    body {
+                                        font-family: Arial, sans-serif;
+                                        line-height: 1.6;
+                                        color: #333;
+                                        max-width: 600px;
+                                        margin: 0 auto;
+                                        padding: 20px;
+                                    }
+                                    .header {
+                                        background-color: #000;
+                                        color: white;
+                                        padding: 20px;
+                                        text-align: center;
+                                        border-radius: 8px 8px 0 0;
+                                    }
+                                    .content {
+                                        background-color: #f9f9f9;
+                                        padding: 30px;
+                                        border-radius: 0 0 8px 8px;
+                                    }
+                                    .button {
+                                        display: inline-block;
+                                        background-color: #000;
+                                        color: white;
+                                        padding: 12px 30px;
+                                        text-decoration: none;
+                                        border-radius: 5px;
+                                        margin: 20px 0;
+                                        font-weight: bold;
+                                    }
+                                    .button:hover {
+                                        background-color: #333;
+                                    }
+                                    .footer {
+                                        text-align: center;
+                                        margin-top: 30px;
+                                        font-size: 12px;
+                                        color: #666;
+                                    }
+                                    .warning {
+                                        background-color: #fff3cd;
+                                        border: 1px solid #ffeaa7;
+                                        color: #856404;
+                                        padding: 15px;
+                                        border-radius: 5px;
+                                        margin: 20px 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="header">
+                                    <h1>IZAJ Trading</h1>
+                                    <p>Password Reset Request</p>
+                                </div>
+                                <div class="content">
+                                    <h2>Password Reset Request</h2>
+                                    <p>We received a request to reset your password for your IZAJ Trading account.</p>
+                                    
+                                    <div style="text-align: center;">
+                                        <a href="${resetUrl}" class="button">Reset Password</a>
+                                    </div>
+                                    
+                                    <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+                                    <p style="word-break: break-all; background-color: #e9e9e9; padding: 10px; border-radius: 4px;">
+                                        ${resetUrl}
+                                    </p>
+                                    
+                                    <div class="warning">
+                                        <strong>Important:</strong> This link will expire in 1 hour for security reasons. If you didn't request this password reset, please ignore this email.
+                                    </div>
+                                    
+                                    <p>If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
+                                    
+                                    <p>Best regards,<br>The IZAJ Trading Team</p>
+                                </div>
+                                <div class="footer">
+                                    <p>© 2024 IZAJ Trading. All rights reserved.</p>
+                                    <p>For support, contact us at izajtrading@gmail.com</p>
+                                </div>
+                            </body>
+                            </html>
+                        `;
+
+                        const text = `
+                            Password Reset Request
+                            
+                            We received a request to reset your password for your IZAJ Trading account.
+                            
+                            To reset your password, please visit this link:
+                            ${resetUrl}
+                            
+                            This link will expire in 1 hour for security reasons.
+                            
+                            If you didn't request a password reset, please ignore this email. Your password will remain unchanged.
+                            
+                            Best regards,
+                            The IZAJ Trading Team
+                        `;
+
+                        await emailService.sendEmail({
+                            to: userEmail,
+                            subject: 'Password Reset Request - IZAJ Trading',
+                            html,
+                            text,
+                        });
+                    } catch (emailError) {
+                        console.error('Error sending password reset email:', emailError);
+                        // Don't reveal the error for security reasons
+                    }
+                }
+            }
         }
 
         // Log the forgot password attempt

@@ -5,15 +5,24 @@ import Link from "next/link";
 import { getAllProducts } from '../../../services/productService';
 import type { Product as ServiceProduct } from '../../../services/productService';
 
+type Product = {
+  id: number;
+  name: string;
+  price: string;
+  image: string;
+  colors: string[];
+  isNew?: boolean;
+};
+
 interface RecentlyViewedProps {
   isCarousel: boolean;
-  productsPerPage: number;
   currentPage: number;
-  selectedColors: Record<number, string>;
+  selectedColors: { [key: number]: string };
   totalPages: number;
-  currentProducts: ServiceProduct[];
-  allProducts: ServiceProduct[];
+  currentProducts: Product[];
+  allProducts: Product[];
   isHoveringProducts: boolean;
+  slideDirection: 'left' | 'right';
   setIsHoveringProducts: (hovering: boolean) => void;
   handleColorSelect: (productId: number, color: string) => void;
   handlePrevPage: () => void;
@@ -25,13 +34,13 @@ interface RecentlyViewedProps {
 
 const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
   isCarousel,
-  productsPerPage,
   currentPage,
   selectedColors,
   totalPages,
   currentProducts,
   allProducts,
   isHoveringProducts,
+  slideDirection,
   setIsHoveringProducts,
   handleColorSelect,
   handlePrevPage,
@@ -47,7 +56,11 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
           Recently Viewed
         </h2>
         <div className="flex-grow"></div>
-        <Link href="/product-list" className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}>
+        <Link
+          href="/collection"
+          className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+        >
           View all
         </Link>
       </div>
@@ -91,7 +104,7 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
         >
           {isCarousel ? (
             <div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1 hide-scrollbar">
-              {allProducts.map((product: ServiceProduct) => {
+              {allProducts.map((product) => {
                 // Card width: 48vw for <=640px, 32vw for 641-1024px
                 let cardWidth = '48vw';
                 if (typeof window !== 'undefined' && window.innerWidth > 640 && window.innerWidth <= 1024) cardWidth = '32vw';
@@ -103,11 +116,16 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
                   >
                     <div className="relative flex-shrink-0 h-[280px]">
                       <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
+                      {product.isNew && (
+                        <div className="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
+                          NEW
+                        </div>
+                      )}
                     </div>
                     <div className="p-3 flex flex-col flex-1">
                       <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
                       <div className="flex items-center space-x-2 mb-2 mt-2">
-                        {product.colors?.map((color: string) => (   
+                        {product.colors?.map((color) => (   
                           <button
                             key={color}
                             onClick={() => handleColorSelect(product.id, color)}
@@ -131,18 +149,23 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out">
-              {currentProducts.map((product: ServiceProduct) => (
+            <div className={`slide-container grid grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out ${slideDirection === 'left' ? 'animate-slideInLeft' : 'animate-slideInRight'}`}>
+              {currentProducts.map((product) => (
                 <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[420px] rounded-lg">
                   <div className="relative flex-grow h-[280px]">
                     <div className="w-full h-full bg-white flex items-center justify-center">
                       <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
                     </div>
+                    {product.isNew && (
+                      <div className="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
+                        NEW
+                      </div>
+                    )}
                   </div>
                   <div className="p-3 sm:p-4 flex flex-col flex-grow">
                     <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
                     <div className="flex items-center space-x-2 mb-2 mt-2">
-                      {product.colors?.map((color: string) => (
+                      {product.colors.map((color) => (
                         <button
                           key={color}
                           onClick={() => handleColorSelect(product.id, color)}
