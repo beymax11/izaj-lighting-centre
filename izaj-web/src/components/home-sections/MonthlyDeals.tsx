@@ -12,6 +12,8 @@ export default function MonthlyDeals() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -55,15 +57,32 @@ export default function MonthlyDeals() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log('🔄 MonthlyDeals: Starting to fetch products...');
+        const products = await getAllProducts();
+        console.log('📦 MonthlyDeals: Received products:', products);
+        setAllProducts(products);
+      } catch (error) {
+        console.error('❌ MonthlyDeals: Error fetching products:', error);
+        setAllProducts([]);
+      } finally {
+        console.log('✅ MonthlyDeals: Setting loading to false');
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const handleColorSelect = (productId: number, color: string) => {
     setSelectedColors(prev => ({
       ...prev,
       [productId]: color
     }));
   };
-
-  // Sample product data
-  const allProducts = getAllProducts();
 
   // Determine productsPerPage based on screen size (avoid window on SSR)
   let productsPerPage = 5;
@@ -141,6 +160,29 @@ export default function MonthlyDeals() {
     return direction === 'left' ? 'slide-left' : 'slide-right';
   };
 
+  if (isLoading) {
+    return (
+      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
+        <div className="flex justify-between items-baseline mb-6">
+          <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Avenir Next', sans-serif", fontWeight: "bold" }}>
+            Monthly Deals 
+          </h2>
+          <div className="flex-grow"></div>
+          <Link
+            href="/sales"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+          >
+            View all
+          </Link>
+        </div>
+        <div className="flex justify-center items-center py-8">
+          <div className="text-gray-500">Loading products...</div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
       <div className="flex justify-between items-baseline mb-6">
@@ -210,7 +252,7 @@ export default function MonthlyDeals() {
                     <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
                   
                     <div className="flex items-center space-x-2 mb-2">
-                      {product.colors?.map((color) => (
+                      {product.colors?.map((color: string) => (
                         <button
                           key={color}
                           onClick={() => handleColorSelect(product.id, color)}
@@ -250,7 +292,7 @@ export default function MonthlyDeals() {
                     <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
                    
                     <div className="flex items-center space-x-2 mb-2">
-                      {product.colors?.map((color) => (
+                      {product.colors?.map((color: string) => (
                         <button
                           key={color}
                           onClick={() => handleColorSelect(product.id, color)}

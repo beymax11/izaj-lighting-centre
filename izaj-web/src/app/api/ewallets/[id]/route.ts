@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase-server';
 // PUT /api/ewallets/[id] - Update e-wallet
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from Supabase session (cookies)
@@ -15,7 +15,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { type, account_name, account_number, icon, color } = body;
 
@@ -71,7 +71,7 @@ export async function PUT(
 // DELETE /api/ewallets/[id] - Delete e-wallet (soft delete)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from Supabase session (cookies)
@@ -82,7 +82,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Soft delete e-wallet (set is_active to false)
     const { data: deletedEwallet, error } = await supabase

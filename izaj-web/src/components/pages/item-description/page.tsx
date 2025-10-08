@@ -9,6 +9,7 @@ import ProductRatings from './ProductRatings';
 import { getProductById } from '../../../services/productService';
 import { useCartContext } from '../../../context/CartContext';
 import { useFavoritesContext } from '../../../context/FavoritesContext';
+import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 
 interface ItemDescriptionProps {
   params: { id: string };
@@ -18,6 +19,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
   const id = params?.id;
   const { addToCart, isLoading: cartLoading } = useCartContext();
   const { toggleFavorite, isFavorite } = useFavoritesContext();
+  const { addToRecentlyViewed } = useRecentlyViewed();
   const [mainImage, setMainImage] = useState("");
   const [zoomStyle, setZoomStyle] = useState({});
   const imgRef = useRef<HTMLDivElement>(null);
@@ -29,19 +31,52 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedBranch, setSelectedBranch] = useState<string>('San Pablo City');
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     if (!id) return;
     
-    const found = getProductById(Number(id));
-    if (found) {
-      setProduct(found);
-      setMainImage(found.image);
-      setSelectedColor(found.colors?.[0] || 'Black');
-      const baseImage = found.image.replace('.webp', '').replace('.jpg', '');
-      setThumbnails([found.image, `${baseImage}2.webp`, `${baseImage}3.webp`, `${baseImage}4.webp`]);
-    }
-  }, [id]);
+    const fetchProduct = async () => {
+      try {
+        console.log('🔄 ItemDescription: Fetching product with ID:', id);
+        const found = await getProductById(Number(id));
+        console.log('📦 ItemDescription: Found product:', found);
+        
+        if (found) {
+          setProduct(found);
+          setMainImage(found.image);
+          setSelectedColor(found.colors?.[0] || 'Black');
+          
+          // Add to recently viewed
+          addToRecentlyViewed({
+            id: found.id,
+            name: found.name,
+            price: found.price,
+            image: found.image,
+            colors: found.colors
+          });
+          
+          // Check if image exists before trying to manipulate it
+          if (found.image && typeof found.image === 'string' && found.image !== '/placeholder.jpg') {
+            // For real images from izaj-desktop, use the same image for all thumbnails
+            // since we only have one image per product
+            setThumbnails([found.image, found.image, found.image, found.image]);
+          } else {
+            // Use placeholder images if no image is available
+            setThumbnails(['/placeholder.jpg', '/placeholder.jpg', '/placeholder.jpg', '/placeholder.jpg']);
+          }
+        } else {
+          console.log('❌ ItemDescription: Product not found');
+        }
+      } catch (error) {
+        console.error('❌ ItemDescription: Error fetching product:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id, addToRecentlyViewed]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -96,6 +131,17 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
 
   if (!id) {
     return <div className="min-h-screen flex items-center justify-center">Invalid product ID</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product details...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!product) {

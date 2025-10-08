@@ -2,6 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import { Product, ProductFilter, ProductSort } from '../types';
+import { IzajDesktopApiService, IzajDesktopProduct } from '../services/izajDesktopApi';
+
+// Transform izaj-desktop product to izaj-web product format
+const transformProduct = (izajProduct: IzajDesktopProduct): Product => {
+  return {
+    id: izajProduct.id,
+    name: izajProduct.product_name,
+    description: izajProduct.description || '',
+    price: parseFloat(izajProduct.price) || 0,
+    images: izajProduct.image_url ? [izajProduct.image_url] : [],
+    category: izajProduct.category || 'Uncategorized',
+    brand: 'IZAJ', // Default brand
+    rating: 4.5, // Default rating
+    reviewCount: 0, // Default review count
+    stock: izajProduct.display_quantity || 0,
+    sku: izajProduct.product_id,
+    tags: [izajProduct.category].filter(Boolean),
+    isNew: false,
+    isOnSale: false,
+    isFeatured: false,
+    createdAt: new Date(izajProduct.last_sync_at),
+    updatedAt: new Date(izajProduct.last_sync_at),
+  };
+};
 
 export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -13,166 +37,69 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
     setError(null);
 
     try {
-      // This would typically be an API call
-      // For now, we'll simulate with mock data
-      const mockProducts: Product[] = [
-        {
-          id: '1',
-          name: 'Premium Wireless Headphones',
-          description: 'High-quality wireless headphones with noise cancellation',
-          price: 2999,
-          originalPrice: 3999,
-          images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop'],
-          category: 'Electronics',
-          subcategory: 'Audio',
-          brand: 'TechBrand',
-          rating: 4.5,
-          reviewCount: 128,
-          stock: 50,
-          sku: 'TB-HP-001',
-          tags: ['wireless', 'noise-cancellation', 'premium'],
-          isOnSale: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: '2',
-          name: 'Smart Fitness Watch',
-          description: 'Track your fitness goals with this advanced smartwatch',
-          price: 4999,
-          images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop'],
-          category: 'Electronics',
-          subcategory: 'Wearables',
-          brand: 'FitTech',
-          rating: 4.8,
-          reviewCount: 256,
-          stock: 30,
-          sku: 'FT-SW-001',
-          tags: ['fitness', 'smartwatch', 'health'],
-          isNew: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: '3',
-          name: 'Wireless Bluetooth Speaker',
-          description: 'Portable speaker with excellent sound quality',
-          price: 1999,
-          images: ['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop'],
-          category: 'Electronics',
-          subcategory: 'Audio',
-          brand: 'SoundMax',
-          rating: 4.3,
-          reviewCount: 89,
-          stock: 75,
-          sku: 'SM-BS-001',
-          tags: ['bluetooth', 'portable', 'speaker'],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: '4',
-          name: 'Gaming Mechanical Keyboard',
-          description: 'RGB backlit mechanical keyboard for gaming',
-          price: 3499,
-          images: ['https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop'],
-          category: 'Electronics',
-          subcategory: 'Gaming',
-          brand: 'GameTech',
-          rating: 4.6,
-          reviewCount: 156,
-          stock: 25,
-          sku: 'GT-KB-001',
-          tags: ['gaming', 'mechanical', 'rgb'],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: '5',
-          name: 'Wireless Gaming Mouse',
-          description: 'High-precision wireless gaming mouse',
-          price: 2499,
-          images: ['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=400&fit=crop'],
-          category: 'Electronics',
-          subcategory: 'Gaming',
-          brand: 'GameTech',
-          rating: 4.4,
-          reviewCount: 203,
-          stock: 40,
-          sku: 'GT-MS-001',
-          tags: ['gaming', 'wireless', 'precision'],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: '6',
-          name: 'Smartphone Stand',
-          description: 'Adjustable smartphone stand for desk use',
-          price: 899,
-          images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop'],
-          category: 'Electronics',
-          subcategory: 'Accessories',
-          brand: 'DeskPro',
-          rating: 4.2,
-          reviewCount: 67,
-          stock: 100,
-          sku: 'DP-ST-001',
-          tags: ['stand', 'adjustable', 'desk'],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
+      // Fetch from izaj-desktop API
+      const response = await IzajDesktopApiService.getProducts({
+        page: 1,
+        limit: 100,
+        category: filters?.category,
+        search: filters?.search,
+        status: 'active',
+      });
 
-      // Apply filters
-      let filteredProducts = mockProducts;
+      if (response.success) {
+        let transformedProducts = response.products.map(transformProduct);
 
-      if (filters) {
-        if (filters.category) {
-          filteredProducts = filteredProducts.filter(p => p.category === filters.category);
-        }
-        if (filters.brand) {
-          filteredProducts = filteredProducts.filter(p => p.brand === filters.brand);
-        }
-        if (filters.minPrice !== undefined) {
-          filteredProducts = filteredProducts.filter(p => p.price >= filters.minPrice!);
-        }
-        if (filters.maxPrice !== undefined) {
-          filteredProducts = filteredProducts.filter(p => p.price <= filters.maxPrice!);
-        }
-        if (filters.rating !== undefined) {
-          filteredProducts = filteredProducts.filter(p => p.rating >= filters.rating!);
-        }
-        if (filters.inStock) {
-          filteredProducts = filteredProducts.filter(p => p.stock > 0);
-        }
-      }
-
-      // Apply sorting
-      if (sort) {
-        filteredProducts.sort((a, b) => {
-          const aValue = a[sort.field];
-          const bValue = b[sort.field];
-          
-          if (typeof aValue === 'string' && typeof bValue === 'string') {
-            return sort.direction === 'asc' 
-              ? aValue.localeCompare(bValue)
-              : bValue.localeCompare(aValue);
+        // Apply additional client-side filters
+        if (filters) {
+          if (filters.brand) {
+            transformedProducts = transformedProducts.filter(p => p.brand === filters.brand);
           }
-          
-          if (typeof aValue === 'number' && typeof bValue === 'number') {
-            return sort.direction === 'asc' 
-              ? aValue - bValue
-              : bValue - aValue;
+          if (filters.minPrice !== undefined) {
+            transformedProducts = transformedProducts.filter(p => p.price >= filters.minPrice!);
           }
-          
-          return 0;
-        });
-      }
+          if (filters.maxPrice !== undefined) {
+            transformedProducts = transformedProducts.filter(p => p.price <= filters.maxPrice!);
+          }
+          if (filters.rating !== undefined) {
+            transformedProducts = transformedProducts.filter(p => p.rating >= filters.rating!);
+          }
+          if (filters.inStock) {
+            transformedProducts = transformedProducts.filter(p => p.stock > 0);
+          }
+        }
 
-      setProducts(filteredProducts);
+        // Apply sorting
+        if (sort) {
+          transformedProducts.sort((a, b) => {
+            const aValue = a[sort.field];
+            const bValue = b[sort.field];
+            
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              return sort.direction === 'asc' 
+                ? aValue.localeCompare(bValue)
+                : bValue.localeCompare(aValue);
+            }
+            
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+              return sort.direction === 'asc' 
+                ? aValue - bValue
+                : bValue - aValue;
+            }
+            
+            return 0;
+          });
+        }
+
+        setProducts(transformedProducts);
+      } else {
+        throw new Error('Failed to fetch products from izaj-desktop');
+      }
     } catch (err) {
-      setError('Failed to fetch products');
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching products');
       console.error('Error fetching products:', err);
+      
+      // Fallback to empty array on error
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +107,7 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
 
   useEffect(() => {
     fetchProducts();
-  }, [filters, sort]);
+  }, [filters?.category, filters?.search, filters?.brand, filters?.minPrice, filters?.maxPrice, filters?.rating, filters?.inStock, sort]);
 
   return {
     products,

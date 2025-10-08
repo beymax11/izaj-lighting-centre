@@ -11,8 +11,32 @@ import stock from './stock/server.js'
 import sale from './sales/server.js'
 
 const app = express();
-app.use(cors());
+
+// CORS configuration to allow izaj-web to access the API
+app.use(cors({
+  origin: [
+    'http://localhost:3000',  // Next.js default port
+    'http://localhost:3001',  // Alternative Next.js port
+    'http://localhost:3002',  // Current izaj-web port
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:3002'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// Test endpoint to verify API is working
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'izaj-desktop API is running!',
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.use('/api/admin', audit);
 app.use('/api/admin', auth);

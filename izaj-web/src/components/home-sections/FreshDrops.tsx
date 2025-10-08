@@ -12,6 +12,8 @@ export default function FreshDrops() {
   const [freshDropsTouchStart, setFreshDropsTouchStart] = useState<number | null>(null);
   const [freshDropsTouchEnd, setFreshDropsTouchEnd] = useState<number | null>(null);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -56,15 +58,32 @@ export default function FreshDrops() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log('🔄 FreshDrops: Starting to fetch products...');
+        const products = await getAllProducts();
+        console.log('📦 FreshDrops: Received products:', products);
+        setAllProducts(products);
+      } catch (error) {
+        console.error('❌ FreshDrops: Error fetching products:', error);
+        setAllProducts([]);
+      } finally {
+        console.log('✅ FreshDrops: Setting loading to false');
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const handleColorSelect = (productId: number, color: string) => {
     setSelectedColors(prev => ({
       ...prev,
       [productId]: color
     }));
   };
-
-  // Sample product data
-  const allProducts = getAllProducts();
 
   // Determine productsPerPage based on screen size (avoid window on SSR)
   let productsPerPage = 5;
@@ -143,6 +162,29 @@ export default function FreshDrops() {
     if (!isAnimating) return '';
     return direction === 'left' ? 'slide-left' : 'slide-right';
   };
+
+  if (isLoading) {
+    return (
+      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
+        <div className="flex justify-between items-baseline mb-6">
+          <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Avenir Next', sans-serif", fontWeight: "bold" }}>
+            Fresh Drops
+          </h2>
+          <div className="flex-grow"></div>
+          <Link
+            href="/sales"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
+            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+          >
+            View all
+          </Link>
+        </div>
+        <div className="flex justify-center items-center py-8">
+          <div className="text-gray-500">Loading products...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">

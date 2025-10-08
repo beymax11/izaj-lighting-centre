@@ -189,6 +189,19 @@ const MyProfile: React.FC = () => {
     setShowRemoveModal(true);
   };
 
+  const handleChangePhotoClick = () => {
+    console.log('📸 Change Photo clicked');
+    if (!uploading && fileInputRef.current) {
+      console.log('📸 Attempting to open file dialog...');
+      fileInputRef.current.click();
+      console.log('📸 File input click() called');
+    } else if (uploading) {
+      console.log('📸 Upload in progress, ignoring click');
+    } else {
+      console.error('📸 File input ref is null');
+    }
+  };
+
   const confirmRemoveImage = async () => {
     setUploading(true);
     setShowRemoveModal(false);
@@ -235,6 +248,41 @@ const MyProfile: React.FC = () => {
   };
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+
+  const handleAccountDeletion = async () => {
+    if (deleteConfirmationText !== 'Delete') {
+      alert('Please type "Delete" to confirm account deletion.');
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      const response = await fetch('/api/auth/request-deletion', {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to request account deletion');
+      }
+
+      setShowDeleteModal(false);
+      setDeleteConfirmationText('');
+      setSuccessMessage('Deletion confirmation email sent! Please check your inbox.');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 5000);
+
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      alert((error as Error).message || 'Failed to process deletion request. Please try again.');
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
   return (
     <RequireAuth>
     <div className="flex flex-col min-h-screen bg-white font-sans">
@@ -523,62 +571,7 @@ const MyProfile: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Request Account Deletion and Delete Buttons */}
-                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-6 sm:mt-8 pt-4 border-t border-gray-200 gap-2 sm:gap-0">
-                          <button 
-                            type="button"
-                            className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left"
-                            onClick={() => setShowDeleteModal(true)}
-                          >
-                            Account Deletion
-                          </button>
-                          <button 
-                            type="button"
-                            className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
-                            onClick={() => setShowDeleteModal(true)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-
-                        {/* Delete Confirmation Modal */}
-                        {showDeleteModal && (
-                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 overflow-y-auto">
-                            <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative max-h-screen overflow-y-auto">
-                              <button
-                                className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-                                onClick={() => setShowDeleteModal(false)}
-                                aria-label="Close"
-                              >
-                                <Icon icon="mdi:close" />
-                              </button>
-                              <div className="text-lg font-semibold text-gray-900 mb-2">Confirm Account Deletion</div>
-                              <div className="text-gray-700 text-sm mb-6">
-                                Are you sure you want to delete your account? A confirmation link will be sent to your email <span className="font-semibold">{formData.email}</span>. Please check your inbox to proceed.
-                              </div>
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
-                                  onClick={() => setShowDeleteModal(false)}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm"
-                                  onClick={() => {
-                                    setShowDeleteModal(false);
-                                    // Simulate sending confirmation email here
-                                    alert(`A confirmation link has been sent to ${formData.email}`);
-                                  }}
-                                >
-                                  Confirm
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Image Upload Section - Now at the bottom */}
+                        {/* Image Upload Section */}
                         <div className="border-t border-gray-100 my-4 sm:my-6" />
                         <div className="mb-4">
                           <h4 className="text-gray-900 font-semibold">Profile Picture</h4>
@@ -603,33 +596,19 @@ const MyProfile: React.FC = () => {
                               </div>
                             )}
                           </div>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageChange}
-                            accept="image/jpeg,image/png,image/webp"
-                            style={{ 
-                              position: 'absolute',
-                              left: '-9999px',
-                              opacity: 0,
-                              pointerEvents: 'none',
-                              width: '1px',
-                              height: '1px'
-                            }}
-                            disabled={uploading}
-                            tabIndex={-1}
-                            id="profile-picture-input"
-                          />
                           <div className="flex gap-2">
                             <label 
-                              htmlFor="profile-picture-input"
-                              className="text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors disabled:opacity-50 cursor-pointer"
-                              style={{ 
-                                pointerEvents: uploading ? 'none' : 'auto',
-                                opacity: uploading ? 0.5 : 1
-                              }}
+                              className={`text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                               {uploading ? 'Uploading...' : 'Change Photo'}
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImageChange}
+                                accept="image/jpeg,image/png,image/webp"
+                                className="hidden"
+                                disabled={uploading}
+                              />
                             </label>
                             {profileImage && (
                               <button 
@@ -647,6 +626,29 @@ const MyProfile: React.FC = () => {
                             File extension: JPEG, PNG, WebP
                           </p>
                         </div>
+
+                        {/* Account Deletion Section - Moved to bottom */}
+                        <div className="border-t border-gray-200 my-6 sm:my-8" />
+                        <div className="mb-4">
+                          <h4 className="text-red-600 font-semibold text-sm sm:text-base">Danger Zone</h4>
+                          <p className="text-gray-500 text-xs">Permanently delete your account and all associated data</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4">
+                          <button 
+                            type="button"
+                            className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left"
+                            onClick={() => setShowDeleteModal(true)}
+                          >
+                            Account Deletion
+                          </button>
+                          <button 
+                            type="button"
+                            className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                            onClick={() => setShowDeleteModal(true)}
+                          >
+                            Delete Account
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </form>
@@ -656,6 +658,88 @@ const MyProfile: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full relative max-h-screen overflow-y-auto mx-4">
+            <button
+              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setDeleteConfirmationText('');
+              }}
+              aria-label="Close"
+            >
+              <Icon icon="mdi:close" />
+            </button>
+            
+            <div className="text-xl font-bold text-gray-900 mb-4">⚠️ Confirm Account Deletion</div>
+            
+            <div className="text-gray-700 text-sm mb-6">
+              <p className="mb-3">
+                <strong>This action cannot be undone!</strong> Deleting your account will permanently remove:
+              </p>
+              <ul className="list-disc list-inside mb-4 space-y-1 text-xs">
+                <li>Your personal profile information</li>
+                <li>Your order history</li>
+                <li>Your saved addresses</li>
+                <li>Your wishlist and favorites</li>
+                <li>Your payment methods</li>
+              </ul>
+              <p className="mb-3">
+                A confirmation link will be sent to your email <span className="font-semibold">{formData.email}</span>.
+              </p>
+              <p className="text-red-600 font-semibold">
+                To confirm, please type <span className="bg-red-100 px-2 py-1 rounded">Delete</span> in the box below:
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <input
+                type="text"
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                placeholder="Type 'Delete' to confirm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmationText('');
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                onClick={handleAccountDeletion}
+                disabled={isDeletingAccount || deleteConfirmationText !== 'Delete'}
+              >
+                {isDeletingAccount ? (
+                  <>
+                    <Icon icon="mdi:loading" className="animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Delete Account'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </RequireAuth>
   );

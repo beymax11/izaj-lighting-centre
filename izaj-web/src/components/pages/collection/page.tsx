@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import { getAllProducts } from '../../../services/productService';
 import type { Product as ServiceProduct } from '../../../services/productService';
+import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import ProductList from '@/components/pages/collection/ProductList';
 import FeaturedProducts from '@/components/pages/collection/FeaturedProducts';
 import RecentlyViewed from '@/components/pages/collection/RecentlyViewed';
@@ -56,12 +57,14 @@ interface CollectionProps {
 }
 
 const Collection: React.FC<CollectionProps> = ({ }) => {
+  const { recentlyViewed } = useRecentlyViewed();
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [allProducts, setAllProducts] = useState<CollectionProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<CollectionProduct[]>([]);
   const [displayedProducts, setDisplayedProducts] = useState<CollectionProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentMainPage, setCurrentMainPage] = useState(1);
   const [productsPerMainPage] = useState(12);
   const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
@@ -160,52 +163,9 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  // Sample product data for Recently Viewed
-  const recentlyViewedProducts = [
-    {
-      id: 1,
-      name: "Abednego | Chandelier/Large",
-      price: "₱32,995",
-      image: "/abed.webp",
-      colors: ["black", "gold", "silver"],
-      isNew: true
-    },
-    {
-      id: 2,
-      name: "Aberdeen | Modern LED Chandelier",
-      price: "₱25,464",
-      image: "/aber.webp",
-      colors: ["black", "gold"],
-      isNew: true
-    },
-    {
-      id: 3,
-      name: "Acadia | Table Lamp",
-      price: "₱12,234",
-      image: "/acad.webp",
-      colors: ["black"],
-      isNew: true
-    },
-    {
-      id: 4,
-      name: "Ademar | Modern Chandelier",
-      price: "₱11,237",
-      image: "/mar.webp",
-      colors: ["black"],
-      isNew: true
-    },
-    {
-      id: 5,
-      name: "Aeris | Modern Pendant Light",
-      price: "₱9,435",
-      image: "/aeris.webp",
-      colors: ["black"],
-      isNew: true
-    }
-  ];
-
-  const totalPages = Math.ceil(recentlyViewedProducts.length / productsPerPage);
-  const currentProducts = recentlyViewedProducts.slice(
+  // Use actual recently viewed products
+  const totalPages = Math.ceil(recentlyViewed.length / productsPerPage);
+  const currentProducts = recentlyViewed.slice(
     currentPage * productsPerPage,
     (currentPage + 1) * productsPerPage
   );
@@ -282,143 +242,39 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     setDeals(sampleDeals);
   }, []);
 
-  // Mock product data - in a real app, this would come from an API
+  // Fetch products from izaj-desktop
   useEffect(() => {
-    const mockProducts: CollectionProduct[] = [
-      {
-        id: 1,
-        name: "Abednego | Chandelier/Large",
-        description: "A stunning large chandelier that adds elegance to any space.",
-        price: 32995,
-        rating: 4,
-        reviewCount: 18,
-        image: "/abed.webp",
-        colors: ["black", "gold", "silver"],
-        isOnSale: false,
-        isNew: true,
-        category: "Chandelier"
-      },
-      {
-        id: 2,
-        name: "Aberdeen | Modern LED Chandelier",
-        description: "Modern LED chandelier with contemporary design.",
-        price: 25464,
-        rating: 4,
-        reviewCount: 15,
-        image: "/aber.webp",
-        colors: ["black", "gold"],
-        isOnSale: false,
-        isNew: true,
-        category: "Chandelier"
-      },
-      {
-        id: 3,
-        name: "Acadia | Table Lamp",
-        description: "Elegant table lamp perfect for any room.",
-        price: 12234,
-        rating: 4,
-        reviewCount: 12,
-        image: "/acad.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Table Lamps"
-      },
-      {
-        id: 4,
-        name: "Ademar | Modern Chandelier",
-        description: "Modern chandelier with unique design elements.",
-        price: 11237,
-        rating: 4,
-        reviewCount: 10,
-        image: "/mar.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Chandelier"
-      },
-      {
-        id: 5,
-        name: "Aeris | Modern Pendant Light",
-        description: "Contemporary pendant light for modern spaces.",
-        price: 9435,
-        rating: 4,
-        reviewCount: 8,
-        image: "/aeris.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Pendant Lights"
-      },
-      {
-        id: 6,
-        name: "Aina | Modern LED Chandelier",
-        description: "Stunning LED chandelier with modern aesthetics.",
-        price: 29995,
-        rating: 4,
-        reviewCount: 20,
-        image: "/aina.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Chandelier"
-      },
-      {
-        id: 7,
-        name: "Alabama | Table Lamp",
-        description: "Classic table lamp with modern touches.",
-        price: 27995,
-        rating: 4,
-        reviewCount: 16,
-        image: "/alab.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Table Lamps"
-      },
-      {
-        id: 8,
-        name: "Alphius | Surface Mounted Downlight",
-        description: "Efficient surface mounted downlight for any space.",
-        price: 25995,
-        rating: 4,
-        reviewCount: 14,
-        image: "/alph.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Recessed Lights"
-      },
-      {
-        id: 9,
-        name: "Altair | Modern LED Chandelier",
-        description: "Contemporary LED chandelier with unique design.",
-        price: 23995,
-        rating: 4,
-        reviewCount: 13,
-        image: "/alta.jpg",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Chandelier"
-      },
-      {
-        id: 10,
-        name: "Amalfi | Boho Rattan Soliya Pendant Lamp",
-        description: "Bohemian style pendant lamp with rattan details.",
-        price: 21995,
-        rating: 4,
-        reviewCount: 11,
-        image: "/ama.webp",
-        colors: ["black"],
-        isOnSale: false,
-        isNew: true,
-        category: "Pendant Lights"
+    const fetchProducts = async () => {
+      try {
+        const serviceProducts = await getAllProducts();
+        
+        // Transform service products to collection products
+        const transformedProducts: CollectionProduct[] = serviceProducts.map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: parseFloat(product.price.replace(/[₱,]/g, '')) || 0,
+          rating: 4.5, // Default rating
+          reviewCount: 0, // Default review count
+          image: product.image,
+          colors: product.colors || ["black"],
+          isOnSale: false, // Default
+          isNew: true, // Default for fresh drops
+          category: getCategoryFromName(product.name) // Use real category from product name
+        }));
+        
+        setAllProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setAllProducts([]);
+        setFilteredProducts([]);
+      } finally {
+        setIsLoading(false);
       }
-    ];
-    
-    setAllProducts(mockProducts);
-    setFilteredProducts(mockProducts);
+    };
+
+    fetchProducts();
   }, []);
 
   // Handle sort change
@@ -467,15 +323,39 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   // Filter products based on selected categories
   useEffect(() => {
     if (selectedCategories.length === 0) {
+      // If no categories selected, show all products
       setFilteredProducts(allProducts);
     } else {
+      // Filter products by selected categories
       const filtered = allProducts.filter(product => 
-        product.category && selectedCategories.includes(product.category)
+        selectedCategories.includes(product.category)
       );
       setFilteredProducts(filtered);
     }
-    setCurrentMainPage(1); // Reset to first page when filters change
+    setCurrentMainPage(1); // Reset to first page when filtering changes
   }, [selectedCategories, allProducts]);
+
+  // Helper function to determine category from product name
+  const getCategoryFromName = (name: string): string => {
+    const nameLower = name.toLowerCase();
+    if (nameLower.includes('chandelier')) return 'Chandelier';
+    if (nameLower.includes('pendant')) return 'Pendant Light';
+    if (nameLower.includes('table') || nameLower.includes('lamp')) return 'Table Lamp';
+    if (nameLower.includes('floor')) return 'Floor Lamp';
+    if (nameLower.includes('wall')) return 'Wall Lamp';
+    if (nameLower.includes('ceiling')) return 'Ceiling Light';
+    if (nameLower.includes('recessed') || nameLower.includes('downlight')) return 'Recessed Lighting';
+    if (nameLower.includes('track')) return 'Track Lighting';
+    if (nameLower.includes('outdoor') || nameLower.includes('garden')) return 'Outdoor Lighting';
+    if (nameLower.includes('bulb')) return 'Bulb';
+    if (nameLower.includes('led') && nameLower.includes('strip')) return 'LED Strip';
+    if (nameLower.includes('spotlight')) return 'Spotlight';
+    if (nameLower.includes('smart')) return 'Smart Lighting';
+    if (nameLower.includes('emergency')) return 'Emergency Light';
+    if (nameLower.includes('lantern')) return 'Lantern';
+    return 'Lighting';
+  };
+
 
   // Update displayed products based on current page
   useEffect(() => {
@@ -494,6 +374,18 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   };
 
   {/* Main Content */}
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
+          <div className="flex justify-center items-center py-20">
+            <div className="text-gray-500 text-lg">Loading products...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
@@ -595,7 +487,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         selectedColors={selectedColors}
         totalPages={totalPages}
         currentProducts={currentProducts}
-        allProducts={recentlyViewedProducts}
+        allProducts={recentlyViewed}
         isHoveringProducts={isHoveringProducts}
         slideDirection={slideDirection}
         setIsHoveringProducts={setIsHoveringProducts}

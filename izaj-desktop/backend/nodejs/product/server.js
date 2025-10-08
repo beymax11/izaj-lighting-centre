@@ -204,7 +204,7 @@ router.get('/client-products', async (req, res) => {
           last_sync_at
         )
       `)
-      .eq('is_published', true)
+      .eq('publish_status', true)
       .order('inserted_at', { ascending: false });
 
     if (status && status !== 'all') {
@@ -246,7 +246,7 @@ router.get('/client-products', async (req, res) => {
     const { count: totalCount, error: countError } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
-      .eq('is_published', true);
+      .eq('publish_status', true);
 
     if (countError) {
       console.error('Error getting product count:', countError);

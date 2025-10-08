@@ -185,16 +185,29 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const register = async (userData: RegisterData) => {
     setIsLoading(true);
     try {
+      const fullName = `${userData.firstName} ${userData.lastName}`.trim();
+      
+      const payload = {
+        email: userData.email,
+        password: userData.password,
+        name: fullName,
+        phone: userData.phone,
+        address: userData.address,
+      };
+      
+      console.log('📝 UserContext - Register payload:', {
+        ...payload,
+        password: '***hidden***',
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        fullNameLength: fullName.length,
+        nameValue: `"${fullName}"`
+      });
+      
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userData.email,
-          password: userData.password,
-          name: `${userData.firstName} ${userData.lastName}`.trim(),
-          phone: userData.phone,
-          address: userData.address,
-        }),
+        body: JSON.stringify(payload),
       });
       const result = await response.json();
       if (!response.ok) {

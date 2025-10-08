@@ -124,16 +124,18 @@ class EmailService {
           }
           
           .greeting {
+            font-family: 'Avenir Next', sans-serif;
             font-size: 24px;
             font-weight: 600;
-            color: #2c3e50;
+            color: #000000;
             margin-bottom: 20px;
           }
           
           .content p {
             margin-bottom: 20px;
             font-size: 16px;
-            color: #5a6c7d;
+            color: #333333;
+            line-height: 1.6;
           }
           
           .button-container {
@@ -143,34 +145,35 @@ class EmailService {
           
           .button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
             color: white;
             padding: 16px 40px;
             text-decoration: none;
-            border-radius: 50px;
+            border-radius: 8px;
             font-weight: 600;
             font-size: 16px;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
             letter-spacing: 0.5px;
+            border: 2px solid #000000;
           }
           
           .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
           }
           
           .link-container {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 12px;
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
             padding: 20px;
             margin: 25px 0;
           }
           
           .link-container p {
             font-size: 14px;
-            color: #6c757d;
+            color: #666666;
             margin-bottom: 10px;
             font-weight: 500;
           }
@@ -179,39 +182,40 @@ class EmailService {
             word-break: break-all;
             background: #ffffff;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            color: #495057;
-            border: 1px solid #e9ecef;
+            color: #333333;
+            border: 1px solid #e5e5e5;
           }
           
           .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 12px;
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
             padding: 20px;
             margin: 25px 0;
           }
           
           .warning p {
-            color: #856404;
+            color: #333333;
             font-weight: 500;
             margin: 0;
           }
           
           .features {
-            background: #f8f9fa;
-            border-radius: 12px;
+            background: #f8f8f8;
+            border-radius: 8px;
             padding: 25px;
             margin: 25px 0;
           }
           
           .features h3 {
-            color: #2c3e50;
+            color: #000000;
             font-size: 18px;
             margin-bottom: 15px;
             font-weight: 600;
+            font-family: 'Avenir Next', sans-serif;
           }
           
           .features ul {
@@ -221,28 +225,28 @@ class EmailService {
           
           .features li {
             padding: 8px 0;
-            color: #5a6c7d;
+            color: #333333;
             position: relative;
             padding-left: 25px;
           }
           
           .features li::before {
-            content: '✨';
+            content: '💡';
             position: absolute;
             left: 0;
             top: 8px;
           }
           
           .footer {
-            background: #f8f9fa;
+            background: #f8f8f8;
             padding: 30px;
             text-align: center;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid #e5e5e5;
           }
           
           .footer p {
             font-size: 14px;
-            color: #6c757d;
+            color: #666666;
             margin: 5px 0;
           }
           
@@ -984,6 +988,312 @@ class EmailService {
     await this.sendEmail({
       to: email,
       subject: 'Password Reset Request - IZAJ Lighting Centre',
+      html,
+      text,
+    });
+  }
+
+  async sendAccountDeletionEmail(email: string, deletionToken: string, userName: string): Promise<void> {
+    const deletionUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/confirm-deletion?token=${deletionToken}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Deletion Confirmation - IZAJ Lighting Centre</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+          }
+          
+          .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e5e5e5;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          }
+          
+          .header {
+            background: #000000;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+          }
+          
+          .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+            text-shadow: -2px 0px 2px rgba(0, 0, 0, 0.5);
+          }
+          
+          .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 300;
+          }
+          
+          .content {
+            padding: 40px 30px;
+            background: #ffffff;
+          }
+          
+          .greeting {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+          }
+          
+          .content p {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #5a6c7d;
+          }
+          
+          .button-container {
+            text-align: center;
+            margin: 30px 0;
+          }
+          
+          .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 16px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+          }
+          
+          .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(231, 76, 60, 0.4);
+          }
+          
+          .link-container {
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+          }
+          
+          .link-container p {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 10px;
+            font-weight: 500;
+          }
+          
+          .link-url {
+            word-break: break-all;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333333;
+            border: 1px solid #e5e5e5;
+          }
+          
+          .warning {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+          }
+          
+          .warning p {
+            color: #dc2626;
+            font-weight: 500;
+            margin: 0;
+          }
+          
+          .data-loss {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+          }
+          
+          .data-loss h3 {
+            color: #ea580c;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-family: 'Avenir Next', sans-serif;
+          }
+          
+          .data-loss ul {
+            list-style: none;
+            padding: 0;
+          }
+          
+          .data-loss li {
+            padding: 8px 0;
+            color: #ea580c;
+            position: relative;
+            padding-left: 25px;
+          }
+          
+          .data-loss li::before {
+            content: '⚠️';
+            position: absolute;
+            left: 0;
+            top: 8px;
+          }
+          
+          .footer {
+            background: #f8f8f8;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e5e5;
+          }
+          
+          .footer p {
+            font-size: 14px;
+            color: #666666;
+            margin: 5px 0;
+          }
+          
+          @media (max-width: 600px) {
+            body {
+              padding: 10px;
+            }
+            
+            .email-container {
+              border-radius: 12px;
+            }
+            
+            .header, .content, .footer {
+              padding: 25px 20px;
+            }
+            
+            .header h1 {
+              font-size: 24px;
+            }
+            
+            .greeting {
+              font-size: 20px;
+            }
+            
+            .button {
+              padding: 14px 30px;
+              font-size: 15px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="header">
+            <h1>IZAJ Lighting Centre</h1>
+            <p>Account Deletion Request</p>
+          </div>
+          
+          <div class="content">
+            <h2 class="greeting">Hello ${userName},</h2>
+            
+            <p>We received a request to permanently delete your <strong>IZAJ Lighting Centre</strong> account. We're sorry to see you go!</p>
+            
+            <p>If you wish to proceed with deleting your account, please click the button below to confirm:</p>
+            
+            <div class="button-container">
+              <a href="${deletionUrl}" class="button">Confirm Account Deletion</a>
+            </div>
+            
+            <div class="link-container">
+              <p>If the button doesn't work, copy and paste this link:</p>
+              <div class="link-url">${deletionUrl}</div>
+            </div>
+            
+            <div class="warning">
+              <p><strong>⏰ Important:</strong> This deletion link will expire in 24 hours for security reasons.</p>
+            </div>
+            
+            <div class="data-loss">
+              <h3>⚠️ What will be deleted:</h3>
+              <ul>
+                <li>Your personal profile information</li>
+                <li>Your order history</li>
+                <li>Your saved addresses</li>
+                <li>Your wishlist and favorites</li>
+                <li>Your payment methods</li>
+              </ul>
+              <p style="margin-top: 15px; color: #721c24; font-weight: 600;">This action is permanent and cannot be undone!</p>
+            </div>
+            
+            <p>If you did NOT request account deletion, please ignore this email and your account will remain active. For security, consider changing your password.</p>
+            
+            <p>If you're having issues with our service, we'd love to help! Please contact our support team before deleting your account.</p>
+            
+            <p>Thank you for being part of the IZAJ family. We hope to see you again in the future!</p>
+            
+            <p>Best regards,<br><strong>The IZAJ Lighting Centre Team</strong></p>
+          </div>
+          
+          <div class="footer">
+            <p>© 2024 IZAJ Lighting Centre. All rights reserved.</p>
+            <p>For support, contact us at <strong>izajtrading@gmail.com</strong></p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      Hello ${userName},
+      
+      We received a request to permanently delete your IZAJ Lighting Centre account. If you wish to proceed, please visit this link:
+      
+      ${deletionUrl}
+      
+      This link will expire in 24 hours for security reasons.
+      
+      WARNING: This will permanently delete:
+      - Your personal profile information
+      - Your order history
+      - Your saved addresses
+      - Your wishlist and favorites
+      - Your payment methods
+      
+      This action cannot be undone!
+      
+      If you did NOT request account deletion, please ignore this email and your account will remain active.
+      
+      Best regards,
+      The IZAJ Lighting Centre Team
+    `;
+
+    await this.sendEmail({
+      to: email,
+      subject: 'Confirm Account Deletion - IZAJ Lighting Centre',
       html,
       text,
     });

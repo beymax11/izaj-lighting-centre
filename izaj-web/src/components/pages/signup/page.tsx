@@ -152,11 +152,11 @@ const SignupPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.firstName) {
+    if (!formData.firstName || !formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
     
-    if (!formData.lastName) {
+    if (!formData.lastName || !formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
 
@@ -202,18 +202,24 @@ const SignupPage: React.FC = () => {
         address: formData.address
       } : undefined;
 
-      const result = await register({
-        email: formData.email,
+      const registerData = {
+        email: formData.email.trim(),
         password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phoneNumber || undefined,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phoneNumber.trim() || undefined,
         address: addressData
+      };
+      
+      console.log('📝 Signup Form - Data being sent:', {
+        ...registerData,
+        password: '***hidden***'
       });
       
-      // Show success message and redirect to login
-      alert('Account created successfully! Please check your email to confirm your account before logging in.');
-      router.push('/login');
+      const result = await register(registerData);
+      
+      // Redirect to login with success message
+      router.push('/login?signup=success');
     } catch (error) {
       console.error('Registration error:', error);
       setErrors({ general: (error as Error).message || 'Registration failed.' });

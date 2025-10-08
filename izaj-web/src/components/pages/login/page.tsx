@@ -15,6 +15,7 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
   
   const { login } = useUserContext();
@@ -52,6 +53,22 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     if (emailInputRef.current) {
       emailInputRef.current.focus();
+    }
+    
+    // Check for signup success message
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('signup') === 'success') {
+      setShowSuccessMessage(true);
+      
+      // Auto-hide message after 8 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 8000);
+      
+      // Clean up URL without reloading
+      window.history.replaceState({}, '', '/login');
+      
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -317,6 +334,28 @@ const LoginPage: React.FC = () => {
             <p className="text-black text-base mb-8 leading-relaxed font-bold">
               Get a more personalized experience where you don't need to fill in your information every time.
             </p>
+
+            {showSuccessMessage && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start">
+                  <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-green-800 mb-1">
+                      Account created successfully!
+                    </p>
+                    <p className="text-sm text-green-700">
+                      Please check your email to confirm your account before logging in.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowSuccessMessage(false)}
+                    className="ml-2 text-green-600 hover:text-green-800"
+                  >
+                    <Icon icon="mdi:close" className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {errors.general && (
               <div className="mb-6 text-sm text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">

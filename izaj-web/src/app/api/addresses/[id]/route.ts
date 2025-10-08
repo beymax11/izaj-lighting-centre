@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase-server';
 // PUT /api/addresses/[id] - Update address
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from Supabase session (cookies)
@@ -15,7 +15,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { name, phone, address, is_default } = body;
 
@@ -70,7 +70,7 @@ export async function PUT(
 // DELETE /api/addresses/[id] - Delete address (soft delete)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from Supabase session (cookies)
@@ -81,7 +81,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Soft delete address (set is_active to false)
     const { data: deletedAddress, error } = await supabase
