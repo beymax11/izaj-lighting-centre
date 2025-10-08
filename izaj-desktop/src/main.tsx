@@ -24,15 +24,38 @@ function parseDeepLink(url: string) {
     }
 }
 
+// Capture early deep link before React mounts (best-effort)
+let __pendingDeepLinkUrl: string | null = null;
+try {
+  onOpenUrl((payload: string | { url: string }) => {
+    const url = typeof payload === 'string' ? payload : payload?.url ?? '';
+    __pendingDeepLinkUrl = url;
+  });
+} catch {
+  // ignore if plugin not ready yet
+}
+
 export function DeepLinkHandler() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    // Cold start: consume any pending URL captured before mount
+    if (__pendingDeepLinkUrl) {
+      const parsed = parseDeepLink(__pendingDeepLinkUrl);
+      __pendingDeepLinkUrl = null;
+      if (parsed && parsed.route && parsed.route.startsWith('update-password')) {
+        const search = new URLSearchParams();
+        if (parsed.accessToken) search.set('access_token', parsed.accessToken);
+        if (parsed.refreshToken) search.set('refresh_token', parsed.refreshToken);
+        navigate(`/update-password?${search.toString()}`, { replace: true });
+      }
+    }
+
     const unlistenPromise = onOpenUrl((payload: string | { url: string }) => {
       const url = typeof payload === 'string' ? payload : payload?.url ?? '';
       const parsed = parseDeepLink(url);
       if (!parsed) return;
-      if (parsed.route === 'update-password') {
+      if (parsed.route && parsed.route.startsWith('update-password')) {
         const search = new URLSearchParams();
         if (parsed.accessToken) search.set('access_token', parsed.accessToken);
         if (parsed.refreshToken) search.set('refresh_token', parsed.refreshToken);

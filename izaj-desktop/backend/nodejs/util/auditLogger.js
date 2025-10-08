@@ -24,13 +24,21 @@ export async function logAuditEvent(userId, action, details, req) {
       .eq('user_id', userId)
       .single();
 
+    const ip =
+      req.headers['x-forwarded-for']?.split(',').shift() ||
+      req.socket?.remoteAddress ||
+      null;
+
     const { error } = await supabase
-      .from('audit_logs')
+      .from('audit_logs') 
       .insert([{
         user_id: userId,
-        user_name: user?.name || 'Unknown',
+        user_name: user?.name || 'unknown',
         action,
-        timecreated: new Date().toISOString()
+        details: details || null,
+        ip_address: ip,
+        user_agent: req?.headers?.['user-agent'] || null,
+        created_at: new Date().toISOString()
       }]);
 
     if (error) {
@@ -38,7 +46,6 @@ export async function logAuditEvent(userId, action, details, req) {
       throw error;
     }
 
-    console.log(`Audit event logged: ${action} by ${user?.name || 'Unknown'} (${userId})`);
     return true;
   } catch (error) {
     console.error('Audit log creation failed:', error);

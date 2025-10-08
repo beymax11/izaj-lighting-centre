@@ -6,4 +6,6 @@ declare module '@tauri-apps/plugin-deep-link' {
   export function onOpenUrl(
     handler: (payload: string | { url: string }) => void
   ): Promise<UnlistenFn>;
+  // Returns the most recent deep link URL if available (cold start)
+  export function getCurrentUrl(): Promise<string | null>;
 }
