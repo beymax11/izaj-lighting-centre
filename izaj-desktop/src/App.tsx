@@ -10,6 +10,7 @@ import Settings from './pages/settings';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
+import Customers from './pages/Customers';
 import { Session } from '@supabase/supabase-js';
 import { ProfileData } from './pages/profile';
 import PrivateRoute from './route/PrivateRoute';
@@ -95,11 +96,13 @@ function App() {
       case 'ORDERS':
         return <Orders session={session} setIsOverlayOpen={setIsOverlayOpen} />;
       case 'FEEDBACKS':
-        return <Feedbacks setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
+        return <Feedbacks session={session} setIsFeedbackModalOpen={setIsFeedbackModalOpen} />;
       case 'PAYMENTS':
         return <Payments session={session} setIsOverlayOpen={setIsOverlayOpen} />;
       case 'REPORTS':
         return <Reports session={session} />;
+      case 'CUSTOMERS':
+        return <Customers session={session} />;
       case 'PROFILE':
         return <Profile session={session} setProfile={setProfile} profile={profile} handleNavigation={handleNavigation} />;
       case 'SETTINGS':
@@ -108,7 +111,7 @@ function App() {
         return <UpdatePassword />;
       case 'DASHBOARD':
       default:
-        return <Dashboard />;
+        return <Dashboard session={session} onNavigate={handleNavigation} />;
     }
   };
 

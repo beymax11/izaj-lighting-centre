@@ -225,19 +225,19 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                 <div className="hidden md:flex flex-col md:flex-row justify-between items-center mt-4 gap-4">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm text-black">Share:</span>
-                    <Icon icon="logos:messenger" className="w-5 h-5 text-blue-500 cursor-pointer hover:opacity-80" />
-                    <Icon icon="ic:baseline-facebook" className="w-5 h-5 text-blue-700 cursor-pointer hover:opacity-80" />
-                    <Icon icon="mdi:instagram" className="w-5 h-5 text-pink-500 cursor-pointer hover:opacity-80" />
-                    <Icon icon="mdi:twitter" className="w-5 h-5 text-blue-400 cursor-pointer hover:opacity-80" />
+                    <Icon icon="mdi:message-outline" className="w-5 h-5 text-gray-700 cursor-pointer hover:text-black" />
+                    <Icon icon="mdi:facebook" className="w-5 h-5 text-gray-700 cursor-pointer hover:text-black" />
+                    <Icon icon="mdi:instagram" className="w-5 h-5 text-gray-700 cursor-pointer hover:text-black" />
+                    <Icon icon="mdi:twitter" className="w-5 h-5 text-gray-700 cursor-pointer hover:text-black" />
                   </div>
 
                   <button 
-                    className="flex items-center text-gray-600 text-sm gap-1 hover:text-red-500 transition-colors"
+                    className="flex items-center text-gray-600 text-sm gap-1 hover:text-black transition-colors"
                     onClick={handleToggleFavorite}
                   >
                     <Icon 
                       icon={isFavorite(product?.id?.toString() || '') ? "mdi:heart" : "mdi:heart-outline"} 
-                      className={`text-lg ${isFavorite(product?.id?.toString() || '') ? 'text-red-500' : 'text-gray-400'}`} 
+                      className={`text-lg ${isFavorite(product?.id?.toString() || '') ? 'text-gray-800' : 'text-gray-400'}`} 
                     />
 Add to Favorites
                   </button>
@@ -246,11 +246,14 @@ Add to Favorites
                 {/* Product Description - Desktop */}
                 <div className="hidden md:block mt-4 p-4">
                   <h3 className="font-bold text-black text-lg mb-2">PRODUCT DESCRIPTION</h3>
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-black">
-                    <li>Color: {selectedColor || product.colors?.[0] || 'Black'}, {product.colors?.[1] || 'Black'} + Gold</li>
-                    <li>Material: Iron art + Aluminum</li>
-                    <li>Width: 120cm</li>
-                  </ul>
+                  {product.description ? (
+                    <p className="text-sm text-black whitespace-pre-wrap">{product.description}</p>
+                  ) : (
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-black">
+                      <li>Color: {selectedColor || product.colors?.[0] || 'Black'}</li>
+                      <li>No additional description available</li>
+                    </ul>
+                  )}
                 </div>
 
                 {/* Payment & Security - Desktop */}
@@ -279,14 +282,14 @@ Add to Favorites
 
               {/* Monthly Deals & Ratings */}
               <div className="flex items-center mb-4 gap-2">
-                <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
+                <span className="bg-black text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
                 <div className="flex items-center">
                   <span className="mr-1 text-black font-semibold">4.5</span>
                   {[...Array(5)].map((_, i) => (
                     <Icon 
                       key={i} 
                       icon={i < 4 ? "mdi:star" : "mdi:star-half"} 
-                      className={`text-lg ${i < 4 ? 'text-yellow-500' : 'text-yellow-500'}`} 
+                      className={`text-lg ${i < 4 ? 'text-gray-800' : 'text-gray-800'}`} 
                     />
                   ))}
                 </div>
@@ -313,7 +316,7 @@ Add to Favorites
               {/* Price and Details */}
               <div>
                 <p className="text-2xl font-bold mb-4 text-black">{product.price}</p>
-                <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-green-600">In Stock</span></p>
+                <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-black">In Stock</span></p>
                 
                 <div className="flex flex-col gap-4 mb-8">
                   <div className="flex items-center gap-4">
@@ -364,14 +367,14 @@ Add to Favorites
               </div>
 
               {/* Shipping Schedule */}
-              <div className="bg-yellow-100 p-4 rounded-lg mb-8 flex items-start">
+              <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-8 flex items-start">
                 <Icon 
                   icon="mdi:truck-delivery-outline" 
-                  className="text-gray-800 text-2xl mr-3 mt-1 flex-shrink-0"
+                  className="text-black text-2xl mr-3 mt-1 flex-shrink-0"
                 />
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-2">Shipping Schedule</h3>
-                  <p className="text-gray-800 text-sm">
+                  <h3 className="font-bold text-black mb-2">Shipping Schedule</h3>
+                  <p className="text-gray-700 text-sm">
                     Dispatched within 10-14 working days (for store pick up), 10-14 days (Metro Manila), and 14 days (Provincial).
                   </p>
                 </div>
@@ -380,7 +383,7 @@ Add to Favorites
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button 
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
                   disabled={cartLoading}
                 >
@@ -390,7 +393,7 @@ Add to Favorites
                 
                 <Link 
                   href="/checkout"
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2"
+                  className="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex-1 flex items-center justify-center gap-2"
                 >
                   <Icon icon="mdi:credit-card-outline" className="text-lg" />
                   BUY NOW
@@ -401,13 +404,13 @@ Add to Favorites
               <div className="md:hidden flex flex-row justify-between items-center mt-4 mb-8">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm text-black">Share:</span>
-                  <Icon icon="logos:messenger" className="w-5 h-5 text-blue-500 cursor-pointer hover:opacity-80" />
-                  <Icon icon="ic:baseline-facebook" className="w-5 h-5 text-blue-700 cursor-pointer hover:opacity-80" />
-                  <Icon icon="mdi:instagram" className="w-5 h-5 text-pink-500 cursor-pointer hover:opacity-80" />
-                  <Icon icon="mdi:twitter" className="w-5 h-5 text-blue-400 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:message-outline" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:facebook" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:instagram" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:twitter" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
                 </div>
                 <div className="flex items-center text-gray-600 text-sm gap-1">
-                  <Icon icon="mdi:heart" className="text-red-500 text-lg" />
+                  <Icon icon="mdi:heart" className="text-gray-800 text-lg" />
                   Favorite (2.7k)
                 </div>
               </div>
@@ -415,11 +418,14 @@ Add to Favorites
               {/* Product Description */}
               <div className="mt-4 p-4">
                 <h3 className="font-bold text-black text-lg mb-2">PRODUCT DESCRIPTION</h3>
-                <ul className="list-disc pl-5 space-y-1 text-sm text-black">
-                  <li>Color: {product.colors?.[0] || 'Black'}, {product.colors?.[1] || 'Black'} + Gold</li>
-                  <li>Material: Iron art + Aluminum</li>
-                  <li>Width: {product.size || '120cm'}</li>
-                </ul>
+                {product.description ? (
+                  <p className="text-sm text-black whitespace-pre-wrap">{product.description}</p>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-black">
+                    <li>Color: {product.colors?.[0] || 'Black'}</li>
+                    <li>No additional description available</li>
+                  </ul>
+                )}
               </div>
 
               {/* Delivery & Installation (Dropdown) */}
@@ -488,14 +494,14 @@ Add to Favorites
 
               {/* Monthly Deals & Ratings */}
               <div className="flex items-center mb-4 gap-2">
-                <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
+                <span className="bg-black text-white text-xs px-2 py-1 rounded">MONTHLY DEALS</span>
                 <div className="flex items-center">
                   <span className="mr-1 text-black font-semibold">4.5</span>
                   {[...Array(5)].map((_, i) => (
                     <Icon 
                       key={i} 
                       icon={i < 4 ? "mdi:star" : "mdi:star-half"} 
-                      className={`text-lg ${i < 4 ? 'text-yellow-500' : 'text-yellow-500'}`} 
+                      className={`text-lg ${i < 4 ? 'text-gray-800' : 'text-gray-800'}`} 
                     />
                   ))}
                 </div>
@@ -523,7 +529,7 @@ Add to Favorites
               <p className="text-2xl font-bold mb-4 text-black">{product.price}</p>
 
               {/* Stock */}
-              <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-green-600">In Stock</span></p>
+              <p className="mb-6 text-gray-600">Stock: <span className="font-semibold text-black">In Stock</span></p>
 
               {/* Quantity & Branch Availability */}
               <div className="flex flex-col gap-4 mb-8">
@@ -570,14 +576,14 @@ Add to Favorites
               </div>
 
               {/* Shipping Schedule */}
-              <div className="bg-yellow-100 p-4 rounded-lg mb-8 flex items-start">
+              <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-8 flex items-start">
                 <Icon 
                   icon="mdi:truck-delivery-outline" 
-                  className="text-gray-800 text-2xl mr-3 mt-1 flex-shrink-0"
+                  className="text-black text-2xl mr-3 mt-1 flex-shrink-0"
                 />
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-2">Shipping Schedule</h3>
-                  <p className="text-gray-800 text-sm">
+                  <h3 className="font-bold text-black mb-2">Shipping Schedule</h3>
+                  <p className="text-gray-700 text-sm">
                     Dispatched within 10-14 working days (for store pick up), 10-14 days (Metro Manila), and 14 days (Provincial).
                   </p>
                 </div>
@@ -586,7 +592,7 @@ Add to Favorites
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button 
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
                   disabled={cartLoading}
                 >
@@ -596,7 +602,7 @@ Add to Favorites
                 
                 <Link 
                   href="/checkout"
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex-1 flex items-center justify-center gap-2"
+                  className="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex-1 flex items-center justify-center gap-2"
                 >
                   <Icon icon="mdi:credit-card-outline" className="text-lg" />
                   BUY NOW
@@ -607,13 +613,13 @@ Add to Favorites
               <div className="md:hidden flex flex-row justify-between items-center mt-4 mb-8">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm text-black">Share:</span>
-                  <Icon icon="logos:messenger" className="w-5 h-5 text-blue-500 cursor-pointer hover:opacity-80" />
-                  <Icon icon="ic:baseline-facebook" className="w-5 h-5 text-blue-700 cursor-pointer hover:opacity-80" />
-                  <Icon icon="mdi:instagram" className="w-5 h-5 text-pink-500 cursor-pointer hover:opacity-80" />
-                  <Icon icon="mdi:twitter" className="w-5 h-5 text-blue-400 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:message-outline" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:facebook" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:instagram" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
+                  <Icon icon="mdi:twitter" className="w-5 h-5 text-gray-700 cursor-pointer hover:opacity-80" />
                 </div>
                 <div className="flex items-center text-gray-600 text-sm gap-1">
-                  <Icon icon="mdi:heart" className="text-red-500 text-lg" />
+                  <Icon icon="mdi:heart" className="text-gray-800 text-lg" />
                   Favorite (2.7k)
                 </div>
               </div>
@@ -659,7 +665,7 @@ Add to Favorites
       </div>
 
       {/* Product Ratings & Reviews Section */}
-      <ProductRatings />
+      <ProductRatings productId={String(id)} />
         
        {/* Chat Modal */}
       {isChatModalOpen && (

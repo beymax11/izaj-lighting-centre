@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 	if (code) {
 		if (type === 'recovery') {
 			// For password reset, redirect to reset page with the code (don't auto-login)
-			const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+			const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
 			return NextResponse.redirect(new URL(`/reset-password?code=${code}`, base));
 		} else {
 			// Exchange the OAuth code for a session and set cookies
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 		}
 	}
 
-	const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+	const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
 	return NextResponse.redirect(new URL(redirectPath, base));
 }
 

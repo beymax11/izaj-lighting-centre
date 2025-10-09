@@ -3,8 +3,7 @@
 export type OrderStatus = 
   | 'pending' 
   | 'approved' 
-  | 'delivering' 
-  | 'delivered' 
+  | 'in_transit' 
   | 'complete' 
   | 'cancelled';
 
@@ -161,8 +160,7 @@ export const getStatusLabel = (status: OrderStatus): string => {
   const labels: Record<OrderStatus, string> = {
     pending: 'Pending',
     approved: 'Approved',
-    delivering: 'Out for Delivery',
-    delivered: 'Delivered',
+    in_transit: 'In Transit',
     complete: 'Complete',
     cancelled: 'Cancelled'
   };
@@ -184,9 +182,8 @@ export const getStatusColor = (status: OrderStatus): string => {
   const colors: Record<OrderStatus, string> = {
     pending: 'text-yellow-600 bg-yellow-50 border-yellow-200',
     approved: 'text-blue-600 bg-blue-50 border-blue-200',
-    delivering: 'text-purple-600 bg-purple-50 border-purple-200',
-    delivered: 'text-green-600 bg-green-50 border-green-200',
-    complete: 'text-gray-600 bg-gray-50 border-gray-200',
+    in_transit: 'text-purple-600 bg-purple-50 border-purple-200',
+    complete: 'text-green-600 bg-green-50 border-green-200',
     cancelled: 'text-red-600 bg-red-50 border-red-200'
   };
   return colors[status];
@@ -196,8 +193,7 @@ export const getStatusIcon = (status: OrderStatus): string => {
   const icons: Record<OrderStatus, string> = {
     pending: 'mdi:clock-outline',
     approved: 'mdi:check-circle',
-    delivering: 'mdi:truck-fast',
-    delivered: 'mdi:package-variant',
+    in_transit: 'mdi:truck-fast',
     complete: 'mdi:check-all',
     cancelled: 'mdi:close-circle'
   };

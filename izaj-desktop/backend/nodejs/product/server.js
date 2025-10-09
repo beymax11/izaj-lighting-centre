@@ -567,11 +567,22 @@ router.get('/products/pending', authenticate, async (req, res) => {
 
 // POST /api/products/publish - Publish selected products (make them visible to admin side)
 router.post('/products/publish', authenticate, async (req, res) => {
-  const { productIds } = req.body;
+  const { productIds, description } = req.body;
+  
+  // Build the update object
+  const updateData = { 
+    is_published: true,
+    publish_status: true 
+  };
+  
+  // Add description if provided
+  if (description && description.trim()) {
+    updateData.description = description.trim();
+  }
   
   const { data, error } = await supabase
     .from('products')
-    .update({ is_published: true })
+    .update(updateData)
     .in('id', productIds);
   
   res.json({ success: !error });

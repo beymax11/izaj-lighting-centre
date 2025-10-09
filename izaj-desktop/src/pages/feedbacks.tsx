@@ -1,36 +1,37 @@
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-
-
-interface Feedback {
-  id: string;
-  name: string;
-  rating: number;
-  feedback: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  date: string;
-  time: string;
-  replies?: { date: string; text: string }[];
-}
+import { Session } from '@supabase/supabase-js';
+import { useReviews } from '../hooks/useReviews';
+import { Review } from '../services/reviewService';
 
 interface FeedBacksProps {
+  session: Session | null;
   setIsFeedbackModalOpen: (isOpen: boolean) => void;
 }
 
-function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
-  const [activeFilter, setActiveFilter] = useState('All Feedbacks');
-  const [searchQuery, setSearchQuery] = useState('');
+function Feedbacks({ session, setIsFeedbackModalOpen}: FeedBacksProps) {
+  const {
+    reviews,
+    summary,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    activeFilter,
+    setActiveFilter,
+    updateReviewStatus,
+    addReply,
+    deleteReview,
+    markHelpful
+  } = useReviews(session);
+
   const [selectedFeedbacks, setSelectedFeedbacks] = useState<string[]>([]);
   const [allSelected, setAllSelected] = useState(false);
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<Review | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // States for action buttons
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
-  const [isHelpful, setIsHelpful] = useState(false);
 
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
@@ -43,7 +44,7 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAllSelected(e.target.checked);
     if (e.target.checked) {
-      setSelectedFeedbacks(feedbackData.map(item => item.id));
+      setSelectedFeedbacks(reviews.map(item => item.id));
     } else {
       setSelectedFeedbacks([]);
     }
@@ -58,7 +59,7 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
   };
 
   const handleViewFeedback = (id: string) => {
-    const feedback = feedbackData.find(item => item.id === id);
+    const feedback = reviews.find(item => item.id === id);
     if (feedback) {
       setSelectedFeedback(feedback);
       setIsModalOpen(true);
@@ -77,104 +78,84 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
   };
 
   const handleReply = () => {
+    // Pre-fill with existing reply if available
+    if (selectedFeedback?.admin_reply) {
+      setReplyText(selectedFeedback.admin_reply);
+    }
     setIsReplying(true);
   };
 
-  const handleSubmitReply = () => {
-    if (replyText.trim()) {
-      // Here you would typically send the reply to your backend
-      console.log('Sending reply:', replyText);
-      // Reset states
-      setReplyText('');
-      setIsReplying(false);
+  const handleSubmitReply = async () => {
+    if (replyText.trim() && selectedFeedback) {
+      const success = await addReply(selectedFeedback.id, replyText.trim());
+      if (success) {
+        setReplyText('');
+        setIsReplying(false);
+        // Refresh selected feedback
+        const updatedFeedback = reviews.find(r => r.id === selectedFeedback.id);
+        if (updatedFeedback) {
+          setSelectedFeedback(updatedFeedback);
+        }
+      }
     }
   };
 
-  const handleMarkHelpful = () => {
-    setIsHelpful(!isHelpful);
-    // Here you would typically update the helpful count in your backend
-    console.log('Marked as helpful:', !isHelpful);
+  const handleMarkHelpful = async () => {
+    if (selectedFeedback) {
+      await markHelpful(selectedFeedback.id);
+      const updatedFeedback = reviews.find(r => r.id === selectedFeedback.id);
+      if (updatedFeedback) {
+        setSelectedFeedback(updatedFeedback);
+      }
+    }
   };
 
-  const feedbackData = [
-    {
-      id: '#000001',
-      name: 'Progress Lighting Ceiling',
-      rating: 4,
-      feedback: 'Great product, easy to install.',
-      customerName: 'Ruiz Miguel Sapio',
-      customerEmail: 'ruiz.sapio@example.com',
-      customerPhone: '0917-123-4567',
-      date: 'March 10, 2025',
-      time: '14:30',
-    },
-    {
-      id: '#000002',
-      name: 'LED Surface Panel Ceiling Light',
-      rating: 3,
-      feedback: 'Decent brightness, but not as expected.',
-      customerName: 'Rim Vernon',
-      customerEmail: 'rimvernon@example.com',
-      customerPhone: '0918-234-5678',
-      date: 'March 9, 2025',
-      time: '15:45',
-    },
-    {
-      id: '#000003',
-      name: 'Kovacs 1 Light Arc Floor Light',
-      rating: 5,
-      feedback: 'Absolutely love the design!',
-      customerName: 'Jerome Bulaktala',
-      customerEmail: 'jeromebulaktala@example.com',
-      customerPhone: '0919-345-6789',
-      date: 'March 8, 2025',
-      time: '09:15',
-    },
-    {
-      id: '#000004',
-      name: 'Plug In Pendant Light',
-      rating: 4,
-      feedback: 'Works well for my kitchen.',
-      customerName: 'Anthony Doria',
-      customerEmail: 'anthonydoria@example.com',
-      customerPhone: '0920-456-7890',
-      date: 'March 7, 2025',
-      time: '11:20',
-    },
-    {
-      id: '#000005',
-      name: 'Progress Floor Light',
-      rating: 3,
-      feedback: 'Average quality, but good for the price.',
-      customerName: 'Isaiah Garcia',
-      customerEmail: 'isaiahgarcia@example.com',
-      customerPhone: '0921-567-8901',
-      date: 'March 6, 2025',
-      time: '16:05',
-    },
-    {
-      id: '#000006',
-      name: 'Progress Lighting Ceiling',
-      rating: 4,
-      feedback: 'Nice light, would recommend.',
-      customerName: 'Pearl Latayan',
-      customerEmail: 'pearl.latayan@example.com',
-      customerPhone: '0922-678-9012',
-      date: 'March 5, 2025',
-      time: '13:40',
-    },
-  ];
+  const handlePublishReview = async () => {
+    if (selectedFeedback) {
+      await updateReviewStatus(selectedFeedback.id, 'published');
+      closeModal();
+    }
+  };
 
-  const filteredFeedbacks = feedbackData.filter(feedback => {
-    const matchesSearch = feedback.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         feedback.feedback.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesFilter = activeFilter === 'All Feedbacks' ||
-                         (activeFilter === 'High Rating' && feedback.rating >= 4) ||
-                         (activeFilter === 'Low Rating' && feedback.rating <= 3);
+  const handleRejectReview = async () => {
+    if (selectedFeedback) {
+      await updateReviewStatus(selectedFeedback.id, 'rejected');
+      closeModal();
+    }
+  };
 
-    return matchesSearch && matchesFilter;
-  });
+  const handleDeleteReview = async () => {
+    if (selectedFeedback) {
+      await deleteReview(selectedFeedback.id);
+      closeModal();
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-full">
+        <div className="text-center">
+          <Icon icon="mdi:loading" className="w-12 h-12 text-yellow-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading reviews...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -195,13 +176,13 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 w-full sm:w-auto">
             <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform w-full sm:w-[300px]">
               <Icon icon="mdi:star-outline" className="w-8 sm:w-10 h-8 sm:h-10 text-yellow-400 mb-2 sm:mb-3" />
-              <span className="text-xl sm:text-2xl font-bold text-gray-800">{feedbackData.length}</span>
-              <span className="text-gray-500 text-xs sm:text-sm">Total Feedbacks</span>
+              <span className="text-xl sm:text-2xl font-bold text-gray-800">{summary.total}</span>
+              <span className="text-gray-500 text-xs sm:text-sm">Total Reviews</span>
             </div>
             <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform w-full sm:w-[300px]">
               <Icon icon="mdi:star" className="w-8 sm:w-10 h-8 sm:h-10 text-blue-400 mb-2 sm:mb-3" />
               <span className="text-xl sm:text-2xl font-bold text-gray-800">
-                {(feedbackData.reduce((acc, curr) => acc + curr.rating, 0) / feedbackData.length).toFixed(1)}
+                {summary.average_rating || 'N/A'}
               </span>
               <span className="text-gray-500 text-xs sm:text-sm">Overall Rating</span>
             </div>
@@ -211,7 +192,7 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
         {/* Filter Bar */}
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4 px-4 sm:px-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm w-full sm:w-auto">
-            {['All Feedbacks', 'High Rating', 'Low Rating'].map((label) => (
+            {['All Feedbacks', 'Published', 'Pending'].map((label) => (
               <button
                 key={label}
                 onClick={() => handleFilterClick(label)}
@@ -276,41 +257,55 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredFeedbacks.map((product, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50 transition">
-                        <td className="px-3 sm:px-4 py-2 sm:py-3">
-                          <input 
-                            type="checkbox" 
-                            className="accent-blue-400 w-4 h-4"
-                            checked={selectedFeedbacks.includes(product.id)}
-                            onChange={() => handleSelectFeedback(product.id)}
-                          />
-                        </td>
-                        <td className="px-3 sm:px-4 py-2 sm:py-3 font-mono text-blue-700 whitespace-nowrap">{product.id}</td>
-                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">{product.name}</td>
-                        <td className="px-3 sm:px-4 py-2 sm:py-3">
-                          <div className="flex items-center space-x-1">
-                            {[...Array(5)].map((_, starIdx) => (
-                              <Icon
-                                key={starIdx}
-                                icon={starIdx < product.rating ? 'mdi:star' : 'mdi:star-outline'}
-                                className={`w-3 sm:w-4 h-3 sm:h-4 ${starIdx < product.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                              />
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-500 whitespace-nowrap">{product.date}</td>
-                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-600 max-w-[200px] truncate">{product.feedback}</td>
-                        <td className="px-3 sm:px-4 py-2 sm:py-3">
-                          <button 
-                            onClick={() => handleViewFeedback(product.id)}
-                            className="px-3 sm:px-4 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition"
-                          >
-                            View
-                          </button>
+                    {reviews.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                          <Icon icon="mdi:comment-text-outline" className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-lg font-medium">No reviews found</p>
+                          <p className="text-sm mt-2">Reviews will appear here when customers leave feedback</p>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      reviews.map((review, idx) => (
+                        <tr key={idx} className="hover:bg-blue-50 transition">
+                          <td className="px-3 sm:px-4 py-2 sm:py-3">
+                            <input 
+                              type="checkbox" 
+                              className="accent-blue-400 w-4 h-4"
+                              checked={selectedFeedbacks.includes(review.id)}
+                              onChange={() => handleSelectFeedback(review.id)}
+                            />
+                          </td>
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 font-mono text-blue-700 whitespace-nowrap text-xs">
+                            {review.id.substring(0, 8)}...
+                          </td>
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">{review.product_name}</td>
+                          <td className="px-3 sm:px-4 py-2 sm:py-3">
+                            <div className="flex items-center space-x-1">
+                              {[...Array(5)].map((_, starIdx) => (
+                                <Icon
+                                  key={starIdx}
+                                  icon={starIdx < review.rating ? 'mdi:star' : 'mdi:star-outline'}
+                                  className={`w-3 sm:w-4 h-3 sm:h-4 ${starIdx < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                />
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-500 whitespace-nowrap text-sm">
+                            {formatDate(review.created_at)}
+                          </td>
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-600 max-w-[200px] truncate">{review.comment}</td>
+                          <td className="px-3 sm:px-4 py-2 sm:py-3">
+                            <button 
+                              onClick={() => handleViewFeedback(review.id)}
+                              className="px-3 sm:px-4 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -373,16 +368,18 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                   {/* LEFT: Product & Rating Details */}
                   <div className="space-y-3 sm:space-y-4 md:space-y-6">
                     <div>
-                      <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Customer Information</span>
+                      <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Review Information</span>
                       <div className="bg-white/90 border border-gray-100 rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 shadow-sm">
                         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                           <div className="w-10 sm:w-12 md:w-16 h-10 sm:h-12 md:h-16 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center border border-blue-100">
                             <Icon icon="mdi:account-circle" className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-blue-400" />
                           </div>
                           <div>
-                            <div className="font-semibold text-sm sm:text-base md:text-lg">{selectedFeedback.customerName}</div>
-                            <div className="text-xs sm:text-sm text-gray-500">{selectedFeedback.customerEmail}</div>
-                            <div className="text-xs sm:text-sm text-gray-500">{selectedFeedback.customerPhone}</div>
+                            <div className="font-semibold text-sm sm:text-base md:text-lg">Customer Review</div>
+                            <div className="text-xs sm:text-sm text-gray-500">User ID: {selectedFeedback.user_id.substring(0, 8)}...</div>
+                            {selectedFeedback.order_number && (
+                              <div className="text-xs sm:text-sm text-gray-500">Order: {selectedFeedback.order_number}</div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -392,17 +389,21 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                       <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Product Information</span>
                       <div className="bg-white/90 border border-gray-100 rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 shadow-sm">
                         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                          <div className="w-14 sm:w-16 md:w-24 h-14 sm:h-16 md:h-24 rounded-lg sm:rounded-xl overflow-hidden border border-yellow-100">
-                            <img 
-                              src="/ceiling.jpg" 
-                              alt={selectedFeedback.name}
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="w-14 sm:w-16 md:w-24 h-14 sm:h-16 md:h-24 rounded-lg sm:rounded-xl overflow-hidden border border-yellow-100 bg-gray-100 flex items-center justify-center">
+                            <Icon icon="mdi:lightbulb" className="text-gray-400 w-8 h-8" />
                           </div>
                           <div>
-                            <div className="font-mono text-blue-700 text-xs sm:text-sm">{selectedFeedback.id}</div>
-                            <div className="font-semibold text-sm sm:text-base md:text-lg">{selectedFeedback.name}</div>
-                            <div className="text-xs sm:text-sm text-gray-500 mt-1">Lighting Category</div>
+                            <div className="font-mono text-blue-700 text-xs sm:text-sm">ID: {selectedFeedback.product_id.substring(0, 8)}...</div>
+                            <div className="font-semibold text-sm sm:text-base md:text-lg">{selectedFeedback.product_name}</div>
+                            <div className="text-xs sm:text-sm text-gray-500 mt-1">
+                              <span className={`inline-block px-2 py-0.5 rounded-full text-xs ${
+                                selectedFeedback.status === 'published' ? 'bg-green-100 text-green-700' :
+                                selectedFeedback.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {selectedFeedback.status.toUpperCase()}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -421,21 +422,38 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                           ))}
                           <span className="ml-2 text-sm sm:text-base md:text-lg font-bold text-gray-700">{selectedFeedback.rating}/5</span>
                         </div>
-                        <p className="text-xs sm:text-sm md:text-base text-gray-700">{selectedFeedback.feedback}</p>
+                        <p className="text-xs sm:text-sm md:text-base text-gray-700 whitespace-pre-wrap">{selectedFeedback.comment}</p>
                       </div>
                     </div>
 
                     <div>
-                      <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Review Status</span>
+                      <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Actions</span>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-medium flex items-center gap-1">
-                          <Icon icon="mdi:check-circle" className="w-3 sm:w-4 h-3 sm:h-4" />
-                          Verified Purchase
-                        </span>
-                        <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-medium flex items-center gap-1">
-                          <Icon icon="mdi:shield-check" className="w-3 sm:w-4 h-3 sm:h-4" />
-                          Authentic Review
-                        </span>
+                        {selectedFeedback.status !== 'published' && (
+                          <button 
+                            onClick={handlePublishReview}
+                            className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1 hover:bg-green-200 transition"
+                          >
+                            <Icon icon="mdi:check-circle" className="w-3 sm:w-4 h-3 sm:h-4" />
+                            Publish
+                          </button>
+                        )}
+                        {selectedFeedback.status !== 'rejected' && (
+                          <button 
+                            onClick={handleRejectReview}
+                            className="px-2 sm:px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1 hover:bg-red-200 transition"
+                          >
+                            <Icon icon="mdi:close-circle" className="w-3 sm:w-4 h-3 sm:h-4" />
+                            Reject
+                          </button>
+                        )}
+                        <button 
+                          onClick={handleDeleteReview}
+                          className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1 hover:bg-gray-200 transition"
+                        >
+                          <Icon icon="mdi:delete" className="w-3 sm:w-4 h-3 sm:h-4" />
+                          Delete
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -450,43 +468,64 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                             <Icon icon="mdi:calendar-check" className="text-green-400 w-4 sm:w-5 h-4 sm:h-5" />
                             <div>
                               <div className="text-xs sm:text-sm font-medium">Submitted</div>
-                              <div className="text-xs text-gray-500">{selectedFeedback.date}</div>
+                              <div className="text-xs text-gray-500">{formatDate(selectedFeedback.created_at)}</div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 sm:gap-3">
                             <Icon icon="mdi:clock-outline" className="text-blue-400 w-4 sm:w-5 h-4 sm:h-5" />
                             <div>
-                              <div className="text-xs sm:text-sm font-medium">Feedback Time</div>
-                              <div className="text-xs text-gray-500">{selectedFeedback.time}</div>
+                              <div className="text-xs sm:text-sm font-medium">Review Time</div>
+                              <div className="text-xs text-gray-500">{formatTime(selectedFeedback.created_at)}</div>
                             </div>
                           </div>
+                          {selectedFeedback.admin_reply_at && (
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <Icon icon="mdi:reply" className="text-purple-400 w-4 sm:w-5 h-4 sm:h-5" />
+                              <div>
+                                <div className="text-xs sm:text-sm font-medium">Admin Replied</div>
+                                <div className="text-xs text-gray-500">{formatDate(selectedFeedback.admin_reply_at)}</div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Review Analytics</span>
+                      <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Review Info</span>
                       <div className="bg-white/90 border border-gray-100 rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 shadow-sm">
                         <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                           <div>
                             <div className="text-xs sm:text-sm text-gray-500">Helpful Votes</div>
-                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">24</div>
+                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{selectedFeedback.helpful_count || 0}</div>
                           </div>
                           <div>
-                            <div className="text-xs sm:text-sm text-gray-500">Reported Issues</div>
-                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">0</div>
+                            <div className="text-xs sm:text-sm text-gray-500">Status</div>
+                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800 capitalize">{selectedFeedback.status}</div>
                           </div>
                           <div>
-                            <div className="text-xs sm:text-sm text-gray-500">Response Time</div>
-                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">2h</div>
+                            <div className="text-xs sm:text-sm text-gray-500">Rating</div>
+                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{selectedFeedback.rating}/5</div>
                           </div>
                           <div>
                             <div className="text-xs sm:text-sm text-gray-500">Review Length</div>
-                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">Medium</div>
+                            <div className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{selectedFeedback.comment.length} chars</div>
                           </div>
                         </div>
                       </div>
                     </div>
+
+                    {selectedFeedback.admin_reply && (
+                      <div>
+                        <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Admin Reply</span>
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 shadow-sm">
+                          <p className="text-xs sm:text-sm md:text-base text-gray-700 whitespace-pre-wrap">{selectedFeedback.admin_reply}</p>
+                          <div className="text-xs text-gray-500 mt-2">
+                            Replied on {formatDate(selectedFeedback.admin_reply_at || '')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <span className="block text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-1">Actions</span>
@@ -497,14 +536,14 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                           disabled={isReplying}
                         >
                           <Icon icon="mdi:reply" className="w-3 sm:w-4 h-3 sm:h-4" />
-                          Reply
+                          {selectedFeedback.admin_reply ? 'Update Reply' : 'Reply'}
                         </button>
                         <button 
                           onClick={handleMarkHelpful}
-                          className={`px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 ${isHelpful ? 'bg-green-100 text-green-700' : 'bg-green-50 text-green-600'} rounded-lg text-xs sm:text-sm font-medium hover:bg-green-100 transition flex items-center gap-1`}
+                          className="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-green-50 text-green-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-100 transition flex items-center gap-1"
                         >
-                          <Icon icon={isHelpful ? "mdi:check-circle" : "mdi:check"} className="w-3 sm:w-4 h-3 sm:h-4" />
-                          {isHelpful ? 'Marked Helpful' : 'Mark as Helpful'}
+                          <Icon icon="mdi:thumb-up" className="w-3 sm:w-4 h-3 sm:h-4" />
+                          Mark Helpful ({selectedFeedback.helpful_count || 0})
                         </button>
                       </div>
 
@@ -606,23 +645,6 @@ function Feedbacks({ setIsFeedbackModalOpen}: FeedBacksProps) {
                         </div>
                       )}
 
-                      {/* Reply History */}
-                      {!isReplying && selectedFeedback.replies && selectedFeedback.replies.length > 0 && (
-                        <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
-                          {selectedFeedback.replies.map((reply, index) => (
-                            <div key={index} className="bg-white/90 border border-gray-100 rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 shadow-sm">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Icon icon="mdi:account-circle" className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-blue-400" />
-                                <div>
-                                  <div className="font-medium text-xs sm:text-sm md:text-base text-gray-800">Admin Support</div>
-                                  <div className="text-xs text-gray-500">{reply.date}</div>
-                                </div>
-                              </div>
-                              <p className="text-xs sm:text-sm md:text-base text-gray-700">{reply.text}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>

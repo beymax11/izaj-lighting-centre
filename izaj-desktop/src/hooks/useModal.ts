@@ -29,6 +29,7 @@ export const useModal = ({
     selectedProduct: modalState.selectedProduct,
     selectedFile: modalState.selectedFile,
     saleData: modalState.saleData,
+    formData: modalState.formData,
     setIsPublishing: modalState.setIsPublishing,
     setUploading: modalState.setUploading,
     resetState: modalState.resetState,

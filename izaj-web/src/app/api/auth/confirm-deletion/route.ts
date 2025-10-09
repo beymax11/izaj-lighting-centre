@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create a response that clears the session cookies
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.url;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
     const redirectUrl = new URL('/auth/deletion-success', baseUrl);
     
     const response = NextResponse.redirect(redirectUrl);

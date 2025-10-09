@@ -9,122 +9,20 @@ interface Order {
   id: string;
   orderNumber: string;
   date: string;
-  status: 'pending' | 'approved' | 'delivering' | 'delivered' | 'complete' | 'cancelled';
+  status: 'pending' | 'approved' | 'in_transit' | 'complete' | 'cancelled';
   items: Array<{
     id: string;
     name: string;
     image: string;
     quantity: number;
     price: number;
+    productId?: string;
   }>;
   total: number;
   shippingAddress: string;
   paymentMethod: string;
   trackingNumber?: string;
 }
-
-// Mock data - replace with API call
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2025-0001',
-    date: '2025-10-05',
-    status: 'complete',
-    items: [
-      {
-        id: '1',
-        name: 'Modern Ceiling Light',
-        image: '/ceiling.jpg',
-        quantity: 2,
-        price: 2500
-      },
-      {
-        id: '2',
-        name: 'Crystal Chandelier',
-        image: '/chadelier.jpg',
-        quantity: 1,
-        price: 8500
-      }
-    ],
-    total: 13500,
-    shippingAddress: 'San Pablo City, Laguna',
-    paymentMethod: 'Credit Card',
-    trackingNumber: 'TRK123456789'
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2025-0002',
-    date: '2025-10-07',
-    status: 'delivering',
-    items: [
-      {
-        id: '3',
-        name: 'Pendant Light Fixture',
-        image: '/pendant.jpg',
-        quantity: 3,
-        price: 1800
-      }
-    ],
-    total: 5400,
-    shippingAddress: 'San Pablo City, Laguna',
-    paymentMethod: 'GCash',
-    trackingNumber: 'TRK987654321'
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2025-0003',
-    date: '2025-10-08',
-    status: 'approved',
-    items: [
-      {
-        id: '4',
-        name: 'LED Floor Lamp',
-        image: '/floor.jpg',
-        quantity: 1,
-        price: 3200
-      }
-    ],
-    total: 3200,
-    shippingAddress: 'San Pablo City, Laguna',
-    paymentMethod: 'Maya'
-  },
-  {
-    id: '4',
-    orderNumber: 'ORD-2025-0004',
-    date: '2025-10-09',
-    status: 'pending',
-    items: [
-      {
-        id: '5',
-        name: 'Wall Sconce Light',
-        image: '/aber.webp',
-        quantity: 2,
-        price: 1500
-      }
-    ],
-    total: 3000,
-    shippingAddress: 'San Pablo City, Laguna',
-    paymentMethod: 'Cash on Delivery'
-  },
-  {
-    id: '5',
-    orderNumber: 'ORD-2025-0005',
-    date: '2025-10-03',
-    status: 'cancelled',
-    items: [
-      {
-        id: '6',
-        name: 'Modern Table Lamp',
-        image: '/ceiling.jpg',
-        quantity: 1,
-        price: 2800
-      }
-    ],
-    total: 2800,
-    shippingAddress: 'San Pablo City, Laguna',
-    paymentMethod: 'Credit Card'
-  }
-];
 
 const MyOrders: React.FC = () => {
   const { user } = useUserContext();
@@ -138,6 +36,10 @@ const MyOrders: React.FC = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     // Check for success message from checkout
@@ -170,36 +72,42 @@ const MyOrders: React.FC = () => {
         if (result.success && result.data) {
           // Transform API data to match our Order interface
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transformedOrders = (result.data as any[]).map((order) => ({
-            id: order.id,
-            orderNumber: order.order_number,
-            date: order.created_at,
-            status: order.status,
-            items: order.items?.map((item: any) => ({
-              id: item.id,
-              name: item.product_name,
-              image: item.product_image || '/placeholder.jpg',
-              quantity: item.quantity,
-              price: parseFloat(item.unit_price)
-            })) || [],
-            total: parseFloat(order.total_amount),
-            shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
-            paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
-                          order.payment_method === 'gcash' ? 'GCash' :
-                          order.payment_method === 'maya' ? 'Maya' : 'Credit Card',
-            trackingNumber: order.tracking_number || undefined
-          }));
+          const transformedOrders = (result.data as any[]).map((order) => {
+            // Map old statuses to new ones
+            let status = order.status;
+            if (status === 'delivering') status = 'in_transit';
+            if (status === 'delivered') status = 'complete';
+            
+            return {
+              id: order.id,
+              orderNumber: order.order_number,
+              date: order.created_at,
+              status: status,
+              items: order.items?.map((item: any) => ({
+                id: item.id,
+                name: item.product_name,
+                image: item.product_image || '/placeholder.jpg',
+                quantity: item.quantity,
+                price: parseFloat(item.unit_price),
+                productId: item.product_id
+              })) || [],
+              total: parseFloat(order.total_amount),
+              shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
+              paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
+                            order.payment_method === 'gcash' ? 'GCash' :
+                            order.payment_method === 'maya' ? 'Maya' : 'Credit Card',
+              trackingNumber: order.tracking_number || undefined
+            };
+          });
           
           setOrders(transformedOrders);
         } else {
-          // Fallback to mock data if API fails
-          console.warn('Failed to fetch orders from API, using mock data');
-          setOrders(mockOrders);
+          console.warn('Failed to fetch orders from API');
+          setOrders([]);
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
-        // Fallback to mock data
-        setOrders(mockOrders);
+        setOrders([]);
       } finally {
         setIsLoading(false);
       }
@@ -214,10 +122,8 @@ const MyOrders: React.FC = () => {
         return 'mdi:clock-outline';
       case 'approved':
         return 'mdi:check-circle';
-      case 'delivering':
+      case 'in_transit':
         return 'mdi:truck-fast';
-      case 'delivered':
-        return 'mdi:package-variant';
       case 'complete':
         return 'mdi:check-all';
       case 'cancelled':
@@ -233,12 +139,10 @@ const MyOrders: React.FC = () => {
         return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       case 'approved':
         return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'delivering':
+      case 'in_transit':
         return 'text-purple-600 bg-purple-50 border-purple-200';
-      case 'delivered':
-        return 'text-green-600 bg-green-50 border-green-200';
       case 'complete':
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return 'text-green-600 bg-green-50 border-green-200';
       case 'cancelled':
         return 'text-red-600 bg-red-50 border-red-200';
       default:
@@ -250,8 +154,7 @@ const MyOrders: React.FC = () => {
     const steps = [
       { key: 'pending', label: 'Pending', icon: 'mdi:clock-outline' },
       { key: 'approved', label: 'Approved', icon: 'mdi:check-circle' },
-      { key: 'delivering', label: 'Delivering', icon: 'mdi:truck-fast' },
-      { key: 'delivered', label: 'Delivered', icon: 'mdi:package-variant' },
+      { key: 'in_transit', label: 'In Transit', icon: 'mdi:truck-fast' },
       { key: 'complete', label: 'Complete', icon: 'mdi:check-all' }
     ];
 
@@ -261,7 +164,7 @@ const MyOrders: React.FC = () => {
       ];
     }
 
-    const statusOrder = ['pending', 'approved', 'delivering', 'delivered', 'complete'];
+    const statusOrder = ['pending', 'approved', 'in_transit', 'complete'];
     const currentIndex = statusOrder.indexOf(status);
 
     return steps.map((step, index) => ({
@@ -324,25 +227,33 @@ const MyOrders: React.FC = () => {
           const { getOrders: fetchOrdersFromAPI } = await import('@/services/orderService');
           const result = await fetchOrdersFromAPI('all', 100, 0);
           if (result.success && result.data) {
-            const transformedOrders = (result.data as any[]).map((order) => ({
-              id: order.id,
-              orderNumber: order.order_number,
-              date: order.created_at,
-              status: order.status,
-              items: order.items?.map((item: any) => ({
-                id: item.id,
-                name: item.product_name,
-                image: item.product_image || '/placeholder.jpg',
-                quantity: item.quantity,
-                price: parseFloat(item.unit_price)
-              })) || [],
-              total: parseFloat(order.total_amount),
-              shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
-              paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
-                            order.payment_method === 'gcash' ? 'GCash' :
-                            order.payment_method === 'maya' ? 'Maya' : 'Credit Card',
-              trackingNumber: order.tracking_number || undefined
-            }));
+            const transformedOrders = (result.data as any[]).map((order) => {
+              // Map old statuses to new ones
+              let status = order.status;
+              if (status === 'delivering') status = 'in_transit';
+              if (status === 'delivered') status = 'complete';
+              
+              return {
+                id: order.id,
+                orderNumber: order.order_number,
+                date: order.created_at,
+                status: status,
+                items: order.items?.map((item: any) => ({
+                  id: item.id,
+                  name: item.product_name,
+                  image: item.product_image || '/placeholder.jpg',
+                  quantity: item.quantity,
+                  price: parseFloat(item.unit_price),
+                  productId: item.product_id
+                })) || [],
+                total: parseFloat(order.total_amount),
+                shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
+                paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
+                              order.payment_method === 'gcash' ? 'GCash' :
+                              order.payment_method === 'maya' ? 'Maya' : 'Credit Card',
+                trackingNumber: order.tracking_number || undefined
+              };
+            });
             setOrders(transformedOrders);
           }
         };
@@ -355,6 +266,56 @@ const MyOrders: React.FC = () => {
       alert('Failed to cancel order. Please try again.');
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const submitReview = async () => {
+    if (!selectedOrder || !reviewComment.trim()) {
+      alert('Please write a review comment');
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      // Prepare review data
+      const reviewData = {
+        order_id: selectedOrder.id,
+        order_number: selectedOrder.orderNumber,
+        rating: reviewRating,
+        comment: reviewComment,
+        items: selectedOrder.items.map(item => ({
+          product_id: item.productId || item.id,
+          product_name: item.name
+        }))
+      };
+
+      console.log('📝 Submitting reviews:', reviewData);
+      
+      // Send to API
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Close modal and show success
+        setShowReviewModal(false);
+        setReviewRating(5);
+        setReviewComment('');
+        alert('Thank you for your review! Your feedback has been submitted and will appear on the product page.');
+      } else {
+        alert(result.error || 'Failed to submit review. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error submitting review:', error);
+      alert('Failed to submit review. Please try again.');
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -524,8 +485,7 @@ const MyOrders: React.FC = () => {
                         { key: 'all', label: 'All Orders', icon: 'mdi:package-variant-closed' },
                         { key: 'pending', label: 'Pending', icon: 'mdi:clock-outline' },
                         { key: 'approved', label: 'Approved', icon: 'mdi:check-circle' },
-                        { key: 'delivering', label: 'Delivering', icon: 'mdi:truck-fast' },
-                        { key: 'delivered', label: 'Delivered', icon: 'mdi:package-variant' },
+                        { key: 'in_transit', label: 'In Transit', icon: 'mdi:truck-fast' },
                         { key: 'complete', label: 'Complete', icon: 'mdi:check-all' },
                         { key: 'cancelled', label: 'Cancelled', icon: 'mdi:close-circle' }
                       ].map((tab) => (
@@ -900,6 +860,11 @@ const MyOrders: React.FC = () => {
                   {/* Leave Review - For Completed Orders */}
                   {selectedOrder.status === 'complete' && (
                     <button
+                      onClick={() => {
+                        setShowReviewModal(true);
+                        setReviewRating(5);
+                        setReviewComment('');
+                      }}
                       className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold flex items-center justify-center gap-2 shadow-lg"
                     >
                       <Icon icon="mdi:star-outline" className="w-5 h-5" />
@@ -996,6 +961,138 @@ const MyOrders: React.FC = () => {
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Review Modal */}
+        {showReviewModal && selectedOrder && (
+          <div 
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+            style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(25px)',
+              WebkitBackdropFilter: 'blur(25px)',
+              animation: 'fadeIn 0.2s ease-out'
+            }}
+            onClick={() => {
+              if (!isSubmittingReview) {
+                setShowReviewModal(false);
+                setReviewRating(5);
+                setReviewComment('');
+              }
+            }}
+          >
+            <div 
+              className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl transform transition-all"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                animation: 'scaleIn 0.2s ease-out'
+              }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <Icon icon="mdi:star" className="text-yellow-500" />
+                  Leave a Review
+                </h3>
+                <button
+                  onClick={() => {
+                    if (!isSubmittingReview) {
+                      setShowReviewModal(false);
+                      setReviewRating(5);
+                      setReviewComment('');
+                    }
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={isSubmittingReview}
+                >
+                  <Icon icon="mdi:close" className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  Order: <span className="font-semibold">{selectedOrder.orderNumber}</span>
+                </p>
+                <p className="text-sm text-gray-500">
+                  Share your experience with the products from this order
+                </p>
+              </div>
+
+              {/* Rating */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Rating
+                </label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="transition-transform hover:scale-110"
+                      disabled={isSubmittingReview}
+                    >
+                      <Icon 
+                        icon={star <= reviewRating ? "mdi:star" : "mdi:star-outline"} 
+                        className={`w-10 h-10 ${
+                          star <= reviewRating ? 'text-yellow-500' : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Comment */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Your Review <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Tell us about your experience with the products..."
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  disabled={isSubmittingReview}
+                  required
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (!isSubmittingReview) {
+                      setShowReviewModal(false);
+                      setReviewRating(5);
+                      setReviewComment('');
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmittingReview}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitReview}
+                  disabled={isSubmittingReview || !reviewComment.trim()}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSubmittingReview ? (
+                    <>
+                      <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="mdi:check" className="w-5 h-5" />
+                      Submit Review
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

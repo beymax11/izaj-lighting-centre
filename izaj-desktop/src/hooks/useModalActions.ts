@@ -2,7 +2,7 @@ import { Session } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
 import { ModalService } from '../services/modalService';
 import { FetchedProduct } from '../types/product';
-import { SaleFormData } from '../types/modal';
+import { SaleFormData, ProductFormData } from '../types/modal';
 import { validateFiles } from '../utils/fileUtils';
 
 interface UseModalActionsProps {
@@ -13,6 +13,7 @@ interface UseModalActionsProps {
   selectedProduct: FetchedProduct | null;
   selectedFile: File[];
   saleData: SaleFormData;
+  formData: ProductFormData;
   setIsPublishing: (value: boolean) => void;
   setUploading: (value: boolean) => void;
   resetState: () => void;
@@ -25,6 +26,7 @@ export const useModalActions = ({
   onProductsPublished,
   selectedProduct,
   selectedFile,
+  formData,
   setIsPublishing,
   setUploading,
   resetState,
@@ -59,8 +61,12 @@ export const useModalActions = ({
   try {
     setIsPublishing(true);
 
-    // First publish the product
-    const publishResult = await ModalService.publishProducts(session, [selectedProduct.id]);
+    // First publish the product with description
+    const publishResult = await ModalService.publishProducts(
+      session, 
+      [selectedProduct.id],
+      formData.description
+    );
     
     if (publishResult.success) {
       toast.success('Product published successfully!');

@@ -44,13 +44,14 @@ export class ModalService {
 
   static async publishProducts(
     session: Session | null, 
-    productIds: string[]
+    productIds: string[],
+    description?: string
   ): Promise<{ success: boolean; message?: string }> {
     try {
       const response = await fetch(`${API_URL}/api/products/publish`, {
         method: 'POST',
         headers: this.getHeaders(session),
-        body: JSON.stringify({ productIds }),
+        body: JSON.stringify({ productIds, description }),
       });
 
       if (response.ok) {

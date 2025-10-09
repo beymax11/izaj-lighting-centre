@@ -21,6 +21,7 @@ const navigationItems = [
   { icon: 'mdi:credit-card-outline', label: 'PAYMENTS' },
   { icon: 'mdi:chart-bar', label: 'REPORTS' },
   { icon: 'mdi:star-outline', label: 'FEEDBACKS' },
+  { icon: 'mdi:account-group', label: 'CUSTOMERS' },
 ];
 
 const Sidebar = ({

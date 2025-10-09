@@ -9,7 +9,9 @@ import user from './user/server.js'
 import products from './product/server.js'
 import stock from './stock/server.js'
 import sale from './sales/server.js'
-import orderRoutes from './order/server.js'
+import reviews from './reviews/server.js'
+import dashboard from './dashboard/server.js'
+import customers from './customers/server.js'
 
 const app = express();
 
@@ -46,9 +48,9 @@ app.use('/api/admin', user);
 app.use('/api', products);
 app.use('/api/products', stock);
 app.use('/api/sales', sale);
-app.use('/api', orderRoutes);
-
-console.log('✅ All routes registered, including orders routes');
+app.use('/api', reviews);
+app.use('/api', dashboard);
+app.use('/api', customers);
 
 // =============================================================================
 // ERROR HANDLING MIDDLEWARE

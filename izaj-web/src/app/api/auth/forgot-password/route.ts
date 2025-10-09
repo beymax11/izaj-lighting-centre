@@ -157,7 +157,7 @@ export async function POST(request: Request) {
                 if (!updateError) {
                     // Send password reset email via Gmail
                     try {
-                        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+                        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002'}/reset-password?token=${resetToken}`;
                         
                         const html = `
                             <!DOCTYPE html>

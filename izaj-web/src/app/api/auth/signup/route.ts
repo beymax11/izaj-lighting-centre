@@ -22,8 +22,6 @@ export async function POST(request: Request) {
 	try {
 		body = (await request.json()) as Partial<SignupBody>;
 		
-		console.log('📝 Signup API - Received body:', JSON.stringify(body, null, 2));
-		
 		if (!body?.email || !body?.password) {
 			return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
 		}
@@ -31,7 +29,6 @@ export async function POST(request: Request) {
 		const supabase = await getSupabaseServerClient();
 		const metadata: Record<string, string> = {};
 		if (body.name) {
-			console.log('📝 Signup API - Received name:', body.name);
 			metadata.name = body.name;
 		}
 		let normalizedPhone: string | undefined;
@@ -61,7 +58,6 @@ export async function POST(request: Request) {
 		const existingUser = existingUsers?.users?.find(user => user.email === body.email);
 		
 		if (existingUser) {
-			console.log('📝 Signup API - User already exists:', body.email);
 			return NextResponse.json({ 
 				error: 'User with this email already exists',
 				code: 'user_exists'
@@ -77,13 +73,10 @@ export async function POST(request: Request) {
 		});
 
 		if (error || !data?.user) {
-			console.error('📝 Signup API - User creation error:', error);
 			return NextResponse.json({ 
 				error: error?.message || 'Signup failed'
 			}, { status: 400 });
 		}
-
-		console.log('📝 Signup API - User created successfully:', data.user.id);
 
 		// Update user with metadata if we have any
 		if (Object.keys(metadata).length > 0) {
@@ -112,25 +105,64 @@ export async function POST(request: Request) {
 			}
 		);
 
-		// Create a profile row so data is visible immediately
-		// Use || instead of ?? to handle empty strings properly
-		const profileName = body.name && body.name.trim() ? body.name.trim() : null;
-		console.log('📝 Signup API - Profile Name:', profileName);
-		console.log('📝 Signup API - Normalized Phone:', normalizedPhone);
-		
-		// Try to insert profile, if it already exists, update it instead (upsert)
-		const { error: profileError } = await supabaseAdmin
+	// Create a profile row so data is visible immediately
+	const profileName = body.name && body.name.trim() ? body.name.trim() : null;
+	
+	// Small delay to ensure any database triggers complete
+	await new Promise(resolve => setTimeout(resolve, 100));
+	
+	// Check if phone number conflicts with another user
+	let finalPhone: string | null = normalizedPhone ?? null;
+	if (normalizedPhone) {
+		const { data: phoneConflict } = await supabaseAdmin
 			.from('profiles')
-			.upsert(
-				{ id: data.user.id, name: profileName, phone: normalizedPhone ?? null },
-				{ onConflict: 'id' }
-			);
+			.select('id')
+			.eq('phone', normalizedPhone)
+			.maybeSingle();
 		
-		if (profileError) {
-			console.error('📝 Signup API - Profile upsert error:', profileError);
-		} else {
-			console.log('📝 Signup API - Profile upserted successfully');
+		if (phoneConflict) {
+			finalPhone = null; // Don't set phone to avoid conflict
 		}
+	}
+	
+	// First, check if profile already exists (might be created by a trigger)
+	const { data: existingProfile } = await supabaseAdmin
+		.from('profiles')
+		.select('id')
+		.eq('id', data.user.id)
+		.maybeSingle();
+	
+	if (existingProfile) {
+		// Profile exists, update it
+		const { error: updateError } = await supabaseAdmin
+			.from('profiles')
+			.update({ 
+				name: profileName, 
+				phone: finalPhone,
+				updated_at: new Date().toISOString()
+			})
+			.eq('id', data.user.id)
+			.select();
+		
+		if (updateError) {
+			console.error('Profile update error:', updateError);
+		}
+	} else {
+		// Profile doesn't exist, insert it
+		const { error: insertError } = await supabaseAdmin
+			.from('profiles')
+			.insert({ 
+				id: data.user.id, 
+				name: profileName, 
+				phone: finalPhone,
+				updated_at: new Date().toISOString()
+			})
+			.select();
+		
+		if (insertError) {
+			console.error('Profile insert error:', insertError);
+		}
+	}
 
 		// If address was provided during signup, create it in the database
 		if (body.address && body.address.province && body.address.city && body.address.barangay && body.address.address) {
@@ -141,7 +173,7 @@ export async function POST(request: Request) {
 				.insert([{
 					user_id: data.user.id,
 					name: profileName || 'User',
-					phone: normalizedPhone || '',
+					phone: finalPhone || '',
 					address: composedAddress,
 					is_default: true // Set as default since it's the first address
 				}]);
@@ -156,9 +188,9 @@ export async function POST(request: Request) {
 			);
 		} catch (emailError) {
 			// Don't fail the signup if email fails
-			console.error('📝 Signup API - Email send error:', emailError);
+			console.error('Email send error:', emailError);
 		}
-
+		
 		return NextResponse.json({ 
 			user: data.user, 
 			message: 'Signup successful. Please check your email to confirm your account.',
@@ -166,6 +198,7 @@ export async function POST(request: Request) {
 			emailSent: true
 		}, { status: 200 });
 	} catch (err) {
+		console.error('Signup error:', err);
 		return NextResponse.json({ 
 			error: 'Signup failed'
 		}, { status: 500 });

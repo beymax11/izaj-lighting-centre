@@ -2,14 +2,14 @@
 export const APP_CONFIG = {
   name: 'IZAJ',
   description: 'Your one-stop shop for quality products at great prices',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002',
   currency: 'PHP',
   currencySymbol: '₱',
 };
 
 // API Configuration
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api',
   timeout: 10000,
 };
 

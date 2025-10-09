@@ -4,6 +4,7 @@ export interface Product {
   price: string;
   image: string;
   colors?: string[];
+  description?: string;
 }
 
 import { IzajDesktopApiService, IzajDesktopProduct } from './izajDesktopApi';
@@ -22,7 +23,8 @@ const transformToLegacyProduct = (izajProduct: IzajDesktopProduct): Product => {
     name: izajProduct.product_name,
     price: `₱${parseFloat(izajProduct.price.toString()).toLocaleString()}`,
     image: izajProduct.image_url || "/placeholder.jpg",
-    colors: ["black"] // Default color
+    colors: ["black"], // Default color
+    description: izajProduct.description
   };
 };
 
