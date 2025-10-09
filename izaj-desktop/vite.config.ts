@@ -8,7 +8,8 @@ export default defineConfig(async () => ({
   plugins: [react()],
   
   define: {
-    'process.env': {},
+    'process.env': '{}',
+    global: 'globalThis',
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -37,6 +38,6 @@ export default defineConfig(async () => ({
 
   // 4. Add PostCSS config
   css: {
-    postcss: './postcss.config.mjs', // Ensure to use your postcss config here
+    postcss: './postcss.config.mjs',
   },
 }));

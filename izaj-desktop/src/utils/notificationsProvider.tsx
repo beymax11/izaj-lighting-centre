@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../../backend/nodejs/supabaseProduct';
-import { supabase as supabaseClient } from '../../backend/nodejs/supabaseClient';
+import { supabaseProduct as supabase, supabase as supabaseClient } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 interface NotificationItem {

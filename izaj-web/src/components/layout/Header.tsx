@@ -299,7 +299,7 @@ function capitalize(str: string) {
             className={`${promoBanners[currentBannerIndex].color} text-white text-center py-2 md:py-3 flex items-center justify-center w-full relative transition-all duration-500 z-50`}
             style={{ minHeight: '40px' }}
           >
-            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in">
+            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in" style={{ fontFamily: "'Inter', sans-serif" }}>
               {promoBanners[currentBannerIndex].text}
             </p>
             <button
@@ -343,14 +343,14 @@ function capitalize(str: string) {
               {/* Logo with animation */}
               <Link href="/" className="flex flex-col items-start flex-shrink-0 w-full group">
                 <div
-                  className={`tracking-wide flex-shrink-0 leading-tight font-regular transition-all duration-300 ${
+                  className={`tracking-wide flex-shrink-0 leading-tight font-semibold transition-all duration-300 ${
                     scrolled ? 'text-2xl lg:text-4xl' : 'text-3xl lg:text-6xl'
                   }`}
                   style={{
                     color: "#000000",
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "'Cinzel', serif",
                     textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-                    letterSpacing: "4px",
+                    letterSpacing: "8px",
                     whiteSpace: "nowrap",
                     width: "100%",
                     display: "inline-block",
@@ -384,6 +384,7 @@ function capitalize(str: string) {
                   className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300 ${
                     scrolled ? 'py-2' : 'py-3'
                   }`}
+                  style={{ fontFamily: "'Inter', sans-serif" }}
                 />
                 <Icon 
                   icon="ic:outline-search" 
@@ -543,15 +544,15 @@ function capitalize(str: string) {
                           )}
                           <div className="hidden md:flex flex-col ml-2 text-left">
                             <span
-                              className="font-medium text-sm text-gray-500 leading-none"
-                              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "200" }}
+                              className="font-normal text-xs text-gray-500 leading-none"
+                              style={{ fontFamily: "'Inter', sans-serif", fontWeight: "400", letterSpacing: "0.02em" }}
                             >
                               Hello, {user ? `${capitalize((user.firstName || '').split(' ')[0])}` : 'Guest'}
                             </span>
                             <div className="flex items-center text-black">
                               <span
-                                className="font-medium text-lg"
-                                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+                                className="font-semibold text-base"
+                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: "600", letterSpacing: "0.01em" }}
                               >
                                 My Account
                               </span>
@@ -805,6 +806,7 @@ function capitalize(str: string) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSearchSuggestions(true)}
                 className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black rounded-full"
+                style={{ fontFamily: "'Inter', sans-serif" }}
                 autoFocus
               />
               <Icon 
@@ -877,10 +879,10 @@ function capitalize(str: string) {
                 <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                   <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
                     <div
-                      className="text-3xl tracking-wide leading-tight font-regular"
+                      className="text-3xl tracking-wide leading-tight font-semibold"
                       style={{
                         color: "#000000",
-                        fontFamily: "'Playfair Display', serif",
+                        fontFamily: "'Cinzel', serif",
                         textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
                         letterSpacing: "10px",
                       }}
@@ -896,7 +898,7 @@ function capitalize(str: string) {
                   </button>
                 </div>
                 {/* Navigation Menu - Scrollable */}
-                <div className="h-auto">
+                <div className="h-auto" style={{ fontFamily: "'Inter', sans-serif" }}>
                   <nav className="px-4 py-6">
                     <ul className="space-y-1">
                       <li>
@@ -1069,8 +1071,8 @@ function capitalize(str: string) {
         {/* Desktop Navbar - Hidden on mobile with enhanced animations - NOT STICKY */}
         <nav className={`hidden lg:block bg-white px-4 lg:px-10 transition-all duration-300 border-t border-gray-100 ${
           scrolled ? 'py-3' : 'py-4'
-        }`}>
-            <ul className="flex justify-center items-center text-sm font-medium relative" style={{gap: '3rem'}}>
+        }`} style={{ fontFamily: "'Inter', sans-serif" }}>
+            <ul className="flex justify-center items-center text-sm font-semibold relative" style={{gap: '3rem'}}>
               {/* HOME NAVIGATION */}
               <li className="flex items-center h-full relative">
                 {/* Vertical Divider */}
@@ -1079,7 +1081,7 @@ function capitalize(str: string) {
                 <a
                   href="#home"
                   className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/') ? 'font-extrabold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                    isLinkActive('/') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
                   }`}
                   onClick={(e) => {
                     createRipple(e);
@@ -1088,8 +1090,9 @@ function capitalize(str: string) {
                   onMouseEnter={() => setHoveredNav('home')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/') ? '0.1em' : hoveredNav === 'home' ? '0.08em' : '0.05em',
-                    transition: 'all 0.3s ease'
+                    letterSpacing: isLinkActive('/') ? '0.08em' : hoveredNav === 'home' ? '0.06em' : '0.04em',
+                    transition: 'all 0.3s ease',
+                    fontWeight: isLinkActive('/') ? '600' : '500'
                   }}
                 >
                   {/* Animated Icon */}
@@ -1132,7 +1135,7 @@ function capitalize(str: string) {
                 
                 <div
                   className={`px-4 py-2 flex items-center gap-2 cursor-pointer relative overflow-hidden rounded-lg transition-all duration-300 ${
-                    isLinkActive('/product-list') ? 'font-extrabold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                    isLinkActive('/product-list') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
                   }`}
                   onClick={(e) => {
                     createRipple(e);
@@ -1153,8 +1156,9 @@ function capitalize(str: string) {
                     }, 200);
                   }}
                   style={{
-                    letterSpacing: isLinkActive('/product-list') ? '0.1em' : hoveredNav === 'products' ? '0.08em' : '0.05em',
-                    transition: 'all 0.3s ease'
+                    letterSpacing: isLinkActive('/product-list') ? '0.08em' : hoveredNav === 'products' ? '0.06em' : '0.04em',
+                    transition: 'all 0.3s ease',
+                    fontWeight: isLinkActive('/product-list') ? '600' : '500'
                   }}
                 >
                   {/* Animated Icon */}
@@ -1226,7 +1230,7 @@ function capitalize(str: string) {
                         <div 
                           className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-200 hover:-translate-y-1"
                         >
-                          <h3 className="text-base font-extrabold mb-4 text-black tracking-wide border-b-2 border-black pb-2">
+                          <h3 className="text-base font-bold mb-4 text-black tracking-wide border-b-2 border-black pb-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: "700", letterSpacing: "0.08em" }}>
                             QUICK ACCESS
                           </h3>
                           <ul className="space-y-2">
@@ -1264,7 +1268,7 @@ function capitalize(str: string) {
                         <div 
                           className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-200 hover:-translate-y-1"
                         >
-                          <h3 className="text-base font-extrabold mb-4 text-black tracking-wide border-b-2 border-black pb-2">
+                          <h3 className="text-base font-bold mb-4 text-black tracking-wide border-b-2 border-black pb-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: "700", letterSpacing: "0.08em" }}>
                             POPULAR
                           </h3>
                           <div className="grid grid-cols-2 gap-3">
@@ -1301,7 +1305,7 @@ function capitalize(str: string) {
                         <div 
                           className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-200 hover:-translate-y-1"
                         >
-                          <h3 className="text-base font-extrabold mb-4 text-black tracking-wide border-b-2 border-black pb-2">
+                          <h3 className="text-base font-bold mb-4 text-black tracking-wide border-b-2 border-black pb-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: "700", letterSpacing: "0.08em" }}>
                             ALL CATEGORIES
                           </h3>
                           <ul className="space-y-1.5 max-h-72 overflow-y-auto custom-scrollbar">
@@ -1376,14 +1380,15 @@ function capitalize(str: string) {
                 <Link 
                   href="/collection" 
                   className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/collection') ? 'font-extrabold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                    isLinkActive('/collection') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
                   }`}
                   onClick={(e) => createRipple(e)}
                   onMouseEnter={() => setHoveredNav('new')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/collection') ? '0.1em' : hoveredNav === 'new' ? '0.08em' : '0.05em',
-                    transition: 'all 0.3s ease'
+                    letterSpacing: isLinkActive('/collection') ? '0.08em' : hoveredNav === 'new' ? '0.06em' : '0.04em',
+                    transition: 'all 0.3s ease',
+                    fontWeight: isLinkActive('/collection') ? '600' : '500'
                   }}
                 >
                   {/* Animated Icon */}
@@ -1432,14 +1437,15 @@ function capitalize(str: string) {
                 <Link 
                   href="/sales" 
                   className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/sales') ? 'font-extrabold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                    isLinkActive('/sales') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
                   }`}
                   onClick={(e) => createRipple(e)}
                   onMouseEnter={() => setHoveredNav('sales')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/sales') ? '0.1em' : hoveredNav === 'sales' ? '0.08em' : '0.05em',
-                    transition: 'all 0.3s ease'
+                    letterSpacing: isLinkActive('/sales') ? '0.08em' : hoveredNav === 'sales' ? '0.06em' : '0.04em',
+                    transition: 'all 0.3s ease',
+                    fontWeight: isLinkActive('/sales') ? '600' : '500'
                   }}
                 >
                   {/* Animated Icon */}
@@ -1480,14 +1486,15 @@ function capitalize(str: string) {
                 <Link 
                   href="/static/aboutus" 
                   className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/static/aboutus') ? 'font-extrabold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                    isLinkActive('/static/aboutus') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
                   }`}
                   onClick={(e) => createRipple(e)}
                   onMouseEnter={() => setHoveredNav('about')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/static/aboutus') ? '0.1em' : hoveredNav === 'about' ? '0.08em' : '0.05em',
-                    transition: 'all 0.3s ease'
+                    letterSpacing: isLinkActive('/static/aboutus') ? '0.08em' : hoveredNav === 'about' ? '0.06em' : '0.04em',
+                    transition: 'all 0.3s ease',
+                    fontWeight: isLinkActive('/static/aboutus') ? '600' : '500'
                   }}
                 >
                   {/* Animated Icon */}

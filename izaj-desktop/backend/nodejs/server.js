@@ -9,6 +9,7 @@ import user from './user/server.js'
 import products from './product/server.js'
 import stock from './stock/server.js'
 import sale from './sales/server.js'
+import orderRoutes from './order/server.js'
 
 const app = express();
 
@@ -45,6 +46,9 @@ app.use('/api/admin', user);
 app.use('/api', products);
 app.use('/api/products', stock);
 app.use('/api/sales', sale);
+app.use('/api', orderRoutes);
+
+console.log('✅ All routes registered, including orders routes');
 
 // =============================================================================
 // ERROR HANDLING MIDDLEWARE

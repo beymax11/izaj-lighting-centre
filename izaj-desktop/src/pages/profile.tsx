@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { Session } from "@supabase/supabase-js"
-import { supabase } from "../../backend/nodejs/supabaseClient";
+import { supabase } from "../lib/supabase";
 import API_URL from "../../config/api";
 
 interface ProfileProps {

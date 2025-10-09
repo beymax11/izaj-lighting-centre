@@ -22,6 +22,7 @@ export interface Cart {
   totalPrice: number;
   createdAt: Date;
   updatedAt: Date;
+  isLoading?: boolean;
 }
 
 export interface CartSummary {
