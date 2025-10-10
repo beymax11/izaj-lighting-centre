@@ -12,6 +12,7 @@ import sale from './sales/server.js'
 import reviews from './reviews/server.js'
 import dashboard from './dashboard/server.js'
 import customers from './customers/server.js'
+import payments from './payments/server.js'
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/sales', sale);
 app.use('/api', reviews);
 app.use('/api', dashboard);
 app.use('/api', customers);
+app.use('/api', payments);
 
 // =============================================================================
 // ERROR HANDLING MIDDLEWARE
