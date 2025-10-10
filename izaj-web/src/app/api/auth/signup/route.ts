@@ -139,6 +139,7 @@ export async function POST(request: Request) {
 			.update({ 
 				name: profileName, 
 				phone: finalPhone,
+				user_type: 'customer',
 				updated_at: new Date().toISOString()
 			})
 			.eq('id', data.user.id)
@@ -155,6 +156,7 @@ export async function POST(request: Request) {
 				id: data.user.id, 
 				name: profileName, 
 				phone: finalPhone,
+				user_type: 'customer',
 				updated_at: new Date().toISOString()
 			})
 			.select();
