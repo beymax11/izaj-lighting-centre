@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CartProvider, UserProvider, CartIconProvider, FavoritesProvider } from '../../context';
+import { NotificationProvider } from '../../context/NotificationContext';
 
 interface ClientProvidersProps {
   children: React.ReactNode;
@@ -13,7 +14,9 @@ export default function ClientProviders({ children }: ClientProvidersProps) {
       <CartProvider>
         <CartIconProvider>
           <FavoritesProvider>
-            {children}
+            <NotificationProvider>
+              {children}
+            </NotificationProvider>
           </FavoritesProvider>
         </CartIconProvider>
       </CartProvider>

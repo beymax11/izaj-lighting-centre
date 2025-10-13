@@ -1,19 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { useNotificationContext } from '@/context/NotificationContext';
+import { Notification } from '@/types/notification';
 
 interface User {
   firstName: string;
   lastName: string;
   email: string;
-}
-
-interface Notification {
-  id: number;
-  type: 'order' | 'promo' | 'review' | 'system' | 'favorite';
-  message: string;
-  time: string;
-  isRead: boolean;
-  link?: string;
 }
 
 interface NotificationDropdownProps {
@@ -23,51 +16,20 @@ interface NotificationDropdownProps {
 
 export default function NotificationDropdown({ user, onOpenAuthModal }: NotificationDropdownProps) {
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: 'order',
-      message: 'Your order #12345 has been shipped and is on its way!',
-      time: '2 hours ago',
-      isRead: false,
-      link: '/orders'
-    },
-    {
-      id: 2,
-      type: 'promo',
-      message: 'Flash sale! 30% off all ceiling lights this weekend only',
-      time: '5 hours ago',
-      isRead: false,
-      link: '/sales'
-    },
-    {
-      id: 3,
-      type: 'review',
-      message: 'Your review for "Modern Chandelier" received a helpful response',
-      time: 'Yesterday',
-      isRead: true,
-      link: '/reviews'
-    },
-    {
-      id: 4,
-      type: 'system',
-      message: 'Your account information was successfully updated',
-      time: '3 days ago',
-      isRead: true,
-      link: '/account'
-    },
-    {
-      id: 5,
-      type: 'favorite',
-      message: 'Your favorite "Crystal Pendant Light" is back in stock!',
-      time: '1 week ago',
-      isRead: true,
-      link: '/favorites'
-    }
-  ]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const { 
+    notifications, 
+    stats, 
+    isLoading, 
+    error, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification: deleteNotificationHandler,
+    clearError 
+  } = useNotificationContext();
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = stats?.unread || 0;
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -81,29 +43,41 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
         return <Icon icon="mdi:information" className="h-5 w-5 text-gray-600" />;
       case 'favorite':
         return <Icon icon="mdi:heart" className="h-5 w-5 text-red-600" />;
+      case 'payment':
+        return <Icon icon="mdi:credit-card" className="h-5 w-5 text-orange-600" />;
       default:
         return <Icon icon="mdi:bell" className="h-5 w-5 text-gray-600" />;
     }
   };
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, isRead: true }
-          : notification
-      )
-    );
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    
+    return date.toLocaleDateString();
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
+  const handleMarkAsRead = async (id: string) => {
+    if (!notifications.find(n => n.id === id)?.is_read) {
+      await markAsRead(id);
+    }
   };
 
-  const deleteNotification = (id: number) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  const handleDeleteNotification = async (id: string) => {
+    await deleteNotificationHandler(id);
+  };
+
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
   };
 
   useEffect(() => {
@@ -151,8 +125,9 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
             </h3>
             {user && unreadCount > 0 && (
               <button 
-                onClick={markAllAsRead}
-                className="text-sm text-gray-600 hover:text-black font-medium transition-colors duration-200 flex items-center gap-1 hover:bg-gray-100 px-2 py-1 rounded-lg"
+                onClick={handleMarkAllAsRead}
+                disabled={isLoading}
+                className="text-sm text-gray-600 hover:text-black font-medium transition-colors duration-200 flex items-center gap-1 hover:bg-gray-100 px-2 py-1 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Icon icon="mdi:check-all" className="w-4 h-4" />
                 Mark all read
@@ -162,17 +137,36 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
 
           <div className="max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar">
             {user ? (
-              notifications.length > 0 ? (
+              isLoading ? (
+                <div className="py-8 text-center px-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
+                  <p className="text-sm text-gray-600">Loading notifications...</p>
+                </div>
+              ) : error ? (
+                <div className="py-8 text-center px-4">
+                  <div className="bg-red-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4">
+                    <Icon icon="mdi:alert-circle-outline" className="h-8 w-8 text-red-500" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-800 mb-2">Error loading notifications</h3>
+                  <p className="text-sm text-gray-600 mb-4">{error}</p>
+                  <button 
+                    onClick={clearError}
+                    className="text-sm text-black hover:text-gray-600 font-medium"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : notifications.length > 0 ? (
                 <div className="py-1">
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
                       className={`px-4 py-3 hover:bg-gray-50 transition-all duration-200 group relative ${
-                        !notification.isRead ? 'bg-gray-50/50' : 'bg-white'
+                        !notification.is_read ? 'bg-gray-50/50' : 'bg-white'
                       }`}
                       onClick={() => {
-                        if (!notification.isRead) {
-                          markAsRead(notification.id);
+                        if (!notification.is_read) {
+                          handleMarkAsRead(notification.id);
                         }
                       }}
                     >
@@ -182,24 +176,30 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                           notification.type === 'promo' ? 'bg-green-50' :
                           notification.type === 'review' ? 'bg-purple-50' :
                           notification.type === 'favorite' ? 'bg-red-50' :
+                          notification.type === 'payment' ? 'bg-orange-50' :
                           'bg-gray-50'
                         }`}>
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium mb-1 ${
+                            !notification.is_read ? 'text-gray-900' : 'text-gray-700'
+                          }`}>
+                            {notification.title}
+                          </p>
                           <p className={`text-sm leading-relaxed ${
-                            notification.isRead
+                            notification.is_read
                               ? 'text-gray-600'
-                              : 'text-gray-800 font-medium'
+                              : 'text-gray-800'
                           }`}>
                             {notification.message}
                           </p>
                           <div className="flex items-center justify-between mt-2">
                             <p className="text-xs text-gray-500 flex items-center gap-1">
                               <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5" />
-                              {notification.time}
+                              {formatTime(notification.created_at)}
                             </p>
-                            {!notification.isRead && (
+                            {!notification.is_read && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-black text-white">
                                 New
                               </span>
@@ -209,7 +209,7 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteNotification(notification.id);
+                            handleDeleteNotification(notification.id);
                           }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-red-500 p-1 hover:bg-red-50 rounded-lg"
                         >

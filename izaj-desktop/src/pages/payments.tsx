@@ -46,14 +46,14 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
     const csvContent = [
       headers.join(','),
       ...selectedData.map(payment => [
-        payment.order_number,
-        payment.customer_name,
-        payment.customer_email,
-        payment.customer_phone,
-        formatPaymentDate(payment.created_at),
-        payment.total_amount,
-        payment.payment_method,
-        payment.payment_status
+        payment.order_number || payment.id,
+        payment.customer_name || (payment as any).name,
+        payment.customer_email || (payment as any).email,
+        payment.customer_phone || (payment as any).phone,
+        formatPaymentDate(payment.created_at || (payment as any).date),
+        payment.total_amount || (payment as any).amount,
+        payment.payment_method || (payment as any).method,
+        payment.payment_status || (payment as any).status
       ].join(','))
     ].join('\n');
 
@@ -105,11 +105,11 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
   // Filter and search data
   const filteredData = payments.filter(payment => {
     const matchesSearch = searchQuery === '' || 
-      payment.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
+      (payment.order_number || payment.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (payment.customer_name || (payment as any).name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (payment.customer_email || (payment as any).email || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = selectedFilters.length === 0 || 
-      selectedFilters.includes(payment.payment_status);
+      selectedFilters.includes(payment.payment_status || (payment as any).status || '');
     return matchesSearch && matchesFilter;
   });
 
@@ -129,31 +129,42 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
       <main className="flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 bg-white">
         {/* Section Header */}
         <div className="max-w-7xl mx-auto mb-6 sm:mb-8">
-          <h2 className="flex items-center gap-2 sm:gap-3 text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
-            <Icon icon="mdi:credit-card-outline" className="text-pink-400 w-6 h-6 sm:w-8 sm:h-8" />
-            Payments
-          </h2>
-          <p className="text-sm sm:text-md text-gray-500">Monitor and manage payment transactions</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 sm:gap-3 text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                <Icon icon="mdi:credit-card-outline" className="text-pink-400 w-6 h-6 sm:w-8 sm:h-8" />
+                Payments
+              </h2>
+              <p className="text-sm sm:text-md text-gray-500">Monitor and manage payment transactions</p>
+            </div>
+            <button 
+              onClick={refetchPayments}
+              className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors"
+            >
+              <Icon icon="mdi:refresh" className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
         <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-10">
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-yellow-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform cursor-pointer" onClick={() => setSelectedFilters(['pending'])}>
             <Icon icon="mdi:clock-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-400 mb-2 sm:mb-3" />
             <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats?.pending || 0}</span>
             <span className="text-xs sm:text-sm text-gray-500">Pending</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-green-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-green-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform cursor-pointer" onClick={() => setSelectedFilters(['paid'])}>
             <Icon icon="mdi:check-circle-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-green-400 mb-2 sm:mb-3" />
             <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats?.paid || 0}</span>
             <span className="text-xs sm:text-sm text-gray-500">Paid</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-red-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-red-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform cursor-pointer" onClick={() => setSelectedFilters(['failed'])}>
             <Icon icon="mdi:close-circle-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-red-400 mb-2 sm:mb-3" />
             <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats?.failed || 0}</span>
             <span className="text-xs sm:text-sm text-gray-500">Failed</span>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform">
+          <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-300 p-4 sm:p-6 flex flex-col items-center hover:scale-[1.025] transition-transform cursor-pointer" onClick={() => setSelectedFilters(['refunded'])}>
             <Icon icon="mdi:cash-refund" className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400 mb-2 sm:mb-3" />
             <span className="text-xl sm:text-2xl font-bold text-gray-800">{stats?.refunded || 0}</span>
             <span className="text-xs sm:text-sm text-gray-500">Refunds</span>
@@ -335,15 +346,15 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
                           className="accent-yellow-400"
                         />
                       </td>
-                      <td className="px-2 sm:px-4 py-3 font-mono text-yellow-700">{payment.order_number}</td>
-                      <td className="px-2 sm:px-4 py-3 hidden sm:table-cell">{payment.customer_name}</td>
-                      <td className="px-2 sm:px-4 py-3 hidden md:table-cell text-xs">{payment.customer_email}</td>
-                      <td className="px-2 sm:px-4 py-3 hidden lg:table-cell">{payment.customer_phone}</td>
-                      <td className="px-2 sm:px-4 py-3 font-semibold">{formatPrice(payment.total_amount)}</td>
-                      <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{getPaymentMethodLabel(payment.payment_method)}</td>
+                      <td className="px-2 sm:px-4 py-3 font-mono text-yellow-700">{payment.order_number || payment.id}</td>
+                      <td className="px-2 sm:px-4 py-3 hidden sm:table-cell">{payment.customer_name || (payment as any).name}</td>
+                      <td className="px-2 sm:px-4 py-3 hidden md:table-cell text-xs">{payment.customer_email || (payment as any).email}</td>
+                      <td className="px-2 sm:px-4 py-3 hidden lg:table-cell">{payment.customer_phone || (payment as any).phone}</td>
+                      <td className="px-2 sm:px-4 py-3 font-semibold">{formatPrice(payment.total_amount || (payment as any).amount)}</td>
+                      <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{getPaymentMethodLabel(payment.payment_method || (payment as any).method)}</td>
                       <td className="px-2 sm:px-4 py-3">
-                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${getPaymentStatusColor(payment.payment_status)}`}>
-                          {payment.payment_status}
+                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${getPaymentStatusColor(payment.payment_status || (payment as any).status)}`}>
+                          {payment.payment_status || (payment as any).status}
                         </span>
                       </td>
                     </tr>
@@ -413,9 +424,9 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
                             <Icon icon="mdi:account-circle" className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400" />
                           </div>
                           <div>
-                            <div className="font-semibold text-base sm:text-lg">{selectedPayment.customer_name}</div>
-                            <div className="text-xs sm:text-sm text-gray-500">{selectedPayment.customer_email}</div>
-                            <div className="text-xs sm:text-sm text-gray-500">{selectedPayment.customer_phone}</div>
+                            <div className="font-semibold text-base sm:text-lg">{selectedPayment.customer_name || (selectedPayment as any).name}</div>
+                            <div className="text-xs sm:text-sm text-gray-500">{selectedPayment.customer_email || (selectedPayment as any).email}</div>
+                            <div className="text-xs sm:text-sm text-gray-500">{selectedPayment.customer_phone || (selectedPayment as any).phone}</div>
                           </div>
                         </div>
                       </div>
@@ -427,16 +438,16 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Amount</span>
-                            <span className="font-semibold text-base sm:text-lg">{formatPrice(selectedPayment.total_amount)}</span>
+                            <span className="font-semibold text-base sm:text-lg">{formatPrice(selectedPayment.total_amount || (selectedPayment as any).amount)}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Payment Method</span>
-                            <span className="font-medium text-sm sm:text-base">{getPaymentMethodLabel(selectedPayment.payment_method)}</span>
+                            <span className="font-medium text-sm sm:text-base">{getPaymentMethodLabel(selectedPayment.payment_method || (selectedPayment as any).method)}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Status</span>
-                            <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${getPaymentStatusColor(selectedPayment.payment_status)}`}>
-                              {selectedPayment.payment_status}
+                            <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${getPaymentStatusColor(selectedPayment.payment_status || (selectedPayment as any).status)}`}>
+                              {selectedPayment.payment_status || (selectedPayment as any).status}
                             </span>
                           </div>
                         </div>
@@ -449,15 +460,15 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Order Number</span>
-                            <span className="font-mono text-blue-700 text-sm sm:text-base">{selectedPayment.order_number}</span>
+                            <span className="font-mono text-blue-700 text-sm sm:text-base">{selectedPayment.order_number || selectedPayment.id}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Date</span>
-                            <span className="font-medium text-sm sm:text-base">{formatPaymentDate(selectedPayment.created_at)}</span>
+                            <span className="font-medium text-sm sm:text-base">{formatPaymentDate(selectedPayment.created_at || (selectedPayment as any).date)}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Time</span>
-                            <span className="font-medium text-sm sm:text-base">{formatPaymentTime(selectedPayment.created_at)}</span>
+                            <span className="font-medium text-sm sm:text-base">{formatPaymentTime(selectedPayment.created_at || (selectedPayment as any).date)}</span>
                           </div>
                         </div>
                       </div>
@@ -472,7 +483,7 @@ function Payments({ setIsOverlayOpen, session }: PaymentProps) {
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Order Status</span>
-                            <span className="font-medium text-sm sm:text-base capitalize">{selectedPayment.status.replace('_', ' ')}</span>
+                            <span className="font-medium text-sm sm:text-base capitalize">{(selectedPayment.status || 'unknown').replace('_', ' ')}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500 text-sm sm:text-base">Shipping Address</span>

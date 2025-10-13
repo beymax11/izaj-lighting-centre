@@ -195,14 +195,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         address: userData.address,
       };
       
-      console.log('📝 UserContext - Register payload:', {
-        ...payload,
-        password: '***hidden***',
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        fullNameLength: fullName.length,
-        nameValue: `"${fullName}"`
-      });
       
       const response = await fetch('/api/auth/signup', {
         method: 'POST',

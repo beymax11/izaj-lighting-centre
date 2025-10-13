@@ -8,19 +8,34 @@ import API_URL from '../../config/api';
 
 export interface Payment {
   id: string;
-  order_number: string;
-  user_id: string;
-  status: 'pending' | 'approved' | 'in_transit' | 'complete' | 'cancelled';
-  payment_method: string;
-  payment_status: string;
-  total_amount: number;
-  recipient_name: string;
-  shipping_phone: string;
-  shipping_address_line1: string;
-  created_at: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string;
+  order_number?: string;
+  user_id?: string;
+  status?: 'pending' | 'approved' | 'in_transit' | 'complete' | 'cancelled';
+  payment_method?: string | null;
+  payment_status?: string | null;
+  total_amount?: number | null;
+  recipient_name?: string;
+  shipping_phone?: string;
+  shipping_address_line1?: string;
+  created_at?: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  
+  // Alternative field names from API
+  name?: string;
+  email?: string;
+  phone?: string;
+  date?: string;
+  time?: string;
+  method?: string;
+  amount?: number;
+  productId?: string;
+  paymentReference?: string;
+  orderId?: string;
+  userId?: string;
+  purchaseItems?: any[];
+  totalItems?: number;
 }
 
 export interface PaymentStats {

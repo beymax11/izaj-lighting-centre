@@ -279,6 +279,29 @@ export async function POST(request: Request) {
 
     console.log('✅ Order items created:', createdItems);
 
+    // Create notification for order placement
+    try {
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          type: 'order',
+          title: 'Order Placed Successfully',
+          message: `Your order #${order.order_number} has been placed and is being processed.`,
+          link: `/orders/${order.id}`,
+          metadata: {
+            order_id: order.id,
+            order_number: order.order_number
+          },
+          is_read: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+    } catch (notificationError) {
+      console.error('❌ Error creating order notification:', notificationError);
+      // Don't fail the order creation if notification fails
+    }
+
     // Fetch complete order with items
     const { data: completeOrder } = await supabase
       .from('orders')

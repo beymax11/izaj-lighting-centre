@@ -142,12 +142,27 @@ export const formatPaymentTime = (dateString: string) => {
   });
 };
 
-export const formatPrice = (amount: number | string) => {
+export const formatPrice = (amount: number | string | null | undefined) => {
+  // Handle null, undefined, or empty values
+  if (amount === null || amount === undefined || amount === '') {
+    return '₱0.00';
+  }
+  
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  // Handle NaN or invalid numbers
+  if (isNaN(numAmount) || !isFinite(numAmount)) {
+    return '₱0.00';
+  }
+  
   return `₱${numAmount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-export const getPaymentStatusColor = (status: string) => {
+export const getPaymentStatusColor = (status: string | null | undefined) => {
+  if (!status || typeof status !== 'string') {
+    return 'bg-gray-100 text-gray-700';
+  }
+  
   const colors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-700',
     paid: 'bg-green-100 text-green-700',
@@ -157,7 +172,11 @@ export const getPaymentStatusColor = (status: string) => {
   return colors[status.toLowerCase()] || 'bg-gray-100 text-gray-700';
 };
 
-export const getPaymentMethodLabel = (method: string) => {
+export const getPaymentMethodLabel = (method: string | null | undefined) => {
+  if (!method || typeof method !== 'string') {
+    return 'Unknown';
+  }
+  
   const labels: Record<string, string> = {
     gcash: 'GCash',
     maya: 'Maya',

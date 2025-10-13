@@ -18,15 +18,21 @@ type SignupBody = {
 };
 
 export async function POST(request: Request) {
+	console.log('🚀 Signup API called');
 	let body: Partial<SignupBody> = {};
 	try {
 		body = (await request.json()) as Partial<SignupBody>;
+		console.log('📝 Request body received:', { ...body, password: '***hidden***' });
 		
 		if (!body?.email || !body?.password) {
+			console.log('❌ Missing email or password');
 			return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
 		}
 
+		console.log('🔧 Getting Supabase client...');
 		const supabase = await getSupabaseServerClient();
+		console.log('✅ Supabase client obtained');
+		
 		const metadata: Record<string, string> = {};
 		if (body.name) {
 			metadata.name = body.name;
@@ -49,6 +55,7 @@ export async function POST(request: Request) {
 				metadata.phone = canonical;
 			}
 		}
+		console.log('🔍 Checking if user already exists...');
 		// Check if user already exists
 		const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
 			page: 1,
@@ -58,35 +65,35 @@ export async function POST(request: Request) {
 		const existingUser = existingUsers?.users?.find(user => user.email === body.email);
 		
 		if (existingUser) {
+			console.log('❌ User already exists');
 			return NextResponse.json({ 
 				error: 'User with this email already exists',
 				code: 'user_exists'
 			}, { status: 400 });
 		}
+		console.log('✅ User does not exist, proceeding with creation...');
 
-		// Create user without email confirmation
-		// Use admin API to create user directly without triggering email confirmation
-		const { data, error } = await supabaseAdmin.auth.admin.createUser({
+		console.log('👤 Creating user with Supabase auth...');
+		// Create user using regular auth flow (not admin API)
+		const { data, error } = await supabase.auth.signUp({
 			email: body.email,
 			password: body.password,
-			email_confirm: true, // Set to true to skip email confirmation
+			options: {
+				data: {
+					name: body.name,
+					phone: body.phone
+				}
+			}
 		});
 
 		if (error || !data?.user) {
-			return NextResponse.json({ 
-				error: error?.message || 'Signup failed'
-			}, { status: 400 });
+			console.log('❌ User creation failed:', error);
+			throw new Error(`Database error saving new user: ${error?.message || 'Unknown error'}`);
 		}
+		console.log('✅ User created successfully:', data.user.id);
 
-		// Update user with metadata if we have any
-		if (Object.keys(metadata).length > 0) {
-			await supabaseAdmin.auth.admin.updateUserById(
-				data.user.id,
-				{
-					user_metadata: metadata
-				}
-			);
-		}
+		// Note: Metadata is already set in the signUp call above
+		// No need to update separately with regular auth flow
 
 		// Generate confirmation token
 		const confirmationToken = randomBytes(32).toString('hex');
@@ -105,11 +112,11 @@ export async function POST(request: Request) {
 			}
 		);
 
-	// Create a profile row so data is visible immediately
-	const profileName = body.name && body.name.trim() ? body.name.trim() : null;
+	// Wait for profile to be created by trigger
+	await new Promise(resolve => setTimeout(resolve, 1000));
 	
-	// Small delay to ensure any database triggers complete
-	await new Promise(resolve => setTimeout(resolve, 100));
+	// Update profile with user details
+	const profileName = body.name && body.name.trim() ? body.name.trim() : null;
 	
 	// Check if phone number conflicts with another user
 	let finalPhone: string | null = normalizedPhone ?? null;
@@ -125,52 +132,26 @@ export async function POST(request: Request) {
 		}
 	}
 	
-	// First, check if profile already exists (might be created by a trigger)
-	const { data: existingProfile } = await supabaseAdmin
+	// Update the profile with user details
+	const { error: profileError } = await supabase
 		.from('profiles')
-		.select('id')
-		.eq('id', data.user.id)
-		.maybeSingle();
+		.update({ 
+			name: profileName, 
+			phone: finalPhone,
+			updated_at: new Date().toISOString()
+		})
+		.eq('id', data.user.id);
 	
-	if (existingProfile) {
-		// Profile exists, update it
-		const { error: updateError } = await supabaseAdmin
-			.from('profiles')
-			.update({ 
-				name: profileName, 
-				phone: finalPhone,
-				user_type: 'customer',
-				updated_at: new Date().toISOString()
-			})
-			.eq('id', data.user.id)
-			.select();
-		
-		if (updateError) {
-			console.error('Profile update error:', updateError);
-		}
-	} else {
-		// Profile doesn't exist, insert it
-		const { error: insertError } = await supabaseAdmin
-			.from('profiles')
-			.insert({ 
-				id: data.user.id, 
-				name: profileName, 
-				phone: finalPhone,
-				user_type: 'customer',
-				updated_at: new Date().toISOString()
-			})
-			.select();
-		
-		if (insertError) {
-			console.error('Profile insert error:', insertError);
-		}
+	if (profileError) {
+		console.error('Profile update error:', profileError);
+		// Don't fail signup if profile update fails, just log it
 	}
 
 		// If address was provided during signup, create it in the database
 		if (body.address && body.address.province && body.address.city && body.address.barangay && body.address.address) {
 			const composedAddress = `${body.address.address.trim()}, ${body.address.barangay.trim()}, ${body.address.city.trim()}, ${body.address.province.trim()}`.replace(/,\s*,/g, ', ').trim();
 			
-			await supabaseAdmin
+			await supabase
 				.from('user_addresses')
 				.insert([{
 					user_id: data.user.id,
@@ -192,6 +173,15 @@ export async function POST(request: Request) {
 			// Don't fail the signup if email fails
 			console.error('Email send error:', emailError);
 		}
+
+		// Create welcome notification
+		try {
+			const { createWelcomeNotification } = await import('@/lib/notificationUtils');
+			await createWelcomeNotification(data.user.id, profileName || 'User');
+		} catch (notificationError) {
+			// Don't fail the signup if notification fails
+			console.error('Welcome notification error:', notificationError);
+		}
 		
 		return NextResponse.json({ 
 			user: data.user, 
@@ -201,9 +191,44 @@ export async function POST(request: Request) {
 		}, { status: 200 });
 	} catch (err) {
 		console.error('Signup error:', err);
+		console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+		console.error('Error details:', {
+			name: err instanceof Error ? err.name : 'Unknown',
+			message: err instanceof Error ? err.message : String(err),
+			code: (err as any)?.code,
+			details: (err as any)?.details,
+			hint: (err as any)?.hint
+		});
+		
+		// Provide more detailed error information
+		let errorMessage = 'Database error saving new user';
+		let statusCode = 500;
+		
+		if (err instanceof Error) {
+			errorMessage = err.message;
+			
+			// Check for specific database errors
+			if (err.message.includes('relation') || err.message.includes('does not exist')) {
+				errorMessage = 'Database tables not found. Please run the database schema.';
+				statusCode = 500;
+			} else if (err.message.includes('duplicate key') || err.message.includes('already exists')) {
+				errorMessage = 'User already exists with this email or phone number.';
+				statusCode = 400;
+			} else if (err.message.includes('permission denied') || err.message.includes('RLS')) {
+				errorMessage = 'Database permission error. Please check RLS policies.';
+				statusCode = 500;
+			} else if (err.message.includes('connection') || err.message.includes('timeout')) {
+				errorMessage = 'Database connection error. Please try again.';
+				statusCode = 500;
+			}
+		}
+		
 		return NextResponse.json({ 
-			error: 'Signup failed'
-		}, { status: 500 });
+			error: errorMessage,
+			details: err instanceof Error ? err.stack : undefined,
+			errorCode: (err as any)?.code,
+			timestamp: new Date().toISOString()
+		}, { status: statusCode });
 	}
 }
 

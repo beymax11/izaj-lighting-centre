@@ -80,6 +80,30 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ [API] Reviews created successfully:', data);
 
+    // Create notification for review submission
+    try {
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          type: 'review',
+          title: 'Review Submitted',
+          message: `Thank you for reviewing your order #${order_number}. Your feedback helps us improve our service.`,
+          link: `/orders/${order_id}`,
+          metadata: {
+            order_id: order_id,
+            order_number: order_number,
+            review_ids: data.map((review: any) => review.id)
+          },
+          is_read: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+    } catch (notificationError) {
+      console.error('❌ Error creating review notification:', notificationError);
+      // Don't fail the review creation if notification fails
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Reviews submitted successfully',
